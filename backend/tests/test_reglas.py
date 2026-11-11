@@ -411,7 +411,7 @@ def test_indicadores_y_catalogo(muestra_de, correr):
 def test_reglas_toleran_datasets_ausentes(muestra_de, correr, catalogo):
     m = muestra_de({})
     for rid in catalogo:
-        if rid != "CAL-FMT-01":
+        if rid not in ("CAL-FMT-01", "CAL-PLZ-04"):  # formato y calendario no dependen de los CSV
             assert correr(rid, m) == [], rid
 
 

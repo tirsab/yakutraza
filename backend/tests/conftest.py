@@ -50,7 +50,8 @@ def correr(catalogo):
     cargar_modulos()
 
     def _correr(regla_id, muestra, corte=CORTE):
-        return REGISTRO[regla_id](muestra, catalogo[regla_id], Contexto(fecha_corte=corte, reglas=catalogo))
+        return REGISTRO[regla_id](muestra, catalogo[regla_id],
+                                  Contexto(fecha_corte=corte, reglas=catalogo, rules_dir=CATALOGO.parent))
     return _correr
 
 

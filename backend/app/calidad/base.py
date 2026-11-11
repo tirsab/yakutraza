@@ -30,6 +30,8 @@ ETIQUETA_TIPO: dict[str, str] = {
     "dato_no_registrado": "Dato no registrado",
     "coherencia_aritmetica": "Coherencia aritmética",
     "desfase_mef": "Diferencias con el MEF explicadas o no verificables por el desfase de fechas",
+    "plazo_ds02": "Plazos de DS02 recalculados",
+    "calendario": "Calendario de días hábiles",
 }
 
 
@@ -90,6 +92,8 @@ class Hallazgo:
 class Contexto:
     fecha_corte: date
     reglas: dict[str, ReglaConfig] = field(default_factory=dict)
+    # Carpeta de catálogos (rules/): las reglas de plazos leen feriados.yaml y plazos.yaml.
+    rules_dir: Path | None = None
 
 
 def nuevo(cfg: ReglaConfig, dataset: str, fila: int | None, llave: str | None, explicacion: str,

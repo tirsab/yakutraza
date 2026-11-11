@@ -1,0 +1,561 @@
+# Catálogo de reglas de plazo (Fase 2): tres relojes.
+#
+#   normativo: plazo máximo del procedimiento (o de su etapa).
+#   interno:   meta de gestión de la hoja Hitos (reloj interno principal). Si el
+#              flujograma del expediente dice otra cosa, se muestra al lado como
+#              «discrepancia».
+#   oficio:    plazo fijado a la EP en un oficio o prórroga. El valor del
+#              catálogo es el máximo por defecto; si el oficio registrado fija
+#              otro (o una prórroga), prima el documento.
+#
+# Todas las reglas están «por validar»: la DRE no ha validado ninguna
+# (Documento técnico, §5: «alternativa: reglas del diccionario y del RGT
+# marcadas "por validar"»). El campo `respaldo` dice qué tan firme es la fuente:
+#   norma_leida               texto de la norma leído y citado (ver fuentes_documentales)
+#   diccionario_y_flujograma  coinciden la hoja Hitos y el flujograma del expediente
+#   solo_diccionario | solo_flujograma
+#   supuesto_simulacion       hoja Supuestos: procedimientos sin flujograma
+#   derivado_muestra          se infiere de los datos (no hay norma citada)
+#
+# Campos: id, procedimiento, etapa, hito (o hitos), tipo_reloj, plazo_dh o
+# plazo_dias_calendario, cuenta_plazo, inicio_conteo, vigente_desde,
+# vigente_hasta, respaldo, fuentes [{doc, ubicacion, cita}], estado_validacion,
+# discrepancia {fuente, valor, descripcion}, pregunta_dre, nota.
+# `vigente_desde` vacío = no verificado (no se inventa).
+
+version: 1
+
+umbral_por_vencer_dh:
+  valor: 5
+  naturaleza: supuesto
+  sustento: Días hábiles restantes desde los que una alerta pasa de «en plazo» a «por vencer». Validar con la DRE (DRE-19).
+
+fuentes_documentales:
+  RGT:
+    titulo: "Reglamento General de Tarifas de los Servicios de Saneamiento brindados por Empresas Prestadoras, RCD 028-2021-SUNASS-CD (publicada el 27.07.2021; «entra en vigencia al día siguiente de su publicación», art. 3)"
+    copia_leida: "Compendio del Reglamento General de Tarifas, Sunass, https://cdn.www.gob.pe/uploads/document/file/4388328/ (incluye modificatorias hasta la RCD 004-2023-SUNASS-CD, publicada el 20.01.2023)"
+    advertencia: "No incluye la RCD 124-2025-SUNASS-CD (23.10.2025), que según el expediente modificó los arts. 45, 47, 48 y 49. Su texto no se pudo obtener (gob.pe bloquea el acceso automatizado)."
+  TUO_27444:
+    titulo: "Texto Único Ordenado de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS"
+    copia_leida: "https://cdn.www.gob.pe/uploads/document/file/5320370/4770872-decreto-supremo-n-004-2019-jus.pdf"
+    advertencia: "El DS 006-2026-JUS (publicado el 30.04.2026) aprobó un nuevo TUO y derogó el DS 004-2019-JUS. No se leyó el nuevo texto: verificar que la numeración citada se mantenga."
+  RCD_108_2022:
+    titulo: "RCD 108-2022-SUNASS-CD (publicada el 17.11.2022): modifica los numerales 3 y 4 del párrafo 93.1 e incorpora el numeral 6 al art. 94 del RGT"
+    copia_leida: "Notas de modificación del Compendio del RGT (págs. 40-42)"
+  RCD_085_2022:
+    titulo: "RCD 085-2022-SUNASS-CD (publicada el 19.09.2022): dispone la publicación del PROYECTO de modificación del art. 93 y del numeral 6 del art. 94, con 15 días para comentarios"
+    copia_leida: "Matriz de evaluación de comentarios, https://cdn.www.gob.pe/uploads/document/file/3847948/ (no se leyó la RCD misma)"
+  DICC_LEAME: {titulo: "Diccionario de variables, hoja Léame (Cómputo de plazos)"}
+  DICC_HITOS: {titulo: "Diccionario de variables, hoja Hitos"}
+  DICC_SUPUESTOS: {titulo: "Diccionario de variables, hoja Supuestos"}
+  FLUJO_UFI: {titulo: "Expediente General del Desafío 3, Anexo 2 (pág. 9): flujo propuesto de uso excepcional del FI"}
+  FLUJO_RP: {titulo: "Expediente General del Desafío 3, Anexo D (pág. 10): flujo propuesto de revisión periódica"}
+  FLUJO_CPI: {titulo: "Expediente General del Desafío 3, Anexo E (pág. 11): flujo propuesto de cambio al programa de inversiones"}
+  DS02: {titulo: "DS02 procedimientos (plazo_maximo_dh, dias_suspension_dh, fecha_limite)"}
+
+reglas:
+
+  # ===================================================== cómputo (transversal)
+  - id: PLZ-COMPUTO
+    procedimiento: todos
+    tipo_reloj: normativo
+    regla: "fecha_limite = fecha_inicio + plazo + días de suspensión, en días hábiles, contados desde el día hábil siguiente a fecha_inicio"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: TUO_27444, ubicacion: "art. 144.1", cita: "El plazo expresado en días es contado a partir del día hábil siguiente de aquel en que se practique la notificación o la publicación del acto"}
+      - {doc: TUO_27444, ubicacion: "art. 142.1", cita: "Los plazos para el pronunciamiento de las entidades, en los procedimientos administrativos, se contabilizan a partir del día siguiente de la fecha en la cual el administrado presentó su solicitud"}
+      - {doc: RGT, ubicacion: "art. 45.1", cita: "contados a partir del día siguiente de presentada la referida solicitud"}
+      - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "fecha_limite = fecha_inicio + plazo_maximo_dh + dias_suspension_dh, en días hábiles"}
+    estado_validacion: por validar
+    nota: "Con esta convención se reproducen las 65 fecha_limite de DS02 con plazo máximo (verificado en la Fase 2)."
+
+  - id: PLZ-DIAS-HABILES
+    procedimiento: todos
+    tipo_reloj: normativo
+    regla: "Día hábil: lunes a viernes, sin feriados nacionales (rules/feriados.yaml)"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: TUO_27444, ubicacion: "art. 145.1", cita: "se entenderá por hábiles consecutivos, excluyendo del cómputo aquellos no laborables del servicio, y los feriados no laborables de orden nacional o regional"}
+      - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "En días hábiles (lunes a viernes, sin feriados nacionales)"}
+      - {doc: DICC_SUPUESTOS, ubicacion: "Feriados", cita: "No incluye días no laborables decretados"}
+    estado_validacion: por validar
+    discrepancia: {fuente: TUO_27444, valor: "feriados regionales y días no laborables del servicio", descripcion: "El TUO también excluye feriados regionales y días no laborables del servicio; el diccionario solo feriados nacionales."}
+    pregunta_dre: DRE-01
+
+  - id: PLZ-SUSPENSION
+    procedimiento: todos
+    tipo_reloj: normativo
+    regla: "Los días de los hitos a cargo de la EP con cuenta_plazo = False suspenden el plazo de la Sunass"
+    respaldo: norma_leida
+    fuentes:
+      - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "Los hitos a cargo de la EP con cuenta_plazo = False suspenden el plazo de la Sunass"}
+      - {doc: RGT, ubicacion: "art. 45.2 (revisión periódica)", cita: "Mientras esté pendiente la subsanación, se suspende el plazo señalado en el párrafo anterior"}
+      - {doc: TUO_27444, ubicacion: "art. 142.1", cita: "salvo que se haya requerido subsanación en cuyo caso se contabilizan una vez efectuada esta"}
+    estado_validacion: por validar
+    discrepancia: {fuente: TUO_27444, valor: "contar desde la subsanación", descripcion: "Para CPI y UFI el RGT no dice expresamente que la información adicional suspenda el plazo; el TUO (art. 142.1) cuenta el plazo «una vez efectuada» la subsanación, lo que podría significar reiniciar y no suspender."}
+    pregunta_dre: DRE-02
+    vigente_desde: 2021-07-28
+
+  # ================================================ reloj normativo por tipo
+  - id: PLZ-N-CPI
+    procedimiento: cambio_programa_inversiones
+    tipo_reloj: normativo
+    plazo_dh: 30
+    cuenta_plazo: true
+    inicio_conteo: "día hábil siguiente a la solicitud"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 93.8", cita: "La tramitación del procedimiento administrativo tiene una duración máxima de treinta días hábiles"}
+      - {doc: FLUJO_CPI, ubicacion: "encabezado", cita: "Plazo máximo: 30 días hábiles"}
+      - {doc: DICC_HITOS, ubicacion: "Plazo de la etapa (DH) = 30"}
+      - {doc: DS02, ubicacion: "plazo_maximo_dh = 30"}
+    estado_validacion: por validar
+    nota: "El art. 93.8 añade «sin perjuicio de» los arts. 87.3 y 147.4 del TUO (suspensiones por colaboración entre entidades y a pedido de la EP, hasta 30 DH): no hay datos de esas suspensiones en la muestra."
+    pregunta_dre: DRE-15
+
+  - id: PLZ-N-UFI
+    procedimiento: uso_excepcional_fondo
+    tipo_reloj: normativo
+    plazo_dh: 30
+    cuenta_plazo: true
+    inicio_conteo: "día hábil siguiente a la solicitud"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 89.7", cita: "La tramitación del procedimiento administrativo tiene una duración máxima de treinta días hábiles"}
+      - {doc: FLUJO_UFI, ubicacion: "encabezado", cita: "Plazo máximo: 30 días hábiles"}
+      - {doc: DICC_HITOS, ubicacion: "Plazo de la etapa (DH) = 30"}
+      - {doc: DS02, ubicacion: "plazo_maximo_dh = 30"}
+    estado_validacion: por validar
+    pregunta_dre: DRE-15
+
+  - id: PLZ-N-RP
+    procedimiento: revision_periodica
+    tipo_reloj: normativo
+    plazo_dh: 195
+    cuenta_plazo: true
+    inicio_conteo: "día hábil siguiente a la solicitud"
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "Plazo de la etapa: 30 + 60 + 45 + 60"}
+      - {doc: FLUJO_RP, ubicacion: "encabezados de etapa", cita: "Máx. 30 DH · Máx. 60 DH · Máx. 45 DH · Máx. 60 DH"}
+      - {doc: DS02, ubicacion: "plazo_maximo_dh = 195"}
+    estado_validacion: por validar
+    nota: "El RGT leído fija plazos por etapa (arts. 45.1, 46.3, 47.6 y 49.3), no un total de 195 DH: el total es la suma. Las etapas no empiezan todas al día siguiente del fin de la anterior (ver cada etapa)."
+    pregunta_dre: DRE-03
+
+  - id: PLZ-N-RP-1
+    procedimiento: revision_periodica
+    etapa: 1_inicio
+    tipo_reloj: normativo
+    plazo_dh: 30
+    inicio_conteo: "día siguiente de presentada la solicitud"
+    vigente_desde: 2021-07-28
+    vigente_hasta:
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 45.1", cita: "en un plazo máximo de treinta días hábiles, contados a partir del día siguiente de presentada la referida solicitud"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 1", cita: "Máx. 30 DH"}
+      - {doc: DICC_HITOS, ubicacion: "1_inicio, plazo de la etapa 30"}
+    estado_validacion: por validar
+    nota: "Art. 45 modificado por la RCD 124-2025 (texto no obtenido): vigente_hasta y el texto nuevo quedan por validar."
+    pregunta_dre: DRE-04
+
+  - id: PLZ-N-RP-2
+    procedimiento: revision_periodica
+    etapa: 2_evaluacion
+    tipo_reloj: normativo
+    plazo_dh: 60
+    inicio_conteo: "día siguiente de emitida la resolución de inicio, hasta la RCD que dispone la difusión"
+    vigente_desde:
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 46.3 (modificado por la RCD 033-2022-SUNASS-CD, publicada el 16.05.2022)", cita: "La etapa de evaluación se desarrolla en un plazo máximo de sesenta días hábiles"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 2", cita: "Máx. 60 DH"}
+      - {doc: DICC_HITOS, ubicacion: "2_evaluacion, plazo de la etapa 60"}
+    estado_validacion: por validar
+    nota: "Art. 46.4: 120 DH si se ejecutan mecanismos de consulta pública (no hay ese dato en la muestra). vigente_desde vacío: no se leyó la disposición de vigencia de la RCD 033-2022."
+    pregunta_dre: DRE-05
+
+  - id: PLZ-N-RP-3
+    procedimiento: revision_periodica
+    etapa: 3_difusion
+    tipo_reloj: normativo
+    plazo_dh: 45
+    inicio_conteo: "día siguiente a la publicación en El Peruano de la resolución que dispone la difusión"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 47.6", cita: "La etapa de difusión se desarrolla dentro de los cuarenta y cinco días hábiles siguientes a la publicación de la resolución que dispone la difusión"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 3", cita: "Cómputo: desde el día siguiente de la publicación en el Peruano"}
+      - {doc: DICC_HITOS, ubicacion: "3_difusion, plazo de la etapa 45"}
+    estado_validacion: por validar
+    nota: "Art. 47 modificado por la RCD 124-2025 (texto no obtenido)."
+    pregunta_dre: DRE-04
+
+  - id: PLZ-N-RP-4
+    procedimiento: revision_periodica
+    etapa: 4_aprobacion
+    tipo_reloj: normativo
+    plazo_dh: 60
+    inicio_conteo: "día siguiente de vencido el plazo de comentarios (art. 47.5)"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 49.3", cita: "La etapa de aprobación se desarrolla en un plazo máximo de sesenta días hábiles, contados a partir del día siguiente de transcurrido el plazo señalado en el párrafo 47.5"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 4", cita: "Máx. 60 DH"}
+      - {doc: DICC_HITOS, ubicacion: "4_aprobacion, plazo de la etapa 60"}
+    estado_validacion: por validar
+    nota: "Art. 49 modificado por la RCD 124-2025 (texto no obtenido)."
+    pregunta_dre: DRE-04
+
+  - id: PLZ-N-VCI
+    procedimiento: verificacion_incremento
+    tipo_reloj: normativo
+    plazo_dh: 30
+    respaldo: supuesto_simulacion
+    fuentes:
+      - {doc: DICC_SUPUESTOS, ubicacion: "Verificación de incrementos", cita: "Plazo supuesto: 30 DH"}
+      - {doc: DS02, ubicacion: "plazo_maximo_dh = 30"}
+    estado_validacion: por validar
+    nota: "Supuesto de simulación. El RGT leído (arts. 19.2 y 19.3) regula la verificación pero no le fija un plazo."
+    pregunta_dre: DRE-18
+
+  - id: PLZ-N-RTI
+    procedimiento: reajuste_ipm
+    tipo_reloj: normativo
+    plazo_dias_calendario: 90
+    inicio_conteo: "vencimiento del mes en que se acumuló al menos 3 % de variación del IPM"
+    responsable: EP
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 82.3", cita: "El plazo máximo para aplicar el reajuste automático de tarifas y precios es de noventa días calendario posteriores al vencimiento del mes en el que se acumuló una variación de por lo menos 3% en el IPM"}
+      - {doc: RGT, ubicacion: "art. 80", cita: "cada vez que se acumule una variación de por lo menos tres por ciento (3%) en el Índice de Precios al por Mayor (IPM)"}
+      - {doc: DICC_SUPUESTOS, ubicacion: "Reajuste por IPM", cita: "Se dispara cuando la variación acumulada del IPM desde el último reajuste aplicado (o desde el inicio del periodo regulatorio) llega a 3 %"}
+    estado_validacion: por validar
+    nota: "DS02 no trae plazo para el reajuste; el plazo de 90 días calendario sale del RGT leído y corre a cargo de la EP."
+    pregunta_dre: DRE-17
+
+  - id: PLZ-N-RPI
+    procedimiento: reporte_periodico
+    tipo_reloj: normativo
+    plazo_dias_calendario: 30
+    inicio_conteo: "cierre del trimestre; si vence en día no hábil, el siguiente hábil"
+    respaldo: supuesto_simulacion
+    fuentes:
+      - {doc: DICC_SUPUESTOS, ubicacion: "Reporte trimestral", cita: "Vence 30 días calendario después del cierre del trimestre (si cae en día no hábil, el siguiente hábil)"}
+      - {doc: TUO_27444, ubicacion: "art. 145.2", cita: "Cuando el último día del plazo o la fecha determinada es inhábil [...] son entendidos prorrogados al primer día hábil siguiente"}
+    estado_validacion: por validar
+
+  - id: PLZ-N-FONDO-MES
+    procedimiento: reporte_fondos
+    tipo_reloj: normativo
+    plazo_dias_calendario: 15
+    inicio_conteo: "cierre del mes"
+    respaldo: supuesto_simulacion
+    fuentes:
+      - {doc: DICC_SUPUESTOS, ubicacion: "Reporte trimestral", cita: "El reporte mensual de fondos vence a los 15 días calendario"}
+    estado_validacion: por validar
+    nota: "La hoja no dice que pase al día hábil siguiente si vence en día no hábil; no se supone (el TUO 145.2 sí lo haría)."
+    pregunta_dre: DRE-06
+
+  # ======================================================== reloj interno
+  - id: PLZ-I-DERIVACION
+    procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo, revision_periodica]
+    hito: derivacion
+    tipo_reloj: interno
+    plazo_dh: 1
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "derivacion, plazo referencial 1"}
+      - {doc: FLUJO_CPI, ubicacion: "DRE deriva a SRT", cita: "1 DH"}
+      - {doc: FLUJO_UFI, ubicacion: "DRE deriva a SRT", cita: "1 DH"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 1", cita: "1 DH"}
+    estado_validacion: por validar
+    discrepancia: {fuente: TUO_27444, valor: "mismo día", descripcion: "A falta de plazo expreso, el TUO (art. 143.1) fija la recepción y derivación «dentro del mismo día de su presentación»."}
+    pregunta_dre: DRE-07
+
+  - id: PLZ-I-RP-ASIGNACION
+    procedimiento: revision_periodica
+    hito: asignacion
+    tipo_reloj: interno
+    plazo_dh: 1
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "asignacion, plazo referencial 1"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 1", cita: "1 DH"}
+    estado_validacion: por validar
+
+  - id: PLZ-I-RP-REQUISITOS
+    procedimiento: revision_periodica
+    hito: evaluacion_requisitos
+    tipo_reloj: interno
+    plazo_dh: 7
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "evaluacion_requisitos, plazo referencial 7"}
+      - {doc: FLUJO_RP, ubicacion: "bloque verde de la etapa 1", cita: "7 dh"}
+    estado_validacion: por validar
+    discrepancia: {fuente: FLUJO_RP, valor: "7 DH para asignación + evaluación + proyecto de oficio", descripcion: "En el flujograma el bloque de 7 dh también incluye la asignación y el proyecto de oficio de subsanación."}
+    pregunta_dre: DRE-08
+
+  - id: PLZ-I-RP-OFICIO-SUB
+    procedimiento: revision_periodica
+    hito: oficio_subsanacion
+    tipo_reloj: interno
+    plazo_dh: 10
+    respaldo: norma_leida
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "oficio_subsanacion, plazo referencial 10"}
+      - {doc: RGT, ubicacion: "art. 45.2", cita: "Dentro de los diez primeros días hábiles del plazo señalado en el párrafo anterior, en una sola oportunidad, la Dirección de Regulación Tarifaria puede formular observaciones"}
+      - {doc: FLUJO_RP, ubicacion: "DRE firma oficio", cita: "el plazo para elaborar el oficio es 10dh"}
+    estado_validacion: por validar
+    discrepancia: {fuente: FLUJO_RP, valor: "2 DH", descripcion: "El flujograma marca además «2 DH» junto a la firma del oficio. Y 1 + 1 + 7 + 10 + 17 = 36 DH supera los 30 DH de la etapa si se cuentan en serie."}
+    pregunta_dre: DRE-08
+
+  - id: PLZ-I-RP-INFORME-INICIO
+    procedimiento: revision_periodica
+    hito: informe_inicio
+    tipo_reloj: interno
+    plazo_dh: 17
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "informe_inicio, plazo referencial 17"}
+      - {doc: FLUJO_RP, ubicacion: "bloque rojo de la etapa 1", cita: "17dh"}
+    estado_validacion: por validar
+
+  - id: PLZ-I-RP-PROYECTO
+    procedimiento: revision_periodica
+    hito: proyecto_estudio
+    tipo_reloj: interno
+    plazo_dh: 50
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "proyecto_estudio, plazo referencial 50"}
+      - {doc: FLUJO_RP, ubicacion: "bloque amarillo de la etapa 2", cita: "50dh"}
+    estado_validacion: por validar
+    discrepancia: {fuente: FLUJO_RP, valor: "50 DH incluye culminar el ET y elaborar informe y memo", descripcion: "En el flujograma el bloque de 50 dh también incluye «Culmina ET + Proyecto RT y elabora Informe + Memo»."}
+    pregunta_dre: DRE-09
+
+  - id: PLZ-I-RP-INFORME-DIFUSION
+    procedimiento: revision_periodica
+    hito: informe_difusion
+    tipo_reloj: interno
+    plazo_dh: 10
+    respaldo: solo_diccionario
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "informe_difusion, plazo referencial 10"}
+    estado_validacion: por validar
+    discrepancia: {fuente: FLUJO_RP, valor: "10 DH para memo a GG + elevación + aprobación de la difusión", descripcion: "En el flujograma los 10 dh («un solo hito o actividad que dura 10 dh», bloque azul) corresponden a memo, elevación y RCD de difusión; el informe está dentro de los 50 dh."}
+    pregunta_dre: DRE-09
+
+  - id: PLZ-I-RP-AUDIENCIA
+    procedimiento: revision_periodica
+    hito: audiencia_publica
+    tipo_reloj: interno
+    plazo_dh: 30
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "audiencia_publica, plazo referencial 30"}
+      - {doc: FLUJO_RP, ubicacion: "DU fija día, hora y lugar", cita: "Máx. 30 dh"}
+    estado_validacion: por validar
+    nota: "El RGT leído (art. 48.3) solo exige al menos 10 días calendario entre el aviso de convocatoria y la audiencia; no fija un máximo de 30 DH (podría venir de la RCD 124-2025)."
+    pregunta_dre: DRE-10
+
+  - id: PLZ-I-RP-COMENTARIOS
+    procedimiento: revision_periodica
+    hito: comentarios
+    tipo_reloj: interno
+    plazo_dh: 15
+    inicio_conteo: "día siguiente a la audiencia"
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "comentarios, plazo referencial 15", cita: "hasta 15 DH tras la audiencia"}
+      - {doc: FLUJO_RP, ubicacion: "EP e interesados", cita: "hasta 15 DH post audiencia"}
+    estado_validacion: por validar
+    discrepancia: {fuente: RGT, valor: "5 DH (interesados) y 40 DH improrrogables (EP)", descripcion: "El RGT leído (versión anterior a la RCD 124-2025) dice: interesados «hasta el quinto día hábil siguiente a la realización de la audiencia pública» (art. 47.5) y la EP «un plazo improrrogable de cuarenta días hábiles [...] contados desde el día siguiente de notificado el proyecto» (art. 47.4)."}
+    pregunta_dre: DRE-10
+
+  - id: PLZ-I-RP-EVAL-COMENTARIOS
+    procedimiento: revision_periodica
+    hito: evaluacion_comentarios
+    tipo_reloj: interno
+    plazo_dh: 50
+    respaldo: diccionario_y_flujograma
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "evaluacion_comentarios, plazo referencial 50"}
+      - {doc: FLUJO_RP, ubicacion: "bloque naranja de la etapa 4", cita: "50dh"}
+    estado_validacion: por validar
+
+  # Bloques que solo están en los flujogramas (la hoja Hitos no les da plazo).
+  # Se muestran como referencia secundaria, rotulados «solo flujograma».
+  - id: PLZ-I-RP-BLOQUE-DIFUSION
+    procedimiento: revision_periodica
+    hitos: [memo_gg_difusion, elevacion_cd_difusion, resolucion_difusion]
+    tipo_reloj: interno
+    plazo_dh: 10
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_RP, ubicacion: "bloque azul", cita: "Corresponde a un solo hito o actividad que dura 10 dh"}
+    estado_validacion: por validar
+    pregunta_dre: DRE-09
+
+  - id: PLZ-I-RP-BLOQUE-FINAL
+    procedimiento: revision_periodica
+    hitos: [memo_gg_final, elevacion_cd_final, resolucion_tarifaria]
+    tipo_reloj: interno
+    plazo_dh: 10
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_RP, ubicacion: "bloque verde de la etapa 4", cita: "Corresponde aun solo hito/actividad que dura 10 dh"}
+    estado_validacion: por validar
+
+  - id: PLZ-I-CPI-BLOQUE-24
+    procedimiento: cambio_programa_inversiones
+    hitos: [asignacion, verificacion_tupa, oficio_subsanacion, evaluacion, oficio_informacion, informe, firma_informe]
+    tipo_reloj: interno
+    plazo_dh: 24
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_CPI, ubicacion: "bloque amarillo (de la asignación a la firma del informe)", cita: "24 dh"}
+    estado_validacion: por validar
+    nota: "Los hitos a cargo de la EP (subsanación, información) no suman: suspenden."
+
+  - id: PLZ-I-CPI-BLOQUE-5
+    procedimiento: cambio_programa_inversiones
+    hitos: [memo_gg, elevacion_cd, resolucion_cd]
+    tipo_reloj: interno
+    plazo_dh: 5
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_CPI, ubicacion: "bloque verde (memo a GG, elevación, CD)", cita: "5 dh"}
+    estado_validacion: por validar
+    discrepancia: {fuente: DICC_HITOS, valor: "memo_gg a cargo de la SRT", descripcion: "La hoja Hitos asigna memo_gg a la SRT («SRT revisa y firma el memorándum a la GG»); el flujograma lo ubica en la DRE («Revisa y firma Memo a GG»)."}
+    pregunta_dre: DRE-11
+
+  - id: PLZ-I-UFI-BLOQUE-24
+    procedimiento: uso_excepcional_fondo
+    hitos: [verificacion_tupa, oficio_subsanacion, evaluacion, oficio_informacion, informe, visado_informe, firma_informe_dre, firma_informe_oaj]
+    tipo_reloj: interno
+    plazo_dh: 24
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_UFI, ubicacion: "bloque rojo (de la verificación TUPA a la firma de la OAJ)", cita: "24 dh"}
+    estado_validacion: por validar
+    discrepancia: {fuente: FLUJO_UFI, valor: "asignación fuera de los bloques", descripcion: "La asignación al equipo SRT queda fuera de los bloques de 24 y 5 dh; con la derivación (1 DH) suman 30, sin tiempo para la asignación. La firma del informe por la DRE aparece en el bloque verde."}
+    pregunta_dre: DRE-12
+
+  - id: PLZ-I-UFI-BLOQUE-5
+    procedimiento: uso_excepcional_fondo
+    hitos: [memo_gg, elevacion_cd, resolucion_cd]
+    tipo_reloj: interno
+    plazo_dh: 5
+    respaldo: solo_flujograma
+    fuentes:
+      - {doc: FLUJO_UFI, ubicacion: "bloque verde", cita: "5 dh"}
+    estado_validacion: por validar
+    pregunta_dre: DRE-12
+
+  # ===================================================== reloj del oficio
+  - id: PLZ-O-SUBSANACION-2
+    procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo]
+    hito: subsanacion_ep
+    tipo_reloj: oficio
+    plazo_dh: 2
+    cuenta_plazo: false
+    inicio_conteo: "día hábil siguiente a la notificación del oficio de subsanación"
+    respaldo: norma_leida
+    fuentes:
+      - {doc: TUO_27444, ubicacion: "art. 136.1", cita: "invitando al administrado a subsanarlas dentro de un plazo máximo de dos días hábiles"}
+      - {doc: DICC_HITOS, ubicacion: "subsanacion_ep", cita: "EP subsana las observaciones (máx. 2 DH)"}
+      - {doc: FLUJO_CPI, ubicacion: "EP subsana", cita: "Máx. 2 DH"}
+      - {doc: FLUJO_UFI, ubicacion: "EP subsana", cita: "Máx. 2 DH"}
+    estado_validacion: por validar
+    nota: "El RGT leído no fija este plazo para CPI y UFI; el art. 136.1 del TUO se refiere a observaciones de la unidad de recepción (requisitos TUPA)."
+    pregunta_dre: DRE-13
+
+  - id: PLZ-O-INFORMACION-10
+    procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo]
+    hito: informacion_ep
+    tipo_reloj: oficio
+    plazo_dh: 10
+    cuenta_plazo: false
+    prorrogable: "una vez, si la EP la pide antes del vencimiento"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 93.7 (CPI)", cita: "le otorga un plazo de hasta diez días hábiles, el cual puede ser prorrogado, por única vez, a pedido de la empresa prestadora, siempre que lo solicite antes de su vencimiento"}
+      - {doc: RGT, ubicacion: "art. 89.6 (UFI)", cita: "le otorga un plazo de hasta diez días hábiles, el cual puede ser prorrogado, por única vez, cuando así solicite antes de su vencimiento"}
+      - {doc: DICC_HITOS, ubicacion: "informacion_ep", cita: "hasta 10 DH"}
+    estado_validacion: por validar
+
+  - id: PLZ-O-RP-SUBSANACION-10
+    procedimiento: revision_periodica
+    hito: subsanacion_ep
+    tipo_reloj: oficio
+    plazo_dh: 10
+    cuenta_plazo: false
+    inicio_conteo: "día siguiente de la notificación"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 45.2", cita: "deben ser subsanadas por la empresa prestadora en un plazo no mayor de diez días hábiles, contados a partir del día siguiente de la notificación respectiva"}
+      - {doc: DICC_HITOS, ubicacion: "subsanacion_ep", cita: "máx. 10 DH"}
+      - {doc: FLUJO_RP, ubicacion: "EP subsana", cita: "Máx. 10 DH"}
+    estado_validacion: por validar
+
+  - id: PLZ-O-RP-INFORMACION-10
+    procedimiento: revision_periodica
+    hito: informacion_ep
+    tipo_reloj: oficio
+    plazo_dh: 10
+    cuenta_plazo: false
+    prorrogable: "una vez, si la EP la pide antes del vencimiento"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 34.2", cita: "La empresa prestadora remite la información solicitada dentro del plazo máximo de diez días hábiles, el cual puede ser prorrogado, por única vez, cuando así lo solicite antes de su vencimiento"}
+      - {doc: DICC_HITOS, ubicacion: "informacion_ep", cita: "máx. 10 DH"}
+      - {doc: FLUJO_RP, ubicacion: "EP remite info.", cita: "Máx. 10 DH"}
+    estado_validacion: por validar
+
+  - id: PLZ-O-VCI-SUSTENTO-10
+    procedimiento: verificacion_incremento
+    hito: sustento_ep
+    tipo_reloj: oficio
+    plazo_dh: 10
+    cuenta_plazo: false
+    respaldo: supuesto_simulacion
+    fuentes:
+      - {doc: DICC_HITOS, ubicacion: "sustento_ep", cita: "EP remite el sustento (máx. 10 DH)"}
+    estado_validacion: por validar
+    nota: "Procedimiento sin flujograma (hoja Léame): sus pasos y plazos son supuestos de simulación."
+
+  - id: PLZ-O-PRORROGA
+    procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo, revision_periodica]
+    tipo_reloj: oficio
+    regla: "Prórroga por única vez, pedida antes del vencimiento; el nuevo plazo es el que fija el oficio que la concede"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "arts. 89.6, 93.7 y 34.2", cita: "puede ser prorrogado, por única vez"}
+      - {doc: TUO_27444, ubicacion: "art. 147.3", cita: "La prórroga es concedida por única vez mediante decisión expresa"}
+    estado_validacion: por validar
+    nota: "Solo se aplica desde un documento registrado (fase 3). DS02 no registra prórrogas: no se inventan. Caso real de referencia: Tacna, Oficio 1590-2026 (solicitud) y Oficio 162-2026 (concesión)."
+
+  - id: PLZ-O-RP-COMENTARIOS-EP-40
+    procedimiento: revision_periodica
+    tipo_reloj: oficio
+    plazo_dh: 40
+    activa: false
+    inicio_conteo: "día siguiente de notificado el proyecto de resolución tarifaria"
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 47.4", cita: "La empresa prestadora cuenta con un plazo improrrogable de cuarenta días hábiles para remitir sus comentarios"}
+    estado_validacion: por validar
+    nota: "Inactiva: DS02 no tiene un hito para los comentarios de la EP separado del de los interesados. Puede haber cambiado con la RCD 124-2025."
+    pregunta_dre: DRE-10

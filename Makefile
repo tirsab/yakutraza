@@ -20,7 +20,7 @@ test:
 	docker compose run --rm api python -m pytest -q
 
 cobertura:
-	docker compose run --rm api python -m pytest -q --cov=app.calidad --cov=app.ingesta --cov-report=term-missing
+	docker compose run --rm api python -m pytest -q --cov=app.calidad --cov=app.ingesta --cov=app.plazos --cov-report=term-missing
 
 logs:
 	docker compose logs -f api

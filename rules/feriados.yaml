@@ -1,0 +1,38 @@
+# Calendario de días hábiles (Fase 2).
+#
+# Día hábil: lunes a viernes, sin feriados nacionales (hoja Léame del
+# diccionario: «En días hábiles (lunes a viernes, sin feriados nacionales)»).
+# Base: librería `holidays` (versión fija en backend/pyproject.toml), país PE.
+# A la base se suman los feriados que la hoja Supuestos lista con vigencia.
+# Si la librería y la hoja difieren en algún año, la diferencia se registra
+# como hallazgo «validar con el calendario oficial» (CAL-PLZ-04) y NO se
+# decide en silencio: manda la hoja Supuestos y la diferencia queda visible.
+
+version: 1
+
+libreria:
+  paquete: holidays
+  pais: PE
+  fuente: "Librería holidays (https://github.com/vacanza/holidays), feriados nacionales de Perú"
+
+# Hoja Supuestos, fila «Feriados»: «Feriados nacionales según su vigencia:
+# 6 de agosto y 9 de diciembre desde 2022, 23 de julio desde 2023 y 7 de junio
+# desde 2024. No incluye días no laborables decretados.»
+feriados_con_vigencia:
+  - {mes: 8, dia: 6, nombre: "Batalla de Junín", desde: 2022}
+  - {mes: 12, dia: 9, nombre: "Batalla de Ayacucho", desde: 2022}
+  - {mes: 7, dia: 23, nombre: "Día de la Fuerza Aérea del Perú", desde: 2023}
+  - {mes: 6, dia: 7, nombre: "Batalla de Arica y Día de la Bandera", desde: 2024}
+fuente_feriados_con_vigencia: "Diccionario de variables, hoja Supuestos (fila Feriados)"
+
+# La hoja Supuestos excluye los días no laborables decretados; el calendario
+# tampoco los incluye. El TUO de la Ley 27444 (art. 145.1) también excluye
+# «los feriados no laborables de orden nacional o regional» y los días no
+# laborables del servicio: los feriados regionales no están modelados
+# (ver docs/preguntas_para_la_DRE.md).
+no_incluye:
+  - dias_no_laborables_decretados
+  - feriados_regionales
+
+# Rango de años que se compara entre la librería y la hoja Supuestos.
+anios_verificados: {desde: 2021, hasta: 2027}
