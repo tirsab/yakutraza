@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporte de calidad de datos · YakuTraza</title>
+<style>
+  :root {
+    /* Línea institucional (Expediente Desafío 3). Por confirmar con el manual de marca de Sunass. */
+    --yt-navy-900: #182C3E; --yt-navy-800: #17324D; --yt-navy-700: #173A66;
+    --yt-blue-600: #245B85; --yt-blue-500: #087EA1; --yt-teal-500: #008C95;
+    --yt-slate-600: #526575; --yt-slate-500: #5F7180;
+    --yt-ice-100: #EAF5F8; --yt-ice-50: #F2F7FA;
+    --yt-violet-600: #713BCE; --yt-lilac-300: #D09EFF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--yt-navy-900);
+         font-family: "Noto Sans", Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.75rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 40px 0 8px; border-bottom: 2px solid var(--yt-teal-500); padding-bottom: 4px; }
+  h3 { font-size: 1.1rem; margin: 24px 0 8px; }
+  p, li { max-width: 80ch; }
+  a { color: var(--yt-blue-600); }
+  .sub { color: var(--yt-slate-600); margin: 0; }
+  .rotulo { display: inline-block; border: 1px solid var(--yt-navy-900); padding: 2px 8px; font-size: .85rem;
+            margin: 2px 4px 2px 0; background: var(--yt-ice-50); }
+  .aviso { background: var(--yt-ice-100); border-left: 4px solid var(--yt-navy-700); padding: 12px 16px; margin: 16px 0; }
+  .tabla-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 8px 0 16px; }
+  th, td { border: 1px solid #c8d3db; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--yt-ice-100); }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  code { font-size: .85em; background: var(--yt-ice-50); padding: 0 3px; }
+  /* Severidad: ícono + texto + patrón de borde; no depende solo del color. */
+  .sev { white-space: nowrap; font-weight: 700; }
+  tr.sev-alta td:first-child { border-left: 6px solid var(--yt-navy-900); }
+  tr.sev-media td:first-child { border-left: 6px dashed var(--yt-blue-600); }
+  tr.sev-baja td:first-child { border-left: 6px dotted var(--yt-slate-500); }
+  tr.sev-informativa td:first-child { border-left: 6px double var(--yt-teal-500); }
+  .si { font-weight: 700; } .no { font-weight: 700; text-decoration: underline; }
+  details { margin-top: 4px; } summary { cursor: pointer; color: var(--yt-blue-600); }
+  footer { margin-top: 48px; color: var(--yt-slate-600); font-size: .85rem; }
+  @media print { details { display: block; } summary { display: none; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Reporte de control de calidad de datos</h1>
+<p class="sub">YakuTraza · Hackathon Sunass «Lideresas por el Agua» · Desafío 3</p>
+<p>
+  <span class="rotulo">Muestra simulada: DS01–DS08 sintéticos</span>
+  <span class="rotulo">DS09 (IPM, INEI): real</span>
+  <span class="rotulo">Fecha de corte: {{ lote.fecha_corte }}</span>
+  <span class="rotulo">Carga n.° {{ lote.id }}</span>
+  <span class="rotulo">Generado: {{ generado }}</span>
+</p>
+
+<div class="aviso" role="note">
+  <p><strong>Cómo leer este reporte.</strong> La muestra trae errores a propósito (hoja Léame del diccionario).
+  Este reporte los <strong>señala; no corrige ningún dato</strong>. Cada hallazgo cita el dataset, la línea del CSV
+  (el encabezado es la línea 1) y la fuente de la regla. Los umbrales marcados como «supuesto» están pendientes de
+  validar con la DRE. Ninguna salida es una decisión regulatoria: las decisiones son de Sunass.</p>
+</div>
+
+<h2 id="resumen">Resumen</h2>
+<p>Total de hallazgos: <strong>{{ hallazgos|length }}</strong>
+  ({% for s in severidades %}{{ icono[s] }} {{ s }}: {{ total_por_severidad.get(s, 0) }}{% if not loop.last %} · {% endif %}{% endfor %}).</p>
+
+<h3>Tipos de problema que anuncia el diccionario</h3>
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Tipo anunciado</th><th>¿Encontrado?</th><th class="num">Hallazgos</th></tr></thead>
+  <tbody>
+  {% for a in anunciados %}
+    <tr><td>{{ a.etiqueta }}</td>
+      <td>{% if a.n %}<span class="si">✔ Sí</span>{% else %}<span class="no">✖ No encontrado en la muestra</span>{% endif %}</td>
+      <td class="num">{{ a.n }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h3>Hallazgos por tipo y severidad</h3>
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Tipo</th>{% for s in severidades %}<th class="num">{{ icono[s] }} {{ s|capitalize }}</th>{% endfor %}<th class="num">Total</th></tr></thead>
+  <tbody>
+  {% for t in orden_tipos %}
+    <tr><td><a href="#tipo-{{ t }}">{{ etiqueta_tipo.get(t, t) }}</a></td>
+      {% for s in severidades %}<td class="num">{{ conteo.get((t, s), 0) }}</td>{% endfor %}
+      <td class="num">{{ por_tipo[t]|length }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h3>Archivos cargados</h3>
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Archivo</th><th class="num">Filas</th><th>SHA-256</th></tr></thead>
+  <tbody>
+  {% for nombre, info in lote.archivos.items() %}
+    <tr><td>{{ nombre }}.csv</td><td class="num">{{ info.filas }}</td><td><code>{{ info.sha256[:16] }}…</code></td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+{% for t in orden_tipos %}
+<h2 id="tipo-{{ t }}">{{ etiqueta_tipo.get(t, t) }} <small>({{ por_tipo[t]|length }})</small></h2>
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Severidad</th><th>Regla</th><th>Dataset y fila</th><th>Llave</th><th>Explicación</th>
+    <th>Observado / esperado</th><th>Fuente de la regla</th></tr></thead>
+  <tbody>
+  {% for h in por_tipo[t] %}
+    <tr class="sev-{{ h.severidad }}">
+      <td class="sev">{{ icono[h.severidad] }} {{ h.severidad|capitalize }}</td>
+      <td><code>{{ h.regla_id }}</code><br>{{ h.titulo }}</td>
+      <td>{{ h.dataset }}<br>{% if h.fila %}fila {{ h.fila }}{% else %}varias filas{% endif %}</td>
+      <td>{{ h.llave or "" }}</td>
+      <td>{{ h.explicacion }}
+        {% if h.detalle and (h.detalle.filas or h.detalle.por_rango_soles) %}
+        <details><summary>Detalle</summary>
+          {% if h.detalle.por_rango_soles %}
+          <p>Filas por diferencia en soles:</p>
+          <ul>{% for k, v in h.detalle.por_rango_soles.items() %}<li>{{ k }}: {{ v }}</li>{% endfor %}</ul>
+          <p>Filas por fracción de la tolerancia:</p>
+          <ul>{% for k, v in h.detalle.por_fraccion_de_tolerancia.items() %}<li>{{ k }}: {{ v }}</li>{% endfor %}</ul>
+          {% endif %}
+          {% if h.detalle.filas %}<p>Líneas del CSV: {{ h.detalle.filas|join(", ") }}</p>{% endif %}
+        </details>
+        {% endif %}
+      </td>
+      <td>{% if h.valor_observado %}Observado: {{ h.valor_observado }}<br>{% endif %}{% if h.valor_esperado %}Esperado: {{ h.valor_esperado }}{% endif %}</td>
+      <td>{{ h.fuente_regla }}<br><em>Regla {{ h.estado_validacion }}</em></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endfor %}
+
+<h2 id="catalogo">Catálogo de reglas aplicado</h2>
+<p>Fuente: <code>rules/calidad.yaml</code>. Los parámetros indican su naturaleza: <strong>diccionario</strong>
+(literal del diccionario), <strong>derivado</strong> (sale de un cálculo documentado) o <strong>supuesto</strong>
+(elegido por el equipo, por validar).</p>
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Regla</th><th>Qué revisa</th><th>Severidad base</th><th>Fuente</th><th>Parámetros</th></tr></thead>
+  <tbody>
+  {% for r in catalogo %}
+    <tr><td><code>{{ r.id }}</code><br>{{ r.estado_validacion }}</td>
+      <td><strong>{{ r.titulo }}</strong><br>{{ r.descripcion }}</td>
+      <td>{{ icono[r.severidad] }} {{ r.severidad }}</td>
+      <td>{{ r.fuente }}</td>
+      <td>{% for nombre, p in r.parametros.items() %}
+        <p><code>{{ nombre }}</code>{% if p is mapping %}{% if p.valor is defined and (p.valor is string or p.valor is number) %} = {{ p.valor }}{% endif %}
+          — <strong>{{ p.naturaleza }}</strong>{% if p.sustento %}: {{ p.sustento }}{% endif %}{% endif %}</p>
+      {% endfor %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<footer>
+  <p>Datos: diccionario de variables y datasets DS01–DS09 del Desafío 3 (Sunass, 2026). Las EPS, montos,
+  expedientes, proyectos, CUI y documentos de DS01–DS08 son ficticios. Código: YakuTraza (licencia MIT).</p>
+</footer>
+</main>
+</body>
+</html>

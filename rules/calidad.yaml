@@ -1,0 +1,489 @@
+# Catálogo de reglas de control de calidad de datos (Fase 1).
+#
+# Se puede editar sin programar: severidad, umbrales, textos, fuentes y
+# relaciones. La lógica de cada regla está en backend/app/calidad/reglas/.
+#
+# Campos de cada regla:
+#   id, tipo, titulo, descripcion, severidad (alta | media | baja | informativa),
+#   fuente (de dónde sale la regla), estado_validacion (validada | por validar),
+#   activa, parametros.
+# Cada parámetro numérico indica su naturaleza:
+#   - "supuesto": valor elegido por el equipo, pendiente de validar con la DRE.
+#   - "derivado": sale de un cálculo documentado en `sustento`.
+#   - "diccionario": sale literalmente del diccionario de variables.
+#
+# Ninguna regla corrige datos: solo registra hallazgos.
+
+version: 1
+
+reglas:
+
+  # ---------------------------------------------------------------- formato
+  - id: CAL-FMT-01
+    tipo: formato
+    titulo: Valor o columna que no coincide con el diccionario
+    descripcion: >-
+      Un valor no se pudo convertir al tipo indicado en el diccionario, una
+      columna del CSV no coincide con su hoja, o la especificación difiere del
+      diccionario. El valor original se conserva.
+    severidad: alta
+    fuente: "Diccionario de variables, hojas por dataset (Tipo, Unidad) y Léame (Formato)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  # ------------------------------------------------------------- duplicados
+  - id: CAL-DUP-01
+    tipo: duplicado
+    titulo: Fila repetida idéntica
+    descripcion: Dos o más filas tienen exactamente los mismos valores.
+    severidad: alta
+    fuente: "Diccionario, hoja Léame (Calidad de datos: duplicados)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-DUP-02
+    tipo: duplicado
+    titulo: Llave natural repetida con valores distintos
+    descripcion: >-
+      Dos o más filas comparten la llave que debería ser única (por ejemplo,
+      proyecto y trimestre en DS04) pero difieren en algún valor. No se elige
+      cuál es la correcta.
+    severidad: alta
+    fuente: "Diccionario, hoja Léame (duplicados) y unidad de observación de cada hoja"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  # ---------------------------------------------------------------- unidades
+  - id: CAL-UNI-01
+    tipo: unidad_sospechosa
+    titulo: Monto en una escala distinta al resto de su serie
+    descripcion: >-
+      El monto es al menos `factor` veces menor o mayor que la mediana de los
+      demás valores de su serie (misma EPS, fondo o proyecto). Puede estar en
+      miles en lugar de soles. Se informa el factor; no se convierte.
+    severidad: alta
+    fuente: "Diccionario, hoja Léame (Calidad de datos: montos en otra unidad; Formato: montos en soles)"
+    estado_validacion: por validar
+    activa: true
+    parametros:
+      factor:
+        valor: 100
+        naturaleza: supuesto
+        sustento: >-
+          Un error de unidad (miles por soles) produce un factor cercano a
+          1000; 100 deja margen para crecimientos reales grandes sin confundirlos.
+      minimo_valores_en_serie:
+        valor: 3
+        naturaleza: supuesto
+        sustento: Con menos de 3 valores la mediana no es representativa.
+      series:
+        naturaleza: supuesto
+        sustento: Series donde los montos de un mismo grupo deberían tener magnitud comparable.
+        valor:
+          - dataset: ds06_estados_financieros
+            agrupar_por: [cod_eps]
+            columnas: [ingresos_operativos, costo_ventas, gastos_administracion, activo_total,
+                       pasivo_total, patrimonio, facturacion_servicios, recaudacion,
+                       cuentas_por_cobrar_comerciales]
+          - dataset: ds05_fondo_inversiones_reservas
+            agrupar_por: [cod_eps, tipo_fondo]
+            columnas: [ingresos_base_mes]
+          - dataset: ds03_programa_inversiones
+            agrupar_por: [cod_proyecto]
+            columnas: [monto_programado_original]
+          - dataset: ds04_ejecucion_inversiones
+            agrupar_por: [cod_proyecto]
+            columnas: [ejecucion_financiera_trimestre]
+
+  # ------------------------------------------------------------------ llaves
+  - id: CAL-LLV-01
+    tipo: llave_sin_cruce
+    titulo: Código que no cruza con el dataset de referencia
+    descripcion: Un código no existe en el dataset al que apunta según la hoja Relaciones.
+    severidad: alta
+    fuente: "Diccionario, hoja Relaciones"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      relaciones:
+        naturaleza: diccionario
+        sustento: Hoja Relaciones (columna «Presente en» y observaciones).
+        valor:
+          - {origen: ds01_localidades_eps, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds02_procedimientos, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds03_programa_inversiones, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds04_ejecucion_inversiones, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds05_fondo_inversiones_reservas, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds06_estados_financieros, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds07_metas_gestion, columna: cod_eps, destino: ds01_catalogo_eps, columna_destino: cod_eps}
+          - {origen: ds03_programa_inversiones, columna: ubigeo, destino: ds01_localidades_eps, columna_destino: ubigeo}
+          - {origen: ds07_metas_gestion, columna: ubigeo, destino: ds01_localidades_eps, columna_destino: ubigeo}
+          - {origen: ds02_hitos_procedimientos, columna: id_expediente, destino: ds02_procedimientos, columna_destino: id_expediente}
+          - {origen: ds02_procedimientos, columna: id_expediente, destino: ds02_hitos_procedimientos, columna_destino: id_expediente}
+          - {origen: ds03_programa_inversiones, columna: id_expediente_modificacion, destino: ds02_procedimientos, columna_destino: id_expediente}
+          - {origen: ds05_fondo_inversiones_reservas, columna: id_expediente_uso_excepcional, destino: ds02_procedimientos, columna_destino: id_expediente}
+          - {origen: ds02_procedimientos, columna: cod_proyecto, destino: ds03_programa_inversiones, columna_destino: cod_proyecto}
+          - {origen: ds04_ejecucion_inversiones, columna: cod_proyecto, destino: ds03_programa_inversiones, columna_destino: cod_proyecto}
+          - {origen: ds03_programa_inversiones, columna: meta_asociada, destino: ds07_metas_gestion, columna_destino: cod_meta}
+          - {origen: ds08_inversiones_mef, columna: cui, destino: ds03_programa_inversiones, columna_destino: cui}
+
+  - id: CAL-LLV-02
+    tipo: llave_sin_cruce
+    titulo: Código con formato distinto al del diccionario
+    descripcion: El código no sigue el formato indicado en la hoja Relaciones, por lo que no puede cruzar.
+    severidad: alta
+    fuente: "Diccionario, hoja Relaciones (columna Formato)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      formatos:
+        naturaleza: diccionario
+        sustento: "Hoja Relaciones: EPS01 a EPS20, 6 dígitos, TIPO-AAAA-NNNN, EPSnn-Pnnn, 7 dígitos, MG01 a MG10."
+        valor:
+          cod_eps: '^EPS\d{2}$'
+          ubigeo: '^\d{6}$'
+          ubigeo_sede: '^\d{6}$'
+          id_expediente: '^(RP|VCI|RTI|CPI|UFI|RPI)-\d{4}-\d{4}$'
+          id_expediente_modificacion: '^CPI-\d{4}-\d{4}$'
+          id_expediente_uso_excepcional: '^UFI-\d{4}-\d{4}$'
+          cod_proyecto: '^EPS\d{2}-P\d{3}$'
+          cui: '^\d{7}$'
+          cod_meta: '^MG\d{2}$'
+          meta_asociada: '^MG\d{2}$'
+
+  - id: CAL-LLV-03
+    tipo: llave_sin_cruce
+    titulo: Proyecto del periodo vigente sin ninguna fila de ejecución
+    descripcion: >-
+      Un proyecto de DS03 del periodo vigente no aparece en DS04. Puede deberse
+      a un código mal escrito en DS04.
+    severidad: media
+    fuente: "Diccionario, hoja Relaciones (cod_proyecto: DS03 -> DS04)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-LLV-04
+    tipo: llave_sin_cruce
+    titulo: Entidad del MEF distinta a la EPS del proyecto
+    descripcion: >-
+      DS08 identifica a la empresa por su nombre (entidad). Se compara, sin
+      tildes ni mayúsculas, con el nombre de la EPS dueña del CUI en DS03.
+    severidad: media
+    fuente: "Diccionario, hoja Relaciones (DS08 se cruza por cui) y hoja ds08_inversiones_mef (entidad)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-CUI-01
+    tipo: cui_sin_mef
+    titulo: CUI declarado en DS03 que no figura en el MEF (DS08)
+    descripcion: El proyecto declara un CUI que no existe en el registro del MEF simulado.
+    severidad: alta
+    fuente: "Diccionario, hoja Relaciones (cui: «uno declarado en DS03 no figura en DS08»)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  # ------------------------------------------------------ reportes faltantes
+  - id: CAL-FAL-01
+    tipo: reporte_faltante
+    titulo: Trimestre sin reporte de ejecución
+    descripcion: >-
+      La EPS no tiene ninguna fila en DS04 para un trimestre cuyo reporte ya
+      venció. Se cita el expediente de reporte periódico de DS02 si existe.
+    severidad: media
+    fuente: "Diccionario, hojas Léame (último trimestre vencido: 2026-T2; trimestres sin reporte no tienen fila) y Supuestos (reporte trimestral)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      primer_trimestre: {valor: "2022-T1", naturaleza: diccionario, sustento: "Hoja ds04: 2022-T1 a 2026-T2."}
+      ultimo_trimestre_vencido: {valor: "2026-T2", naturaleza: diccionario, sustento: "Hoja Léame, fecha de corte."}
+
+  - id: CAL-FAL-02
+    tipo: reporte_faltante
+    titulo: Mes sin reporte del fondo o las reservas
+    descripcion: La EPS no tiene fila en DS05 para un mes ya vencido, en un fondo que sí reporta otros meses.
+    severidad: media
+    fuente: "Diccionario, hojas Léame (último mes reportado: 2026-08) y ds05 (los meses no reportados al corte no tienen fila)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      primer_mes: {valor: "2022-01", naturaleza: diccionario, sustento: "Hoja ds05: 2022-01 a 2026-08."}
+      ultimo_mes_vencido: {valor: "2026-08", naturaleza: diccionario, sustento: "Hoja Léame; vence 15 días calendario después del cierre (hoja Supuestos)."}
+
+  - id: CAL-FAL-03
+    tipo: reporte_faltante
+    titulo: Estados financieros no presentados
+    descripcion: La EPS no presentó sus estados financieros del año.
+    severidad: media
+    fuente: "Diccionario, hoja ds06_estados_financieros (estado_presentacion)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-FAL-04
+    tipo: reporte_faltante
+    titulo: Meta de gestión sin valor alcanzado en un año ya evaluado
+    descripcion: El valor alcanzado está vacío en un año anterior al año en curso.
+    severidad: media
+    fuente: "Diccionario, hoja ds07_metas_gestion (valor_alcanzado: vacío solo para 2026)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      anio_en_curso: {valor: 2026, naturaleza: diccionario, sustento: "Hoja Léame: metas 2022 a 2026 (2026 aún sin evaluar)."}
+
+  - id: CAL-FAL-05
+    tipo: dato_no_registrado
+    titulo: Inversión del MEF sin avance físico registrado
+    descripcion: >-
+      DS08 no registra avance físico. El diccionario lo permite («vacío si no
+      se registró»), pero impide conciliar el avance con DS04.
+    severidad: informativa
+    fuente: "Diccionario, hoja ds08_inversiones_mef (avance_fisico_pct)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  # ---------------------------------------------------------------- fechas
+  - id: CAL-FEC-01
+    tipo: fecha_inconsistente
+    titulo: Fecha de fin anterior a la fecha de inicio
+    descripcion: Un hito, expediente o plazo termina antes de empezar.
+    severidad: alta
+    fuente: "Diccionario, hoja Léame (Calidad de datos: fechas inconsistentes)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-FEC-02
+    tipo: fecha_inconsistente
+    titulo: Hito que no empieza cuando termina el anterior
+    descripcion: >-
+      Según el diccionario, la fecha de inicio de cada hito coincide con la
+      fecha de fin del hito anterior. También detecta hitos fuera de orden.
+    severidad: alta
+    fuente: "Diccionario, hoja ds02_hitos_procedimientos (fecha_inicio: «Coincide con la fecha de fin del hito anterior»)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  - id: CAL-FEC-03
+    tipo: fecha_inconsistente
+    titulo: Fecha posterior a la fecha de corte
+    descripcion: Una fecha de un hecho ya ocurrido es posterior a la fecha de corte de la muestra.
+    severidad: media
+    fuente: "Diccionario, hoja Léame (fecha de corte 2026-09-30)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      columnas:
+        naturaleza: supuesto
+        sustento: Fechas que registran hechos ocurridos (no plazos futuros como fecha_limite).
+        valor:
+          ds02_procedimientos: [fecha_inicio, fecha_conclusion, fecha_presentacion]
+          ds02_hitos_procedimientos: [fecha_inicio, fecha_fin]
+          ds04_ejecucion_inversiones: [fecha_reporte]
+          ds05_fondo_inversiones_reservas: [fecha_reporte]
+          ds06_estados_financieros: [fecha_presentacion]
+          ds08_inversiones_mef: [fecha_viabilidad, fecha_ultima_actualizacion]
+
+  - id: CAL-FEC-04
+    tipo: fecha_inconsistente
+    titulo: Reporte presentado antes de que termine el periodo reportado
+    descripcion: La fecha de reporte es anterior al cierre del trimestre, mes o año que reporta.
+    severidad: media
+    fuente: "Diccionario, hojas ds04 (fecha_reporte), ds05 (fecha_reporte) y ds06 (fecha_presentacion)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}
+
+  # ------------------------------------------------------------------- MEF
+  - id: CAL-MEF-01
+    tipo: diferencia_mef
+    titulo: Avance físico de la EPS distinto al del MEF
+    descripcion: >-
+      Compara el último avance físico acumulado que reporta la EPS (DS04) con
+      el avance del registro MEF (DS08). DS08 no trae historia del avance, así
+      que no hay corte común: si el MEF es posterior y mayor (dirección del
+      desfase) se informa como no verificable (informativa, tipo desfase_mef);
+      si el MEF posterior es menor, el desfase no lo explica y es una
+      diferencia real (media).
+    severidad: media
+    fuente: "Diccionario, hoja Léame (Calidad de datos: diferencias con el MEF) y Relaciones (cui)"
+    estado_validacion: por validar
+    activa: true
+    parametros:
+      umbral_puntos_porcentuales:
+        valor: 10
+        naturaleza: supuesto
+        sustento: Diferencia que justifica revisar; pendiente de validar con la DRE.
+
+  - id: CAL-MEF-02
+    tipo: diferencia_mef
+    titulo: Ejecución acumulada de la EPS distinta al devengado del MEF
+    descripcion: >-
+      Compara la ejecución financiera acumulada de DS04 con el devengado de
+      DS08 en un corte común: el cierre del año anterior al del devengado
+      anual de DS08 (T4). Si la diferencia supera el umbral en ese corte, es
+      una diferencia real (media). Si solo aparece al comparar las fechas
+      actuales, se explica por el desfase y se informa (informativa, tipo
+      desfase_mef). Si no hay dato en el corte común, se dice «no puedo
+      comparar» en vez de estimar.
+    severidad: media
+    fuente: "Diccionario, hoja Léame (Calidad de datos: diferencias con el MEF), Relaciones (cui) y hoja ds08_inversiones_mef (devengado_acumulado y devengado_2026, ambos «al corte»)"
+    estado_validacion: por validar
+    activa: true
+    parametros:
+      umbral_relativo_pct:
+        valor: 20
+        naturaleza: supuesto
+        sustento: Diferencia relativa que justifica revisar; pendiente de validar con la DRE.
+      anio_devengado:
+        valor: 2026
+        naturaleza: diccionario
+        sustento: >-
+          Hoja ds08_inversiones_mef: devengado_2026 = «Devengado 2026 al corte».
+          Por eso devengado_acumulado − devengado_2026 = devengado al 31-12-2025,
+          y el corte común es 2025-T4.
+      ds04_en_el_corte:
+        naturaleza: supuesto
+        sustento: >-
+          Si DS04 no tiene el trimestre del corte, se usa el acumulado del
+          trimestre siguiente menos lo ejecutado en él (derivado). Si el último
+          reporte es anterior y el proyecto figura concluido, se usa su
+          acumulado final (supuesto: un proyecto concluido no ejecuta más). Si
+          no, no se compara.
+
+  # ----------------------------------------------------- coherencia interna
+  - id: CAL-ARI-01
+    tipo: coherencia_aritmetica
+    titulo: Saldo final del fondo distinto a su fórmula
+    descripcion: >-
+      saldo_final = saldo_inicial + deposito_efectuado + intereses -
+      uso_ejecutado - uso_excepcional. Las diferencias dentro de la tolerancia
+      de redondeo se informan agrupadas; las mayores, fila por fila.
+    severidad: alta
+    fuente: "Diccionario, hoja ds05_fondo_inversiones_reservas (saldo_final)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      decimales_monto:
+        valor: 2
+        naturaleza: diccionario
+        sustento: "Hoja Léame: montos en soles con 2 decimales."
+      tolerancia:
+        naturaleza: derivado
+        sustento: >-
+          Cada uno de los 6 montos de la fórmula puede estar redondeado a medio
+          centavo: tolerancia = 6 × 0,5 × 10^-decimales_monto = S/ 0,03.
+
+  - id: CAL-ARI-02
+    tipo: coherencia_aritmetica
+    titulo: Depósito programado distinto de porcentaje × ingresos base
+    descripcion: >-
+      deposito_programado = porcentaje_ingresos × ingresos_base_mes / 100.
+      Las diferencias dentro de la tolerancia de redondeo se informan agrupadas
+      (severidad informativa) con su conteo por rango; las mayores, fila por fila.
+    severidad: media
+    fuente: "Diccionario, hoja ds05_fondo_inversiones_reservas (deposito_programado)"
+    estado_validacion: por validar
+    activa: true
+    parametros:
+      decimales_porcentaje:
+        valor: 2
+        naturaleza: supuesto
+        sustento: >-
+          SUPUESTO: el CSV publica porcentaje_ingresos con 2 decimales, y
+          suponemos que es el redondeo del porcentaje real con el que se calculó
+          el depósito. Validar con el comité.
+      decimales_monto:
+        valor: 2
+        naturaleza: diccionario
+        sustento: "Hoja Léame: montos en soles con 2 decimales."
+      tolerancia:
+        naturaleza: derivado
+        sustento: >-
+          No es un monto fijo: es relativa a los ingresos del mes. Si el
+          porcentaje real está a lo más a 0,5 × 10^-decimales_porcentaje del
+          publicado, el depósito puede diferir hasta
+          ingresos_base_mes × 0,5 × 10^-decimales_porcentaje / 100, más medio
+          centavo por el redondeo del propio depósito. Con 2 y 2 decimales:
+          tolerancia = ingresos_base_mes × 0,00005 + 0,005.
+
+  - id: CAL-ARI-03
+    tipo: coherencia_aritmetica
+    titulo: Saldo inicial distinto al saldo final del mes anterior
+    descripcion: Solo compara meses consecutivos que tienen reporte.
+    severidad: media
+    fuente: "Diccionario, hoja ds05_fondo_inversiones_reservas (saldo_inicial, saldo_final)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      tolerancia:
+        valor: 0.01
+        naturaleza: derivado
+        sustento: Un centavo, la unidad mínima de los montos (2 decimales).
+
+  - id: CAL-ARI-04
+    tipo: coherencia_aritmetica
+    titulo: Avance acumulado que retrocede o no suma
+    descripcion: >-
+      Entre dos trimestres consecutivos con reporte, la ejecución acumulada
+      debe crecer en lo ejecutado en el trimestre y el avance físico acumulado
+      no debe bajar.
+    severidad: media
+    fuente: "Diccionario, hoja ds04_ejecucion_inversiones (acumulados)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      tolerancia_soles:
+        valor: 0.02
+        naturaleza: derivado
+        sustento: >-
+          Tres montos (dos acumulados y el del trimestre) redondeados a medio
+          centavo cada uno: 3 × 0,005 = 0,015, llevado al centavo superior.
+
+  - id: CAL-ARI-05
+    tipo: coherencia_aritmetica
+    titulo: Indicador financiero distinto a su fórmula
+    descripcion: >-
+      Recalcula los indicadores de DS06 con las fórmulas de la hoja Supuestos y
+      verifica que los resultados cuadren con los montos del mismo registro.
+      Un margen negativo no es un error: solo se marca si no cuadra. Un signo
+      invertido o un resultado que no cuadra suben a severidad media.
+    severidad: baja
+    fuente: "Diccionario, hoja Supuestos (Indicadores financieros DS06)"
+    estado_validacion: validada
+    activa: true
+    parametros:
+      tolerancia:
+        valor: 0.006
+        naturaleza: derivado
+        sustento: Los indicadores se publican con 2 decimales (redondeo de 0,005) más margen numérico.
+      identidades:
+        naturaleza: supuesto
+        sustento: >-
+          resultado_operativo = ingresos_operativos − costo_ventas −
+          gastos_administracion − gastos_ventas (la depreciación ya está dentro
+          de costos y gastos: «partida informativa», hoja ds06), y resultado_neto
+          = resultado_operativo + ingresos_financieros − gastos_financieros −
+          impuesto_renta. No están escritas en el diccionario; se cumplen en las
+          99 filas presentadas de la muestra. Validar con el comité.
+      tolerancia_identidades_soles:
+        valor: 2
+        naturaleza: derivado
+        sustento: DS06 está en soles enteros; se admite el redondeo de hasta 4 montos.
+
+  - id: CAL-ARI-06
+    tipo: coherencia_aritmetica
+    titulo: Catálogo de EPS distinto a la suma de sus localidades
+    descripcion: Conexiones, población y número de localidades del catálogo deben sumar las de DS01 localidades.
+    severidad: media
+    fuente: "Diccionario, hoja ds01_catalogo_eps (conexiones_agua: «Suma de las localidades»; n_localidades)"
+    estado_validacion: validada
+    activa: true
+    parametros: {}

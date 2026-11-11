@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-yakutraza}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yakutraza_local}
+      POSTGRES_DB: ${POSTGRES_DB:-yakutraza}
+    ports:
+      # 5433 en el host para no chocar con un PostgreSQL local en 5432.
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yakutraza} -d ${POSTGRES_DB:-yakutraza}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-yakutraza}:${POSTGRES_PASSWORD:-yakutraza_local}@db:5432/${POSTGRES_DB:-yakutraza}
+      DATA_DIR: /data
+      RULES_DIR: /rules
+      REPORTES_DIR: /reportes
+      FECHA_CORTE: ${FECHA_CORTE:-2026-09-30}
+      TZ: America/Lima
+    volumes:
+      # Los datos se montan en solo lectura desde DATA_DIR (no están en el repositorio).
+      - ${DATA_DIR:?Define DATA_DIR en .env con la carpeta de los CSV}:/data:ro
+      - ./rules:/rules:ro
+      - ./reportes:/reportes
+    ports:
+      - "8000:8000"
+
+  # La interfaz React se construye en la Fase 5; el servicio queda declarado
+  # bajo el perfil "web" para no romper `docker compose up` mientras tanto.
+  web:
+    profiles: ["web"]
+    build: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+
+volumes:
+  pgdata:

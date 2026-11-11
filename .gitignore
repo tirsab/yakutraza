@@ -1,2 +1,16 @@
 data/
 docs/Expediente_General_Desafio_3.pdf
+
+# Entorno local
+.env
+.venv/
+backend/.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+# Salidas generadas (el reporte se regenera con `seed`)
+reportes/
