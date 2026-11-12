@@ -123,6 +123,13 @@ docker compose run --rm api python -m app.cli seed
 privada, `seed` se detiene con un mensaje y la interfaz muestra «No grabe todavía». Para volver a la demo completa,
 repita los pasos con `CASOS_REALES_PRIVADOS=true`.
 
+### Enlace público permanente (Render)
+
+Para que el jurado revise la demo sin depender de esta computadora, hay una imagen de un solo contenedor (interfaz,
+API y SQLite) que abre con «Ver como» y sin la parte privada de los casos reales. La muestra va dentro de la imagen y
+no en el repositorio, por eso la imagen se sube a un registro privado. Pasos en
+[deploy/render/README.md](deploy/render/README.md).
+
 ### Sin Docker (desarrollo y pruebas)
 
 ```powershell
