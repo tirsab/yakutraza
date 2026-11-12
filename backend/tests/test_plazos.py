@@ -97,7 +97,12 @@ def test_catalogo_campos_obligatorios():
     assert set(cat.etapas("revision_periodica")) == {"1_inicio", "2_evaluacion", "3_difusion", "4_aprobacion"}
     assert cat.de_oficio("cambio_programa_inversiones", "subsanacion_ep").plazo_dh == 2
     assert cat.de_oficio("revision_periodica", "subsanacion_ep").plazo_dh == 10
-    assert cat.interna("revision_periodica", "comentarios").discrepancia["fuente"] == "RGT"
+    assert cat.interna("revision_periodica", "comentarios").discrepancia is None   # resuelta por la RCD 124-2025
+    assert cat.normativa_de_hito("revision_periodica", "comentarios", date(2025, 10, 26)).plazo_dh == 5
+    assert cat.normativa_de_hito("revision_periodica", "comentarios", date(2025, 10, 27)).plazo_dh == 15
+    assert cat.normativa_de_hito("revision_periodica", "audiencia_publica", date(2025, 1, 1)) is None
+    assert cat.normativa_de_hito("revision_periodica", "audiencia_publica", date(2026, 1, 1)).plazo_dh == 30
+    assert [r.id for r in cat.versiones("PLZ-N-RP-3")] == ["PLZ-N-RP-3-V2021", "PLZ-N-RP-3-V2025"]
 
 
 def test_catalogo_rechaza_documento_no_declarado():
@@ -245,7 +250,7 @@ def test_reloj_interno_y_discrepancia(motor):
     aud = next(a for a in al if a.hito == "audiencia_publica")
     assert aud.estado == "incumplido"
     com = next(a for a in al if a.hito == "comentarios")
-    assert com.estado == "en_plazo" and com.discrepancia["fuente"] == "RGT"
+    assert com.estado == "en_plazo" and com.discrepancia is None
     assert "DS02 indica 12 DH" in com.mensaje
     etapa = [a for a in motor.reloj_normativo(exp, date(2026, 8, 20)) if a.etapa == "3_difusion"][0]
     assert etapa.estado == "vencido" and etapa.dias_restantes < 0  # más de 45 DH desde el 2026-06-01
@@ -301,9 +306,50 @@ def test_motor_reproduce_ds02(muestra_real, motor):
     assert len(con_plazo) == 65
     resultados = {}
     for e in con_plazo:
-        a = next(x for x in motor.reloj_normativo(e, CORTE) if x.etapa is None)
+        a = next(x for x in motor.reloj_normativo(e, CORTE) if x.etapa is None and x.hito is None)
         resultados[e.id] = (a.estado, a.fecha_limite == e.fecha_limite_ds02, a.dias_transcurridos == e.dias_sunass_ds02)
     assert sum(1 for v in resultados.values() if v[1] and v[2]) == 64
     assert resultados["RP-2026-0002"][0] == "no_calculable"
     cpi = next(a for a in motor.relojes(exps["CPI-2026-0004"], CORTE) if a.reloj == "normativo")
     assert cpi.estado == "vencido" and cpi.fecha_limite == date(2026, 9, 21)
+
+
+def test_versiones_por_fecha_en_el_motor(motor):
+    """La misma etapa de difusión se evalúa con la norma vigente cuando ocurrió cada hito."""
+    def rp(anio):
+        return Expediente(id=f"RP-{anio}", cod_eps="EPS99", tipo="revision_periodica",
+                          fecha_inicio=date(anio, 6, 1), plazo_maximo_dh=195, estado="concluido",
+                          fecha_conclusion=date(anio, 9, 30), hitos=[
+                              Hito(1, "publicacion", "3_difusion", "GG", date(anio, 6, 1), date(anio, 6, 5), None, 45, True, None),
+                              Hito(2, "audiencia_publica", "3_difusion", "DU", date(anio, 6, 5), date(anio, 7, 3), 30, 45, True, None),
+                              Hito(3, "comentarios", "3_difusion", "EP e interesados", date(anio, 7, 3), date(anio, 7, 17),
+                                   15, 45, True, None),
+                          ])
+    antes = {a.regla_id: a for a in motor.reloj_normativo(rp(2024), CORTE) if a.hito}
+    assert set(antes) == {"PLZ-N-RP-COMENTARIOS-V2021"}          # sin máximo de audiencia antes de 2025-10-27
+    # DS02 junta a la EP (40 DH) y a los interesados (5 DH) en un hito: no se califica.
+    assert antes["PLZ-N-RP-COMENTARIOS-V2021"].estado == "no_calculable"
+    assert "No puedo comparar" in antes["PLZ-N-RP-COMENTARIOS-V2021"].mensaje
+    despues = {a.regla_id: a for a in motor.reloj_normativo(rp(2026), CORTE) if a.hito}
+    assert set(despues) == {"PLZ-N-RP-AUDIENCIA-V2025", "PLZ-N-RP-COMENTARIOS-V2025"}
+    assert all(a.estado == "cumplido" for a in despues.values())
+    etapa = next(a for a in motor.reloj_normativo(rp(2026), CORTE) if a.etapa == "3_difusion")
+    assert etapa.regla_id == "PLZ-N-RP-3-V2025"
+
+
+def test_catalogo_rechaza_versiones_superpuestas():
+    datos = yaml.safe_load((RULES / "plazos.yaml").read_text(encoding="utf-8"))
+    for r in datos["reglas"]:
+        if r["id"] == "PLZ-N-RP-3-V2021":
+            r["vigente_hasta"] = date(2026, 1, 1)
+    with pytest.raises(ValueError, match="superpuestas"):
+        CatalogoPlazos(datos)
+
+
+def test_informes_de_emergencia(cal):
+    from app.plazos.simulados import limites_informe_emergencia
+    # Declaratoria del 2026-08-10 al 2026-10-15: informes de agosto y septiembre, y uno al término.
+    lims = limites_informe_emergencia(date(2026, 8, 10), date(2026, 10, 15), cal)
+    assert lims == [cal.sumar_dias_habiles(date(2026, 8, 31), 10), cal.sumar_dias_habiles(date(2026, 9, 30), 10),
+                    cal.sumar_dias_habiles(date(2026, 10, 15), 10)]
+    assert len(limites_informe_emergencia(date(2026, 9, 1), None, cal)) == 1

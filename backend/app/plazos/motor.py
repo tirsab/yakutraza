@@ -175,7 +175,7 @@ class MotorPlazos:
         return susp, sunass
 
     def reloj_normativo(self, exp: Expediente, corte: date) -> list[Alerta]:
-        regla = self.cat.normativa(exp.tipo)
+        regla = self.cat.normativa(exp.tipo, exp.fecha_inicio)
         if regla is None or regla.plazo_dh is None:
             return []  # procedimientos sin plazo en DH (reajuste, reportes): ver plazos.simulados
         plazo = exp.plazo_maximo_dh if exp.plazo_maximo_dh is not None else regla.plazo_dh
@@ -217,14 +217,19 @@ class MotorPlazos:
                 exp, "normativo", regla, estado=estado, fecha_limite=limite, dias_transcurridos=sunass,
                 dias_restantes=restantes, mensaje=f"{texto} {base}{quien}", **comun))
         alertas.extend(self._etapas(exp, corte))
+        alertas.extend(self._hitos_normativos(exp, corte))
         return alertas
 
     def _etapas(self, exp: Expediente, corte: date) -> list[Alerta]:
-        reglas = self.cat.etapas(exp.tipo)
+        """Plazo de cada etapa, con la versión de la regla vigente cuando la etapa empezó."""
         res = []
-        for etapa, regla in reglas.items():
+        etapas = list(dict.fromkeys(h.etapa for h in exp.hitos if h.etapa))
+        for etapa in etapas:
             hs = [h for h in exp.hitos if h.etapa == etapa and h.fecha_inicio and h.fecha_inicio <= corte]
             if not hs:
+                continue
+            regla = self.cat.etapa(exp.tipo, etapa, hs[0].fecha_inicio)
+            if regla is None:
                 continue
             siguiente = any(h.nro > hs[-1].nro and h.etapa != etapa and h.fecha_inicio is not None
                             and h.fecha_inicio <= corte for h in exp.hitos)
@@ -252,39 +257,64 @@ class MotorPlazos:
         return res
 
     # ---------------------------------------------------------------- interno
+    def _evaluar_hito(self, exp: Expediente, h: Hito, regla: ReglaPlazo, corte: date, reloj: str) -> Alerta:
+        """Compara la duración de un hito con el plazo de una regla (meta interna o plazo de la norma)."""
+        doc, est = self._documento_previo(exp, h)
+        tipo = "Meta interna" if reloj == "interno" else "Plazo de la norma"
+        meta = "meta" if reloj == "interno" else "plazo"
+        comun = dict(titulo=f"{tipo}: {h.hito} ({_texto_dh(regla.plazo_dh)})", hito=h.hito, etapa=h.etapa,
+                     plazo_dh=regla.plazo_dh, fecha_inicio=h.fecha_inicio, documento_inicio=doc,
+                     documento_estado=est,
+                     fecha_limite=self.cal.sumar_dias_habiles(h.fecha_inicio, regla.plazo_dh))
+        if h.fecha_fin is not None and h.fecha_fin < h.fecha_inicio:
+            return self._base(exp, reloj, regla, estado="no_calculable",
+                              mensaje=f"No puedo calcular: falta una fecha confiable en el hito {h.nro} "
+                                      f"(fila {h.fila}).", **comun)
+        usados = self._dias(h, corte)
+        nota_ds02 = ""
+        if reloj == "interno" and h.plazo_referencial_dh is not None and h.plazo_referencial_dh != regla.plazo_dh:
+            nota_ds02 = f" DS02 indica {h.plazo_referencial_dh} DH para este hito."
+        if h.fecha_fin is not None and h.fecha_fin <= corte:
+            ok = usados <= regla.plazo_dh
+            return self._base(exp, reloj, regla, estado="cumplido" if ok else "incumplido",
+                              dias_transcurridos=usados, dias_restantes=regla.plazo_dh - usados,
+                              mensaje=f"{h.hito}: tomó {_texto_dh(usados)} de un {meta} de {regla.plazo_dh}"
+                                      + ("." if ok else f" (+{usados - regla.plazo_dh}).") + nota_ds02,
+                              **comun)
+        restantes = regla.plazo_dh - usados
+        return self._base(exp, reloj, regla, estado=self._estado_en_curso(restantes),
+                          dias_transcurridos=usados, dias_restantes=restantes,
+                          mensaje=f"{h.hito} en curso ({h.responsable}): lleva {_texto_dh(usados)} de un {meta} de "
+                                  f"{regla.plazo_dh}." + nota_ds02, **comun)
+
+    def _hitos_normativos(self, exp: Expediente, corte: date) -> list[Alerta]:
+        """Plazos que la norma fija a hitos concretos (audiencia, comentarios), según la versión vigente."""
+        res = []
+        for h in exp.hitos:
+            if h.fecha_inicio is None or h.fecha_inicio > corte:
+                continue
+            regla = self.cat.normativa_de_hito(exp.tipo, h.hito, h.fecha_inicio)
+            if regla is None:
+                continue
+            motivo = regla.extra.get("no_comparable")
+            if motivo:
+                res.append(self._base(exp, "normativo", regla, estado="no_calculable", hito=h.hito, etapa=h.etapa,
+                                      titulo=f"Plazo de la norma: {h.hito}", plazo_dh=regla.plazo_dh,
+                                      fecha_inicio=h.fecha_inicio,
+                                      mensaje=f"No puedo comparar: {motivo}"))
+                continue
+            res.append(self._evaluar_hito(exp, h, regla, corte, "normativo"))
+        return res
+
+    # ---------------------------------------------------------------- interno
     def reloj_interno(self, exp: Expediente, corte: date) -> list[Alerta]:
         res = []
         for h in exp.hitos:
-            regla = self.cat.interna(exp.tipo, h.hito)
-            if regla is None or h.fecha_inicio is None or h.fecha_inicio > corte:
+            if h.fecha_inicio is None or h.fecha_inicio > corte:
                 continue
-            doc, est = self._documento_previo(exp, h)
-            comun = dict(titulo=f"Meta interna: {h.hito} ({_texto_dh(regla.plazo_dh)})", hito=h.hito, etapa=h.etapa,
-                         plazo_dh=regla.plazo_dh, fecha_inicio=h.fecha_inicio, documento_inicio=doc,
-                         documento_estado=est,
-                         fecha_limite=self.cal.sumar_dias_habiles(h.fecha_inicio, regla.plazo_dh))
-            if h.fecha_fin is not None and h.fecha_fin < h.fecha_inicio:
-                res.append(self._base(exp, "interno", regla, estado="no_calculable",
-                                      mensaje=f"No puedo calcular: falta una fecha confiable en el hito {h.nro} "
-                                              f"(fila {h.fila}).", **comun))
-                continue
-            usados = self._dias(h, corte)
-            nota_ds02 = ""
-            if h.plazo_referencial_dh is not None and h.plazo_referencial_dh != regla.plazo_dh:
-                nota_ds02 = f" DS02 indica {h.plazo_referencial_dh} DH para este hito."
-            if h.fecha_fin is not None and h.fecha_fin <= corte:
-                ok = usados <= regla.plazo_dh
-                res.append(self._base(exp, "interno", regla, estado="cumplido" if ok else "incumplido",
-                                      dias_transcurridos=usados, dias_restantes=regla.plazo_dh - usados,
-                                      mensaje=f"{h.hito}: tomó {_texto_dh(usados)} de una meta de {regla.plazo_dh}"
-                                              + ("." if ok else f" (+{usados - regla.plazo_dh}).") + nota_ds02,
-                                      **comun))
-            else:
-                restantes = regla.plazo_dh - usados
-                res.append(self._base(exp, "interno", regla, estado=self._estado_en_curso(restantes),
-                                      dias_transcurridos=usados, dias_restantes=restantes,
-                                      mensaje=f"{h.hito} en curso ({h.responsable}): lleva {_texto_dh(usados)} de una "
-                                              f"meta de {regla.plazo_dh}." + nota_ds02, **comun))
+            regla = self.cat.interna(exp.tipo, h.hito, h.fecha_inicio)
+            if regla is not None:
+                res.append(self._evaluar_hito(exp, h, regla, corte, "interno"))
         res.extend(self._bloques(exp, corte))
         return res
 
@@ -314,7 +344,7 @@ class MotorPlazos:
         for h in exp.hitos:
             if h.cuenta_plazo is not False or h.fecha_inicio is None or h.fecha_inicio > corte:
                 continue
-            regla = self.cat.de_oficio(exp.tipo, h.hito)
+            regla = self.cat.de_oficio(exp.tipo, h.hito, h.fecha_inicio)
             doc, est = self._documento_previo(exp, h)
             if regla is None:
                 res.append(self._base(exp, "oficio", None, estado="no_calculable", titulo=f"Plazo del oficio: {h.hito}",
