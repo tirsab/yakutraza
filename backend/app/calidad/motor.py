@@ -18,7 +18,7 @@ def evaluar(muestra: Muestra, ruta_catalogo: Path, fecha_corte: date) -> list[Ha
     sin_logica = [rid for rid in catalogo if rid not in REGISTRO]
     if sin_logica:
         raise ValueError(f"Reglas del catálogo sin implementación: {sin_logica}")
-    ctx = Contexto(fecha_corte=fecha_corte, reglas=catalogo)
+    ctx = Contexto(fecha_corte=fecha_corte, reglas=catalogo, rules_dir=Path(ruta_catalogo).parent)
     hallazgos: list[Hallazgo] = []
     for rid, cfg in catalogo.items():
         if cfg.activa:

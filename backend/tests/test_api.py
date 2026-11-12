@@ -90,3 +90,41 @@ def test_cli_verificar_diccionario_sin_archivo(settings, monkeypatch, capsys):
     monkeypatch.setattr(cli, "get_settings", lambda: settings)
     assert cli.main(["verificar-diccionario"]) == 1
     assert "No se encontró" in capsys.readouterr().out
+
+
+def test_api_plazos(settings, cliente):
+    from app.config import get_settings as _gs
+    from tests.conftest import escribir_csvs
+    escribir_csvs(settings.data_dir, {
+        "ds02_procedimientos": [
+            {"id_expediente": "CPI-2026-0004", "cod_eps": "EPS01", "tipo_procedimiento": "cambio_programa_inversiones",
+             "fecha_inicio": "2026-07-27", "plazo_maximo_dh": "30", "estado": "en_tramite", "hito_actual": "elevacion_cd",
+             "responsable_actual": "GG"},
+            {"id_expediente": "CPI-2026-0005", "cod_eps": "EPS02", "tipo_procedimiento": "cambio_programa_inversiones",
+             "fecha_inicio": "2026-09-25", "plazo_maximo_dh": "30", "estado": "en_tramite"},
+        ],
+        "ds02_hitos_procedimientos": [
+            {"id_expediente": "CPI-2026-0004", "nro_hito": "1", "hito": "solicitud", "fecha_inicio": "2026-07-27",
+             "fecha_fin": "2026-07-27", "cuenta_plazo": "True"},
+            {"id_expediente": "CPI-2026-0004", "nro_hito": "2", "hito": "elevacion_cd", "fecha_inicio": "2026-07-27",
+             "cuenta_plazo": "True"},
+            {"id_expediente": "CPI-2026-0005", "nro_hito": "1", "hito": "solicitud", "fecha_inicio": "2026-09-25",
+             "fecha_fin": "2026-09-25", "cuenta_plazo": "True"},
+        ],
+    })
+    servicio.seed(settings)
+    assert len(cliente.get("/calendario/feriados", params={"anio": 2026}).json()) >= 15
+    assert cliente.get("/calendario/diferencias").json() == []
+    reglas = cliente.get("/reglas/plazos").json()
+    assert all(r["estado_validacion"] == "por validar" for r in reglas["reglas"])
+    assert cliente.get("/expedientes/NO-EXISTE/relojes").status_code == 404
+    rel = cliente.get("/expedientes/CPI-2026-0004/relojes").json()
+    norm = next(a for a in rel if a["reloj"] == "normativo")
+    assert norm["estado"] == "vencido" and norm["fuente"].startswith("RGT")
+    al = cliente.get("/alertas").json()
+    assert [a["expediente"] for a in al if a["reloj"] == "normativo"] == ["CPI-2026-0004", "CPI-2026-0005"]
+    assert cliente.get("/alertas", params={"cod_eps": "EPS02", "reloj": "normativo"}).json()[0]["estado"] == "en_plazo"
+    pasado = cliente.get("/alertas", params={"fecha_corte": "2026-08-03", "cod_eps": "EPS01",
+                                           "reloj": "normativo"}).json()
+    assert pasado[0]["estado"] == "en_plazo"
+    assert cliente.get("/alertas", params={"solo_en_curso": False}).status_code == 200

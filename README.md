@@ -16,7 +16,7 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 | Fase | Contenido | Estado |
 |---|---|---|
 | 1 | Ingesta de DS01–DS09 y control de calidad con reporte HTML | Lista |
-| 2 | Calendario de días hábiles y motor de tres relojes | Pendiente |
+| 2 | Calendario de días hábiles y motor de tres relojes | Lista (por aprobar) |
 | 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Pendiente |
 | 4 | Ruta del dinero | Pendiente |
 | 5 | Interfaz por rol (React) | Pendiente |
@@ -37,7 +37,8 @@ backend/app/ingesta     lee todo como texto, convierte a los tipos del diccionar
 PostgreSQL 16           tablas por dataset + carga_lotes + calidad_hallazgos (Alembic)
         │
         ▼
-FastAPI (/docs)         /datasets, /calidad/hallazgos, /calidad/resumen, /calidad/reporte.html
+FastAPI (/docs)         /datasets, /calidad/*, /calendario/*, /reglas/plazos,
+                        /expedientes/{id}/relojes, /alertas
 ```
 
 - **Base de datos:** PostgreSQL 16. Llaves del diccionario (`cod_eps`, `ubigeo` como texto de 6 dígitos,
@@ -133,6 +134,33 @@ informativa), explicación, valor observado y esperado, fuente de la regla y est
 Las diferencias que caben en la tolerancia de redondeo no se ocultan: se informan agrupadas, con
 severidad informativa, su conteo y su distribución por rangos.
 
+## Motor de plazos (Fase 2)
+
+Cada expediente de DS02 tiene **tres relojes**:
+
+| Reloj | Qué mide | De dónde sale |
+|---|---|---|
+| Normativo | Plazo máximo del procedimiento y de cada etapa de la revisión periódica | RGT (arts. 45.1, 46.3, 47.6, 49.3, 89.7 y 93.8), hoja Hitos, DS02 |
+| Interno | Metas de gestión por hito | Hoja Hitos (principal). Si el flujograma del expediente dice otra cosa, se muestra al lado como «discrepancia». |
+| Del oficio | Plazo que se le da a la EP en un oficio o prórroga | RGT (arts. 34.2, 45.2, 89.6 y 93.7), TUO de la Ley 27444 (arts. 136.1 y 147), hoja Hitos. Si hay un documento registrado, prima el plazo que fija. |
+
+- **Cómputo:** días hábiles contados desde el día hábil siguiente (TUO de la Ley 27444, arts. 142.1, 144.1 y 145.1; RGT art. 45.1).
+  `fecha_limite = inicio + plazo + días de suspensión a cargo de la EP` (hoja Léame).
+- **Calendario:** librería `holidays` (versión fija) más los feriados con vigencia de la hoja Supuestos. Las dos fuentes coinciden; si difirieran, la diferencia se registraría como hallazgo.
+- **Alertas explicables:** «vence en N DH», «vencido hace N DH» o «no puedo calcular: falta X». Cada alerta trae su regla, su fuente, su estado de validación y el documento que inició el conteo. Si DS02 no trae el documento, la alerta dice «declarado, no verificado».
+- **Validación contra DS02:**
+  - `fecha_limite` y `dias_habiles_sunass` coinciden en 64 de 65 expedientes. El restante, RP-2026-0002, queda en «no puedo calcular» porque tiene una fecha inconsistente.
+  - Los 360 vencimientos de reporte trimestral coinciden.
+  - De los reajustes por IPM, coinciden los 35 que tienen base conocida.
+  - Los resultados aparecen en el reporte de calidad (reglas CAL-PLZ).
+- **Procedimientos sin flujograma** (reporte periódico, reajuste por IPM y verificación de incrementos): sus reglas vienen de la hoja Supuestos y se rotulan «supuesto de simulación». La excepción es el plazo de 90 días calendario para aplicar el reajuste, que sale del RGT, art. 82.3.
+- **Catálogo:** [`rules/plazos.yaml`](rules/plazos.yaml). Cada regla trae `tipo_reloj`, plazo, `vigente_desde` y `vigente_hasta`, sus fuentes con cita textual, su `respaldo` y su `estado_validacion`. **Todas están «por validar»**, porque la DRE aún no valida ninguna.
+- **Preguntas pendientes:** [`docs/preguntas_para_la_DRE.md`](docs/preguntas_para_la_DRE.md) reúne cada discrepancia, subplazo que no suma y plazo sin norma citada, con la pregunta concreta y lo que cambia en el motor según la respuesta.
+
+Endpoints: `/calendario/feriados?anio=`, `/calendario/diferencias`, `/reglas/plazos`,
+`/expedientes/{id}/relojes?fecha_corte=` y `/alertas?fecha_corte=&cod_eps=&reloj=`. Las alertas se ordenan por
+plazo restante, con las vencidas primero, y nunca por el tamaño de la EPS.
+
 ## Supuestos
 
 Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
@@ -163,10 +191,11 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 
 ## Fuentes
 
+- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>. No se pudo leer el texto de la RCD 124-2025 (ver `docs/preguntas_para_la_DRE.md`).
+- TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS: <https://cdn.www.gob.pe/uploads/document/file/5320370/>. El DS 006-2026-JUS aprobó un TUO nuevo, que no se leyó.
 - Sunass (2026). Expediente General del Desafío 3, v1.0.
 - Sunass (2026). Diccionario de variables y datasets DS01–DS09, Desafío 3 (hojas Léame, Relaciones, Hitos,
   Supuestos y una por dataset).
-- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD y modificatorias.
 
 ## Declaración de uso de IA
 

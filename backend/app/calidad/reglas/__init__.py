@@ -30,5 +30,6 @@ def cargar_modulos() -> None:
         formato,
         llaves,
         mef,
+        plazos,
         unidades,
     )

@@ -487,3 +487,67 @@ reglas:
     estado_validacion: validada
     activa: true
     parametros: {}
+
+  # -------------------------------------------- plazos de DS02 (Fase 2)
+  - id: CAL-PLZ-01
+    tipo: plazo_ds02
+    titulo: fecha_limite de DS02 distinta a la recalculada
+    descripcion: >-
+      Recalcula fecha_limite = fecha_inicio + plazo_maximo_dh + días de
+      suspensión (en DH, desde el día hábil siguiente) con el calendario de
+      rules/feriados.yaml y la compara con DS02. Informa el conteo de
+      coincidencias y marca cada discrepancia o caso no calculable.
+    severidad: media
+    fuente: "Diccionario, hoja Léame (Cómputo de plazos); rules/plazos.yaml (PLZ-COMPUTO)"
+    estado_validacion: por validar
+    activa: true
+    parametros: {}
+
+  - id: CAL-PLZ-02
+    tipo: plazo_ds02
+    titulo: Días hábiles de la Sunass o de suspensión distintos a la suma de los hitos
+    descripcion: >-
+      Suma los días hábiles de los hitos que cuentan para el plazo (Sunass) y de
+      los que no (suspensión, a cargo de la EP), hasta la conclusión o el corte,
+      y los compara con dias_habiles_sunass y dias_suspension_dh de DS02.
+    severidad: media
+    fuente: "Diccionario, hojas ds02_procedimientos (dias_habiles_sunass, dias_suspension_dh) y ds02_hitos_procedimientos (cuenta_plazo)"
+    estado_validacion: por validar
+    activa: true
+    parametros: {}
+
+  - id: CAL-PLZ-03
+    tipo: plazo_ds02
+    titulo: Vencimiento del reporte trimestral distinto al de la hoja Supuestos
+    descripcion: "30 días calendario después del cierre del trimestre; si cae en día no hábil, el siguiente hábil."
+    severidad: media
+    fuente: "Diccionario, hoja Supuestos (Reporte trimestral) — supuesto de simulación"
+    estado_validacion: por validar
+    activa: true
+    parametros: {}
+
+  - id: CAL-PLZ-04
+    tipo: calendario
+    titulo: Feriado distinto entre la librería y la hoja Supuestos
+    descripcion: >-
+      Compara año por año los feriados con vigencia de la hoja Supuestos con la
+      librería holidays. Cada diferencia se marca «validar con el calendario
+      oficial»; si no hay diferencias, se informa.
+    severidad: media
+    fuente: "Diccionario, hoja Supuestos (Feriados); rules/feriados.yaml"
+    estado_validacion: por validar
+    activa: true
+    parametros: {}
+
+  - id: CAL-PLZ-05
+    tipo: plazo_ds02
+    titulo: Reajuste por IPM que no se reproduce desde DS09
+    descripcion: >-
+      Recalcula el mes de disparo (3 % acumulado) y la variación de cada
+      reajuste de DS02 desde el índice de DS09, con base en el último reajuste
+      aplicado o el inicio del periodo regulatorio.
+    severidad: media
+    fuente: "RGT art. 80; diccionario, hoja Supuestos (Reajuste por IPM); DS09 (dato real del INEI)"
+    estado_validacion: por validar
+    activa: true
+    parametros: {}
