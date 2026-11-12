@@ -18,7 +18,7 @@ export const configPrueba: Config = {
 
 export function usuarioPrueba(rol: string, extra: Partial<UsuarioDemo> = {}): UsuarioDemo {
   const r = configPrueba.roles.find((x) => x.rol === rol)!;
-  return { id: r.usuario ?? (rol === "eps" ? "eps-EPS02" : "ciudadania"), nombre: `${r.nombre} (ficticio)`, rol,
+  return { id: r.usuario ?? (rol === "eps" ? "eps-EPS02" : "ciudadania"), nombre: rol === "especialista_srt" ? "Especialista SRT (ficticia)" : `${r.nombre} (ficticio)`, rol,
     permisos: rol === "especialista_srt" || rol === "coordinacion_srt" ? ["registrar_documento", "confirmar_registro"] : [],
     cod_eps: rol === "eps" ? "EPS02" : null, rotulo: "Usuario ficticio de demostración", vistas: r.vistas, inicio: r.inicio, ...extra };
 }

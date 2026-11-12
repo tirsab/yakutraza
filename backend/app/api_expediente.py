@@ -57,6 +57,25 @@ class EventoIn(BaseModel):
     cita: str | None = None
 
 
+class CorreccionIn(BaseModel):
+    motivo: str
+    numero: str | None = None
+    tipo: str | None = None
+    hito: str | None = None
+    asunto: str | None = None
+    remitente: str | None = None
+    fecha_emision: date | None = None
+    fecha_recepcion: date | None = None
+    fecha_notificacion: date | None = None
+    canal: str | None = None
+    plazo_otorgado_dh: int | None = None
+    dias_dh: int | None = None
+    nueva_fecha_limite: date | None = None
+    fecha_solicitud: date | None = None
+    cita: str | None = None
+    pagina: int | None = None
+
+
 class PrechequeoIn(BaseModel):
     cod_eps: str
     tipo_cambio: str
@@ -159,6 +178,23 @@ def confirmar_documento(doc_id: int, x_usuario: str | None = Header(None),
     return _ejecutar(lambda: docs_srv.confirmar_documento(get_engine(s.database_url), _usuario(s, x_usuario), doc_id))
 
 
+@router.post("/documentos/{doc_id}/corregir", tags=["expediente vivo"])
+def corregir_documento(doc_id: int, c: CorreccionIn, x_usuario: str | None = Header(None),
+                       s: Settings = Depends(get_settings)) -> dict[str, Any]:
+    """Corrige un registro propuesto (con motivo y bitácora). Sigue «propuesto» hasta que alguien lo confirme."""
+    datos = c.model_dump(exclude_none=True, exclude={"motivo"})
+    return _ejecutar(lambda: docs_srv.corregir_documento(get_engine(s.database_url), _usuario(s, x_usuario), doc_id,
+                                                         datos, c.motivo))
+
+
+@router.post("/eventos/{evento_id}/corregir", tags=["expediente vivo"])
+def corregir_evento(evento_id: int, c: CorreccionIn, x_usuario: str | None = Header(None),
+                    s: Settings = Depends(get_settings)) -> dict[str, Any]:
+    datos = c.model_dump(exclude_none=True, exclude={"motivo"})
+    return _ejecutar(lambda: docs_srv.corregir_evento(get_engine(s.database_url), _usuario(s, x_usuario), evento_id,
+                                                      datos, c.motivo))
+
+
 @router.post("/eventos/{evento_id}/confirmar", tags=["expediente vivo"])
 def confirmar_evento(evento_id: int, x_usuario: str | None = Header(None),
                      s: Settings = Depends(get_settings)) -> dict[str, Any]:
@@ -200,4 +236,7 @@ def prechequeo(entrada: PrechequeoIn, s: Settings = Depends(get_settings)) -> di
                                monto_nuevo_pendiente=d(entrada.monto_nuevo_pendiente),
                                costo_proyecto_sustituto=d(entrada.costo_proyecto_sustituto),
                                suma_sustituciones_previas=d(entrada.suma_sustituciones_previas))
-    return prechequeo_srv.prechequear(vivo._ds03(get_engine(s.database_url)), e, cat).__dict__
+    r = prechequeo_srv.prechequear(vivo._ds03(get_engine(s.database_url)), e, cat).__dict__
+    docs = cat.get("documentos_por_via", {})
+    return {**r, "documentos": docs.get(r["ruta"], []), "documentos_pendientes": docs.get("pendiente"),
+            "decision": "Es una orientación. La decisión final siempre es de Sunass."}

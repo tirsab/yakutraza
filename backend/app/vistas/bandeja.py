@@ -11,6 +11,7 @@ Orden: por plazo restante (vencidos primero), nunca por tamaño de la EPS.
 from __future__ import annotations
 
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import select
@@ -22,6 +23,7 @@ from app.expediente.casos_reales import pendientes
 from app.expediente.documentos import listar
 from app.expediente.vivo import DECLARADO, casos, pasaporte
 from app.vistas.etiquetas import etiqueta
+from app.vistas.pasos import catalogo as cat_pasos, pasos_de
 from app.vistas.tablero import ORDEN, Contexto, Fila, especialista_de
 
 SUNASS_TECNICO = ("Equipo SRT", "SRT")
@@ -113,6 +115,7 @@ def _soles(v) -> str:
 
 
 def items(ctx: Contexto, filas: list[Fila], cat: dict[str, Any]) -> list[dict[str, Any]]:
+    cp = cat_pasos(Path(ctx.s.rules_dir) / "pasos_procedimiento.yaml")
     p_ds02 = _ds02(ctx.engine, [f.exp.id for f in filas])
     res = []
     for f in filas:
@@ -123,6 +126,10 @@ def items(ctx: Contexto, filas: list[Fila], cat: dict[str, Any]) -> list[dict[st
                     "evidencia_faltante": evidencia_faltante(f, docs, ctx.corte, cat),
                     "por_que_importa": por_que_importa(f, p, proyecto), "proyecto": proyecto,
                     "monto_solicitado": float(p["monto_solicitado"]) if p and p.get("monto_solicitado") else None,
+                    "base_normativa": p.get("base_normativa") if p else None,
+                    "te_toca": bool(f.hito and f.hito.responsable in SUNASS_TECNICO),
+                    "en_pausa": bool(f.hito and f.hito.cuenta_plazo is False),
+                    "pasos": pasos_de(f.exp, cp, ctx.corte),
                     "fuente": f"DS02 fila {f.exp.fila} (sintético); relojes del motor de plazos"})
     return res
 
@@ -151,6 +158,7 @@ def items_casos_reales(ctx: Contexto, especialistas: list[str]) -> list[dict[str
                                    for k in faltan],
             "por_que_importa": ["Caso real de referencia: sin confirmación de una persona, sus relojes no se calculan."],
             "proyecto": None, "monto_solicitado": None, "naturaleza": "real", "fila_ds02": None,
+            "base_normativa": None, "te_toca": True, "en_pausa": False, "pasos": None,
             "fuente": c.datos["fuente_principal"]})
     return res
 

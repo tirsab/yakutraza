@@ -19,7 +19,8 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 | 2 | Calendario de días hábiles y motor de tres relojes | Lista |
 | 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista |
 | 4 | Ruta del dinero (tablero, escaleras, visibilidad) | Lista |
-| 5 | Vistas por rol, tablero gerencial, simulador y diseño visual | Lista (por aprobar) |
+| 5 | Vistas por rol, tablero gerencial, simulador y diseño visual | Lista |
+| 5b | Rediseño por rol (visibilidad y facilidad de uso) | Lista (por aprobar) |
 | 6 | Extracción asistida de documentos (IA con cita) | Pendiente |
 | 7 | Demo, pruebas de interfaz y entrega | Pendiente |
 
@@ -330,6 +331,51 @@ Endpoints:
 - `GET|POST /resumenes-quechua`, `POST /resumenes-quechua/{id}/validar`
 
 Línea base: `python -m app.cli indicadores` escribe `docs/indicadores.md`.
+
+## Rediseño por rol (Fase 5b)
+
+Rediseño visual y de experiencia por rol, tomando como referencia `docs/referencia_diseno/referencia_diseno.html`
+(no se versiona). De la referencia se tomaron la tipografía, los colores, las animaciones suaves y la organización
+de cada vista; **no sus datos**: toda cifra sale de la API y de la muestra.
+
+- **Sistema visual:** Poppins (títulos) e Inter (texto) con `@fontsource` (licencia OFL), paleta de la referencia
+  como tokens, tarjetas de 18 px, píldoras de estado con ícono y texto, chips de fuente que abren la fuente (las
+  normas enlazan a su publicación oficial), avatares con iniciales, avisos tipo toast y barra DEMO amarilla.
+  - **Contraste corregido:** el texto blanco va sobre `#0E5AA7` o más oscuro; el degradado claro (`--grad`) es solo
+    decorativo y con texto se usa `--grad-texto`; los verdes, ámbar y rojos de la referencia solo se usan en
+    íconos y bordes, y las píldoras usan tonos oscurecidos. Una prueba verifica cada par.
+  - **Movimiento:** tarjetas que suben 1 a 4 px, toasts y desplazamiento suave; con `prefers-reduced-motion`, nada.
+- **Portada:** «Cada trámite y cada sol, a la vista.», cómo funciona en 4 pasos, tres accesos (Sunass, EPS y
+  ciudadanía) y tres principios.
+- **Vista Sunass:** barra lateral con el usuario ficticio, Mi bandeja (con contador de urgentes), Tablero de
+  dirección, Expedientes, Ruta del dinero y Bitácora, según permisos; la fecha de corte queda siempre visible.
+  - **Bandeja (lista y detalle):** la tarjeta «Próxima acción» responde las tres preguntas de la prueba memorable;
+    barra de pasos del procedimiento; tres relojes en columnas con su fuente (y «no puedo calcular: falta X»);
+    línea de tiempo con el pasaporte de evidencia; «La IA leyó el documento» (solo registros de los casos reales
+    transcritos con asistencia de IA, con **Confirmar** y **Corregir**); y mini ruta del dinero, donde «pendiente»
+    nunca es cero.
+  - **Tablero de dirección:** cinco indicadores (el % que supera el plazo, rotulado «muestra simulada»), ruta del
+    dinero por EPS (programado vigente frente a ejecutado y usos excepcionales; los pedidos de cambio al programa
+    no se suman como «solicitado»), alertas que necesitan decisión, «¿En qué paso están los expedientes?» y carga
+    del equipo. Se mantienen la fecha de corte destacada, los cuellos de botella, el embudo, la calidad y el simulador.
+- **Portal EPS:** «Sunass te pidió algo» con el contador de días hábiles, la fecha límite, el oficio y «Mientras
+  no respondas, el plazo de Sunass está en pausa» solo si el hito no cuenta para el plazo de Sunass; **Responder**
+  registra la respuesta como «propuesta». «¿Qué vía te corresponde?» convierte el pre-chequeo art. 93/94 en
+  preguntas Sí/No con la regla aplicada y solo los documentos que menciona la norma (los requisitos del TUPA,
+  por validar, DRE-27). Mis trámites con pasos y Mi fondo con cuatro recuadros (DS05 y DS02).
+- **Vista ciudadana** (máx. 460 px): selectores de departamento, provincia y distrito (DS01), filtros, tarjetas
+  de obra con **seis etapas** en lenguaje simple (por validar, E-2; ninguna obra figura «en funcionamiento» sin
+  verificación), mapa **esquemático** (DS01 no trae coordenadas), Participa (audiencias), audio con la síntesis
+  de voz del navegador (solo español) y Runasimi solo con resúmenes validados por una persona.
+
+**Enlaces de demo** (solo con `MODO_DEMO=true`): `?como=<usuario ficticio>` y `?corte=AAAA-MM-DD` abren una vista
+con el rol y la fecha listos; en la bandeja, `?exp=<expediente>` lo abre directamente. Por ejemplo,
+`/mi-eps?como=eps-EPS02&corte=2026-08-27` muestra el pedido del oficio con su contador.
+
+Endpoints nuevos:
+- `POST /documentos/{id}/corregir`, `POST /eventos/{id}/corregir` (solo registros propuestos; motivo y bitácora)
+- `GET /publico/ubicaciones`, `GET /publico/mapa?departamento=&provincia=`
+- `rules/pasos_procedimiento.yaml`: pasos de cada procedimiento (supuesto de presentación).
 
 ## Supuestos
 

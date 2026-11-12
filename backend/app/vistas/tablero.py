@@ -19,6 +19,8 @@ import yaml
 from sqlalchemy.engine import Engine
 
 from app.config import Settings
+from app.dinero import ruta
+from app.dinero.datos import tablas
 from app.expediente.documentos import eventos_para_motor
 from app.persistencia import leer_hallazgos, ultimo_lote
 from app.plazos.calendario import calendario_desde
@@ -341,6 +343,56 @@ def carga(ctx: Contexto, filas: list[Fila], especialistas: list[str] | None = No
             "pregunta_dre": ctx.cfg["pesos_carga"]["pregunta_dre"],
             "rotulo": ctx.cfg["asignacion"]["rotulo"], "metodo": ctx.cfg["asignacion"]["metodo"],
             "aviso": "Propuesta orientativa: no reasigna nada. Los especialistas son ficticios."}
+
+
+# ------------------------------------------------------ ruta del dinero por EPS
+def ruta_por_eps(ctx: Contexto, filas: list[Fila], params: dict[str, Any], textos: dict[str, str],
+                 cod_eps: str | None = None) -> dict[str, Any]:
+    """Programado vigente frente a ejecutado (DS03 y DS04) y usos excepcionales (DS02 y DS05), por EPS.
+
+    Los pedidos de cambio al programa no se suman como «solicitado»: no son dinero que se usa.
+    """
+    t = tablas(ctx.s.database_url)
+    proys = ruta.proyectos(t, params, textos, cod_eps=cod_eps, periodo="vigente")
+    por: dict[str, dict[str, Any]] = {}
+
+    def g(cod: str) -> dict[str, Any]:
+        return por.setdefault(cod, {"cod_eps": cod, "programado_vigente": ruta.CERO, "ejecutado": ruta.CERO,
+                                    "proyectos": 0, "sin_dato_ejecucion": 0, "senales": [],
+                                    "uso_solicitado": ruta.CERO, "uso_autorizado": ruta.CERO, "uso_usado": ruta.CERO,
+                                    "usos": [], "estado": None, "expedientes_en_curso": 0})
+    for p in proys:
+        x = g(p["cod_eps"])
+        x["proyectos"] += 1
+        x["programado_vigente"] += p["monto_programado_vigente"]
+        if p["ejecucion_financiera"] is None:
+            x["sin_dato_ejecucion"] += 1
+        else:
+            x["ejecutado"] += p["ejecucion_financiera"]
+        if p["senal_revision"]:
+            x["senales"].append({"cod_proyecto": p["cod_proyecto"], "diferencia_pp": p["diferencia_pp"],
+                                 "fuente": p["fuente"]})
+    d5 = t["ds05_fondo_inversiones_reservas"]
+    for _, r in ruta._ufi(t, cod_eps).iterrows():
+        x = g(r["cod_eps"])
+        usado = sum((ruta.D(v) for v in d5[d5["id_expediente_uso_excepcional"] == r["id_expediente"]]["uso_excepcional"]),
+                    ruta.CERO)
+        x["uso_solicitado"] += ruta.D(r["monto_solicitado"])
+        x["uso_autorizado"] += ruta.D(r["monto_aprobado"])
+        x["uso_usado"] += usado
+        x["usos"].append(r["id_expediente"])
+    for f in filas:
+        if f.exp.cod_eps in por:
+            x = por[f.exp.cod_eps]
+            x["expedientes_en_curso"] += 1
+            if x["estado"] is None or ORDEN[f.estado] < ORDEN[x["estado"]]:
+                x["estado"] = f.estado
+    lista = sorted(por.values(), key=lambda x: (ORDEN.get(x["estado"], 9), -len(x["senales"]), x["cod_eps"]))
+    return {"eps": lista, "umbral_senal_pp": params["umbral_senal_pp"]["valor"],
+            "nota": "Programado vigente del periodo vigente (DS03) frente a ejecución acumulada reportada (DS04, último "
+                    "trimestre). Usos excepcionales: solicitado y autorizado (DS02) y usado (DS05). Los pedidos de cambio "
+                    "al programa no se suman como «solicitado».",
+            "fuente": "DS02, DS03, DS04 y DS05 (sintéticos)"}
 
 
 # ---------------------------------------------------------- calidad de datos

@@ -1,73 +1,143 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSesion } from "./sesion";
 
-const ACCESOS: { rol: string; vista: string; titulo: string; texto: string }[] = [
-  { rol: "especialista_srt", vista: "Mi siguiente acción", titulo: "Especialista SRT",
-    texto: "Su bandeja ordenada por plazo restante: qué expediente atender primero." },
-  { rol: "coordinacion_srt", vista: "Tablero gerencial", titulo: "Coordinación SRT",
-    texto: "Vencidos, cuellos de botella, carga del equipo y propuesta de asignación." },
-  { rol: "direccion_dre", vista: "Tablero gerencial", titulo: "Dirección DRE",
-    texto: "Línea base del plazo superado, embudo de firmas y simulador de escenarios." },
-  { rol: "otras_areas", vista: "Expedientes", titulo: "Otras áreas",
-    texto: "Consulta de expedientes y ruta del dinero, solo lectura." },
-  { rol: "eps", vista: "Mi EPS", titulo: "Empresa prestadora (EPS)",
-    texto: "Qué le falta entregar y hasta cuándo; su fondo y usos autorizados." },
-  { rol: "ciudadania", vista: "Vista ciudadana", titulo: "Ciudadanía",
-    texto: "Proyectos de su localidad, su etapa y las audiencias públicas." },
+const PASOS = [
+  { t: "La EPS revisa su vía y presenta", d: "Sabe si su pedido va por el art. 93 o el 94 del RGT antes de enviarlo." },
+  { t: "Sunass sigue cada paso con evidencia", d: "Próxima acción, responsable y tres plazos: normativo, interno y del oficio." },
+  { t: "Se sigue el dinero", d: "Lo programado, lo solicitado, lo autorizado y lo usado, con su fuente." },
+  { t: "La ciudadanía ve su obra", d: "En lenguaje simple, con audio y fechas para participar." },
+];
+
+const PRINCIPIOS = [
+  { i: "IA", t: "La IA propone, una persona confirma", d: "Lo transcrito con asistencia de IA entra como propuesta, con su cita. Nada cambia los plazos sin revisión humana." },
+  { i: "§", t: "Cada alerta tiene su fuente", d: "Toda alerta muestra la regla (RGT, flujograma, oficio) o el documento que la origina." },
+  { i: "✓", t: "Las decisiones son de Sunass", d: "YakuTraza ordena y avisa; las decisiones regulatorias siguen a cargo de Sunass." },
+];
+
+const ROLES_SUNASS = [
+  { rol: "especialista_srt", nombre: "Especialista SRT" },
+  { rol: "coordinacion_srt", nombre: "Coordinación SRT" },
+  { rol: "direccion_dre", nombre: "Dirección DRE" },
+  { rol: "otras_areas", nombre: "Otras áreas (solo lectura)" },
 ];
 
 export function Portada() {
   const { config, verComo } = useSesion();
-  const accesos = config.modo_demo ? ACCESOS : ACCESOS.filter((a) => a.rol === "ciudadania");
+  const navegar = useNavigate();
+  const [rolSunass, setRolSunass] = useState("especialista_srt");
+  const [eps, setEps] = useState(config.eps[0]?.cod_eps ?? "");
+  const demo = config.modo_demo;
   return (
     <div className="portada">
-      <section className="portada-cabecera" aria-labelledby="portada-titulo">
-        <p className="rotulo-prototipo">{config.rotulo}</p>
-        <h1 id="portada-titulo">YakuTraza</h1>
-        <p className="lema">Seguimiento verificable de trámites y recursos de inversión de las EPS</p>
+      <section className="hero" aria-labelledby="portada-titulo">
+        <div className="pagina hero-nav">
+          <span className="marca">YakuTraza</span>
+          <nav aria-label="Portada">
+            <a href="#como" style={{ color: "#fff", marginRight: 16 }}>Cómo funciona</a>
+            <Link to="/ciudadania" style={{ color: "#fff" }}>Consulta ciudadana</Link>
+          </nav>
+        </div>
+        <div className="pagina hero-cuerpo">
+          <div>
+            <span className="hero-etq">TRAZABILIDAD · AGUA Y SANEAMIENTO</span>
+            <h1 id="portada-titulo">Cada trámite y cada sol, a la vista.</h1>
+            <p>YakuTraza: seguimiento verificable de trámites y recursos de inversión de las EPS. Muestra la próxima acción,
+              el documento que respalda cada paso, los plazos y por dónde se mueve el dinero, hasta la obra de tu distrito.</p>
+            <div className="hero-botones">
+              {demo && <button type="button" className="claro" onClick={() => verComo("especialista_srt")}>Ver vista Sunass</button>}
+              <button type="button" className="fantasma" onClick={() => navegar("/ciudadania")}>Consultar obras de mi zona →</button>
+            </div>
+          </div>
+          <section className="como-funciona" id="como" aria-labelledby="como-titulo">
+            <h2 id="como-titulo">CÓMO FUNCIONA</h2>
+            <ol>
+              {PASOS.map((p, i) => (
+                <li key={p.t}><span className="paso-num" aria-hidden="true">{i + 1}</span><span><strong>{p.t}</strong>{p.d}</span></li>
+              ))}
+            </ol>
+          </section>
+        </div>
       </section>
 
-      <section aria-labelledby="preguntas-titulo">
-        <h2 id="preguntas-titulo">Responde tres preguntas en menos de un minuto</h2>
-        <ol className="tres-preguntas">
-          <li>
-            <span className="numero" aria-hidden="true">1</span>
-            <strong>¿Qué requiere acción?</strong>
-            <span>El expediente con el plazo más urgente: vencido, por vencer o sin datos para calcular.</span>
+      <div className="pagina">
+        <ul className="accesos" aria-label="Accesos por rol">
+          <li className="tarjeta acceso elevable">
+            <span className="icono" aria-hidden="true">⚖</span>
+            <span className="pildora pil-info" style={{ alignSelf: "flex-start" }}>Acceso privado</span>
+            <h3>Sunass</h3>
+            <p className="detalle">Especialistas, coordinación y dirección de la DRE</p>
+            <ul>
+              <li>Bandeja con la próxima acción</li>
+              <li>Línea de tiempo con documentos</li>
+              <li>Alertas con su fuente</li>
+              <li>Tablero de dirección</li>
+            </ul>
+            {demo ? (
+              <>
+                <label className="campo" htmlFor="rol-sunass">Rol (modo demo)
+                  <select id="rol-sunass" value={rolSunass} onChange={(e) => setRolSunass(e.target.value)}>
+                    {ROLES_SUNASS.map((r) => <option key={r.rol} value={r.rol}>{r.nombre}</option>)}
+                  </select>
+                </label>
+                <button type="button" onClick={() => verComo(rolSunass)}>Ingresar como Sunass →</button>
+              </>
+            ) : <p className="detalle">Requiere acceso institucional: no está disponible en el enlace público.</p>}
           </li>
-          <li>
-            <span className="numero" aria-hidden="true">2</span>
-            <strong>¿Qué falta?</strong>
-            <span>La evidencia que no está: hitos declarados sin documento y registros sin confirmar.</span>
+          <li className="tarjeta acceso elevable">
+            <span className="icono" aria-hidden="true">🏢</span>
+            <span className="pildora pil-info" style={{ alignSelf: "flex-start" }}>Acceso privado</span>
+            <h3>EPS</h3>
+            <p className="detalle">Empresas prestadoras de saneamiento</p>
+            <ul>
+              <li>Revisión previa de la vía (art. 93 o 94)</li>
+              <li>Qué pidió Sunass y hasta cuándo</li>
+              <li>Mis trámites paso a paso</li>
+              <li>Mi fondo de inversiones</li>
+            </ul>
+            {demo ? (
+              <>
+                <label className="campo" htmlFor="eps-portada">Empresa (modo demo)
+                  <select id="eps-portada" value={eps} onChange={(e) => setEps(e.target.value)}>
+                    {config.eps.map((e) => <option key={e.cod_eps} value={e.cod_eps}>{e.cod_eps} · {e.nombre_eps}</option>)}
+                  </select>
+                </label>
+                <button type="button" onClick={() => verComo("eps", eps)}>Ingresar como EPS →</button>
+              </>
+            ) : <p className="detalle">Requiere acceso institucional: no está disponible en el enlace público.</p>}
           </li>
-          <li>
-            <span className="numero" aria-hidden="true">3</span>
-            <strong>¿Por qué importa?</strong>
-            <span>Los días de atraso, el monto, el proyecto y la población que espera la decisión.</span>
+          <li className="tarjeta acceso elevable">
+            <span className="icono" aria-hidden="true">💧</span>
+            <span className="pildora pil-ok" style={{ alignSelf: "flex-start" }}>Ingreso libre</span>
+            <h3>Ciudadanía</h3>
+            <p className="detalle">Cualquier persona, desde el celular</p>
+            <ul>
+              <li>Mapa esquemático de obras por distrito</li>
+              <li>6 etapas en lenguaje simple</li>
+              <li>Resumen en audio</li>
+              <li>Fechas para participar</li>
+            </ul>
+            <button type="button" onClick={() => (demo ? verComo("ciudadania").then(() => navegar("/ciudadania")) : navegar("/ciudadania"))}>
+              Consultar sin registrarme →
+            </button>
           </li>
-        </ol>
-      </section>
-
-      <section aria-labelledby="accesos-titulo">
-        <h2 id="accesos-titulo">Entrar a cada vista</h2>
-        {config.modo_demo && (
-          <p className="sub">Modo demo: cada acceso cambia el rol y aplica sus permisos. Los usuarios son ficticios.</p>
-        )}
-        <ul className="accesos">
-          {accesos.map((a) => (
-            <li key={a.rol}>
-              <h3>{a.titulo}</h3>
-              <p>{a.texto}</p>
-              <p className="meta">Abre: {a.vista}</p>
-              {a.rol === "ciudadania" && !config.modo_demo ? (
-                <Link className="boton" to="/ciudadania">Abrir la {a.vista.toLowerCase()}</Link>
-              ) : (
-                <button type="button" onClick={() => verComo(a.rol)}>Entrar como {a.titulo}</button>
-              )}
-            </li>
-          ))}
         </ul>
-      </section>
+
+        <section className="principios" aria-label="Principios">
+          {PRINCIPIOS.map((p) => (
+            <div key={p.t} className="principio">
+              <span className="icono" aria-hidden="true">{p.i}</span>
+              <div><h3 style={{ marginTop: 0 }}>{p.t}</h3><p className="detalle">{p.d}</p></div>
+            </div>
+          ))}
+        </section>
+
+        <footer className="pie-sintetico">
+          <strong>YakuTraza</strong> · Seguimiento verificable de trámites y recursos de inversión de las EPS · Prototipo.<br />
+          <span className="rotulo-prototipo">{config.rotulo}</span>: las EPS, expedientes y montos de la muestra son sintéticos.
+          Ninguna salida es una decisión regulatoria. Código abierto (MIT).
+        </footer>
+      </div>
     </div>
   );
 }

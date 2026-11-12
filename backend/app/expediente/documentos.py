@@ -103,6 +103,60 @@ def _confirmar(engine: Engine, usuario: Usuario | None, tabla, entidad: str, rid
         return {**dict(fila), **cambios}
 
 
+CORREGIBLES = {
+    "documento": ("numero", "tipo", "hito", "asunto", "remitente", "fecha_emision", "fecha_recepcion",
+                  "fecha_notificacion", "canal", "plazo_otorgado_dh", "cita", "pagina"),
+    "evento": ("hito", "dias_dh", "nueva_fecha_limite", "fecha_solicitud", "cita"),
+}
+
+
+def _corregir(engine: Engine, usuario: Usuario | None, tabla, entidad: str, rid: int, cambios: dict[str, Any],
+              motivo: str | None) -> dict[str, Any]:
+    """Corrige un registro PROPUESTO (por ejemplo, una transcripción con asistencia de IA).
+
+    Exige un motivo, deja el antes y el después en la bitácora y el registro sigue «propuesto»: una
+    persona debe confirmarlo. Un registro confirmado no se corrige por esta vía.
+    """
+    u = exigir(usuario, "confirmar_registro")
+    if not motivo or len(motivo.strip()) < 5:
+        raise ErrorRegistro("Indique el motivo de la corrección (al menos 5 caracteres).")
+    cambios = {k: v for k, v in cambios.items() if k in CORREGIBLES[entidad]}
+    if not cambios:
+        raise ErrorRegistro(f"No hay campos corregibles. Use: {', '.join(CORREGIBLES[entidad])}.")
+    if entidad == "documento":
+        if "tipo" in cambios and cambios["tipo"] not in TIPOS_DOCUMENTO:
+            raise ErrorRegistro(f"Tipo de documento no válido: {cambios['tipo']}.")
+        if "canal" in cambios and cambios["canal"] not in CANALES:
+            raise ErrorRegistro(f"Canal no válido: {cambios['canal']}.")
+    for k in ("dias_dh", "plazo_otorgado_dh"):
+        if cambios.get(k) is not None and int(cambios[k]) < 0:
+            raise ErrorRegistro("Los días hábiles no pueden ser negativos.")
+    with engine.begin() as cx:
+        fila = cx.execute(select(tabla).where(tabla.c.id == rid)).mappings().first()
+        if fila is None:
+            raise LookupError(f"No existe el {entidad} {rid}.")
+        if fila["estado_registro"] == "confirmado":
+            raise ErrorRegistro(f"El {entidad} {rid} ya está confirmado: no se corrige por esta vía.")
+        cambios = {k: v for k, v in cambios.items() if fila[k] != v}
+        if not cambios:
+            return dict(fila)
+        # «corregido»: la próxima carga de casos reales ya no sobrescribe este registro.
+        cx.execute(update(tabla).where(tabla.c.id == rid).values(**cambios, origen="corregido"))
+        bitacora.registrar(cx, u, f"corregir_{entidad}", entidad, rid, id_expediente=fila["id_expediente"],
+                           antes={k: fila[k] for k in cambios}, despues=cambios, motivo=motivo.strip())
+        return {**dict(fila), **cambios, "origen": "corregido"}
+
+
+def corregir_documento(engine: Engine, usuario: Usuario | None, doc_id: int, cambios: dict[str, Any],
+                       motivo: str | None) -> dict[str, Any]:
+    return _corregir(engine, usuario, documentos, "documento", doc_id, cambios, motivo)
+
+
+def corregir_evento(engine: Engine, usuario: Usuario | None, evento_id: int, cambios: dict[str, Any],
+                    motivo: str | None) -> dict[str, Any]:
+    return _corregir(engine, usuario, eventos_plazo, "evento", evento_id, cambios, motivo)
+
+
 def confirmar_documento(engine: Engine, usuario: Usuario | None, doc_id: int) -> dict[str, Any]:
     return _confirmar(engine, usuario, documentos, "documento", doc_id)
 

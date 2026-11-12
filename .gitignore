@@ -21,3 +21,5 @@ frontend/dist/
 
 # Normas (PDF de publicaciones oficiales): no se versionan; ver docs/normas/README.md
 docs/normas/*.pdf
+# Referencia visual de la Fase 5b (no se versiona)
+docs/referencia_diseno/

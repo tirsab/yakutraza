@@ -240,6 +240,15 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
     programa y uso excepcional 3; verificación de incrementos 2; reporte periódico y reajuste por IPM 1.
   - Con la respuesta cambian la carga por especialista y la propuesta de asignación del tablero.
 
+### DRE-27 · Requisitos del TUPA para cambios al programa de inversiones
+- **Pregunta.** ¿Qué documentos exige el TUPA de Sunass para pedir un cambio al programa de inversiones (art. 93) o para comunicarlo (art. 94)?
+- **Fuentes.**
+  - El RGT solo menciona, en el art. 94, el «oficio dirigido al Gerente General de la Sunass», y en el art. 93.1, que la solicitud es previa a la ejecución.
+  - La hoja Hitos del diccionario tiene el hito «verificación de requisitos del TUPA», pero no lista los requisitos.
+- **Qué cambia en el motor.**
+  - Hoy el portal EPS («¿Qué vía te corresponde?») muestra solo los documentos que menciona la norma citada; los requisitos del TUPA figuran «por validar».
+  - Con la lista oficial, la EPS vería todos los documentos con sus casillas antes de presentar.
+
 ### DRE-19 · Umbral de alerta «por vencer»
 - **Pregunta.** ¿Desde cuántos días hábiles restantes conviene avisar «por vencer»? Hoy usamos 5 DH, como supuesto.
 - **Fuentes.** Ninguna. Es un supuesto del equipo (`umbral_por_vencer_dh`).
