@@ -29,6 +29,7 @@ entidades:
     senal_revision: {nivel: reservado, criterio: "Señal interna de trabajo para la especialista."}
     conciliacion_mef: {nivel: reservado, estado: por validar, criterio: "El registro del MEF es público, pero la comparación con lo reportado por la EPS es interna (E-2)."}
     expediente_modificacion: {nivel: publico, criterio: "Número del expediente cuya resolución (publicada) cambió el programa."}
+    etapa_ciudadana: {nivel: publico, estado: por validar, criterio: "Etapa en lenguaje simple (6 etapas) derivada de la escalera; validar con la DRE (E-2)."}
     etapa_escalera: {nivel: publico, estado: por validar, criterio: "La etapa general (programado, en ejecución, concluido) es la pregunta central de la ciudadanía; validar con la DRE (E-2)."}
     verificacion_posterior: {nivel: reservado, criterio: "Resultado de supervisión o fiscalización."}
 

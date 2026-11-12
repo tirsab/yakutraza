@@ -67,3 +67,16 @@ tipos_cambio:
   reprogramacion_94_4: "Reprogramación de dos o más inversiones sin cambiar los montos anuales (94, numeral 4)"
   cambio_nombre_94_5: "Cambio de nombre aprobado en el SNPMGI (94, numeral 5)"
   otro_93_1: "Otro caso del párrafo 93.1 (fuente de financiamiento, expansión, emergencia, fuerza mayor u otros)"
+
+# Documentos que menciona la norma citada para cada vía (Fase 5b). Solo lo que dice el texto; los
+# requisitos del TUPA no están en la muestra: quedan «por validar» (DRE-27).
+documentos_por_via:
+  solo_comunicacion_art_94:
+    - {texto: "Oficio dirigido al Gerente General de la Sunass que comunica el cambio", fuente: "RGT art. 94 (encabezado)"}
+  aprobacion_cd_art_93:
+    - {texto: "Solicitud de modificación o reprogramación, presentada antes de ejecutar la inversión", fuente: "RGT art. 93.1"}
+    - {texto: "Para recursos liberados: autorización previa de Sunass antes de destinarlos", fuente: "RGT art. 93.2"}
+  no_determinable: []
+  pendiente:
+    texto: "Requisitos del TUPA de Sunass: no están en la muestra (por validar, DRE-27)."
+    pregunta_dre: DRE-27

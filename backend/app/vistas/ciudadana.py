@@ -21,6 +21,33 @@ from app.plazos.motor import Expediente
 
 HITOS_AUDIENCIA = ("audiencia_publica", "comentarios")
 
+# Seis etapas en lenguaje simple (rotuladas «por validar», E-2). La etapa 6 exige verificar el beneficio:
+# ninguna obra de la muestra la alcanza, así que nunca se afirma «en funcionamiento» sin verificación.
+ETAPAS_CIUDADANAS = [
+    {"n": 1, "clave": "programada", "nombre": "Programada", "detalle": "Está en el programa de inversiones del estudio tarifario."},
+    {"n": 2, "clave": "aprobada", "nombre": "Aprobada", "detalle": "Aprobada por Sunass; aún no hay reporte de inicio."},
+    {"n": 3, "clave": "en_preparacion", "nombre": "En preparación", "detalle": "Sin iniciar la obra o con expediente técnico."},
+    {"n": 4, "clave": "en_obra", "nombre": "En obra", "detalle": "La obra está en ejecución."},
+    {"n": 5, "clave": "terminada", "nombre": "Terminada", "detalle": "Reportada como concluida; la verificación posterior está pendiente."},
+    {"n": 6, "clave": "beneficio_verificado", "nombre": "Beneficio verificado", "detalle": "Sunass verificó el beneficio. Ninguna obra de la muestra tiene esta verificación."},
+]
+
+
+def etapa_ciudadana(p: dict[str, Any]) -> dict[str, Any]:
+    """Etapa simple a partir de la escalera del proyecto (DS03 y DS04). Detenida = paralizada (sigue en la etapa 4)."""
+    est = p.get("estado_ejecucion")
+    if est in ("no_iniciado", "expediente_tecnico"):
+        n = 3
+    elif est in ("en_ejecucion", "paralizado"):
+        n = 4
+    elif est == "concluido":
+        n = 5
+    else:
+        n = 2  # programada y aprobada en el estudio; sin reporte de ejecución
+    e = ETAPAS_CIUDADANAS[n - 1]
+    return {"n": n, "de": len(ETAPAS_CIUDADANAS), "clave": e["clave"], "nombre": e["nombre"],
+            "detenida": est == "paralizado", "estado_validacion": "por validar (E-2)"}
+
 
 def _plano(t: str | None) -> str:
     t = unicodedata.normalize("NFKD", t or "")
@@ -80,7 +107,7 @@ def localidad(engine: Engine, cat_vis: dict[str, Any], t: dict[str, Any], params
     ds02 = {r["id_expediente"]: r for r in _filas(engine, "ds02_procedimientos", lambda tb: tb.c.cod_eps == cod)}
     proyectos = []
     for p in proys:
-        pub = vis.solo_publico(cat_vis, "proyecto", p)
+        pub = vis.solo_publico(cat_vis, "proyecto", {**p, "etapa_ciudadana": etapa_ciudadana(p)})
         pub["decisiones"] = [vis.solo_publico(cat_vis, "decision_sunass", ds02[i]) for i in p["expediente_modificacion"]
                              if i in ds02]
         pub["naturaleza_poblacion"] = "estimado"
@@ -104,7 +131,7 @@ def localidad(engine: Engine, cat_vis: dict[str, Any], t: dict[str, Any], params
     for p in proyectos:
         etapas[p.get("etapa_escalera") or "sin dato"] = etapas.get(p.get("etapa_escalera") or "sin dato", 0) + 1
     return {
-        "localidad": info, "fecha_corte": corte,
+        "localidad": info, "fecha_corte": corte, "etapas": ETAPAS_CIUDADANAS,
         "agregados": {"proyectos": len(proyectos), "por_etapa": etapas,
                       "monto_programado_original": sum(float(p.get("monto_programado_original") or 0) for p in proyectos)},
         "proyectos": proyectos, "audiencias": audiencias,
@@ -115,6 +142,38 @@ def localidad(engine: Engine, cat_vis: dict[str, Any], t: dict[str, Any], params
         "naturaleza": "sintético",
         "fuente": "DS01 localidades, DS02 y DS03 (sintéticos); campos públicos según rules/visibilidad.yaml",
     }
+
+
+def ubicaciones(engine: Engine) -> list[dict[str, Any]]:
+    """Departamento → provincia → distritos (DS01 localidades), para los selectores públicos."""
+    arbol: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for r in _filas(engine, "ds01_localidades_eps"):
+        arbol.setdefault(r["departamento"], {}).setdefault(r["provincia"], []).append(
+            {"distrito": r["distrito"], "ubigeo": r["ubigeo"], "localidad": r["localidad"]})
+    return [{"departamento": d, "provincias": [{"provincia": p, "distritos": sorted(ds, key=lambda x: x["distrito"])}
+                                               for p, ds in sorted(provs.items())]}
+            for d, provs in sorted(arbol.items())]
+
+
+def mapa(engine: Engine, cat_vis: dict[str, Any], t: dict[str, Any], params: dict[str, Any], textos: dict[str, str],
+         departamento: str, provincia: str) -> dict[str, Any]:
+    """Mapa ESQUEMÁTICO: DS01 no trae coordenadas; los distritos se ordenan por nombre, no por ubicación real."""
+    locs = [r for r in _filas(engine, "ds01_localidades_eps")
+            if r["departamento"] == departamento and r["provincia"] == provincia]
+    ubigeos = {str(r["ubigeo"]) for r in locs}
+    por_ubigeo: dict[str, list[dict[str, Any]]] = {}
+    for cod in sorted({r["cod_eps"] for r in locs}):
+        for p in ruta.proyectos(t, params, textos, cod_eps=cod):
+            if str(p.get("ubigeo")) in ubigeos:
+                por_ubigeo.setdefault(str(p["ubigeo"]), []).append(vis.solo_publico(cat_vis, "proyecto", {
+                    "cod_proyecto": p["cod_proyecto"], "nombre_proyecto": p["nombre_proyecto"],
+                    "etapa_ciudadana": etapa_ciudadana(p)}))
+    return {"departamento": departamento, "provincia": provincia, "tipo": "esquemático",
+            "aviso": "Mapa esquemático: DS01 no trae coordenadas. Los distritos se ordenan por nombre, no por ubicación.",
+            "distritos": [{"distrito": r["distrito"], "ubigeo": r["ubigeo"], "localidad": r["localidad"],
+                           "obras": por_ubigeo.get(str(r["ubigeo"]), [])}
+                          for r in sorted(locs, key=lambda x: x["distrito"])],
+            "etapas": ETAPAS_CIUDADANAS, "naturaleza": "sintético"}
 
 
 def resumen_validado(engine: Engine, ubigeo: str) -> dict[str, Any] | None:

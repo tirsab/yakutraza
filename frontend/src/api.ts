@@ -53,12 +53,14 @@ export interface Documento {
   estado_registro: "propuesto" | "confirmado";
   fuente: string | null;
   cita: string | null;
+  pagina?: number | null;
   registrado_por: string;
   confirmado_por: string | null;
 }
 
 export interface Evento {
   id: number;
+  origen?: string;
   hito: string;
   tipo: string;
   dias_dh: number | null;
@@ -97,6 +99,7 @@ export interface Prechequeo {
 export interface Ficha {
   expediente: Record<string, unknown> & { id_expediente: string; naturaleza: string; tipo_procedimiento: string };
   fecha_corte: string;
+  pasos?: import("./ui").Pasos | null;
   linea_de_tiempo: Hito[];
   relojes: Alerta[];
   documentos: Documento[];

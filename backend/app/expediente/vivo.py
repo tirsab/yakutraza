@@ -27,6 +27,7 @@ from app.plazos.calendario import calendario_desde
 from app.plazos.catalogo import catalogo_desde as catalogo_plazos
 from app.plazos.motor import Expediente, MotorPlazos
 from app.plazos.repositorio import expedientes_desde_bd
+from app.vistas.pasos import catalogo as cat_pasos, pasos_de
 
 DECLARADO = "declarado, no verificado"
 CODIGO_DS02 = "código en DS02, sin archivo"
@@ -137,7 +138,8 @@ def ficha(engine: Engine, s: Settings, id_expediente: str, corte: date | None = 
             relojes = [{
                 "expediente": exp.id, "cod_eps": None, "reloj": "normativo", "estado": "no_calculable",
                 "en_curso": True, "titulo": "Relojes en espera de confirmación",
-                "mensaje": "No puedo calcular todavía: falta que una persona confirme " + ", ".join(faltan) + ".",
+                "mensaje": f"No puedo calcular todavía: falta que una persona confirme {len(faltan)} "
+                           f"{'registro transcrito' if len(faltan) == 1 else 'registros transcritos'} con asistencia de IA.",
                 "regla_id": None, "fuente": caso.datos["fuente_principal"], "estado_validacion": "por validar",
                 "respaldo": None, "hito": None, "etapa": None, "fecha_inicio": None, "fecha_limite": None,
                 "plazo_dh": None, "dias_transcurridos": None, "dias_restantes": None, "documento_inicio": None,
@@ -177,7 +179,8 @@ def ficha(engine: Engine, s: Settings, id_expediente: str, corte: date | None = 
             "evidencia": pasaporte(h, por_hito.get(h.hito, [])),
             "alertas": [a for a in relojes if a.get("hito") == h.hito],
         })
-    return {"expediente": meta, "fecha_corte": corte, "linea_de_tiempo": linea, "relojes": relojes,
+    pasos = pasos_de(exp, cat_pasos(Path(s.rules_dir) / "pasos_procedimiento.yaml"), corte)
+    return {"expediente": meta, "fecha_corte": corte, "pasos": pasos, "linea_de_tiempo": linea, "relojes": relojes,
             "documentos": docs, "eventos": evs, "proyectos": proyectos, "prechequeo": pre,
             "ruta_dinero": _json(_ruta_dinero(s, caso, exp, proyectos)),
             "bitacora": bitacora.leer(engine, id_expediente=id_expediente)}

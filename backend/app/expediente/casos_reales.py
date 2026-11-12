@@ -123,8 +123,8 @@ def _sincronizar_fila(cx: Connection, tabla, entidad: str, fila: dict[str, Any],
     existente = cx.execute(select(tabla).where(tabla.c.clave == fila["clave"])).mappings().first()
     if existente is None:
         return None
-    if existente["estado_registro"] == "confirmado":
-        resumen["confirmados_intactos"] += 1
+    if existente["estado_registro"] == "confirmado" or existente["origen"] == "corregido":
+        resumen["confirmados_intactos"] += 1  # confirmado o corregido por una persona: no se toca
         return existente["id"]
     cambios = {k: v for k, v in fila.items() if k in existente and k != "clave" and existente[k] != v}
     if cambios:

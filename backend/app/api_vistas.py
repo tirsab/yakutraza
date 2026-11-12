@@ -24,6 +24,7 @@ from app.persistencia import ultimo_lote
 from app.vistas import bandeja as bandeja_srv
 from app.vistas import ciudadana, eps, tablero
 from app.vistas.etiquetas import catalogo as catalogo_etiquetas
+from app.vistas.pasos import catalogo as cat_pasos, por_paso
 from app.vistas.sesion import exige_vista, ruta_usuarios, sesion
 
 router = APIRouter()
@@ -150,6 +151,10 @@ def ver_tablero(fecha_corte: date | None = None, tipo: str | None = None, cod_ep
         "embudo": tablero.embudo(ctx, tipo=tipo, cod_eps=cod_eps),
         "carga": tablero.carga(ctx, tablero.filtrar(todas, tipo=tipo, cod_eps=cod_eps)),
         "calidad": tablero.resumen_calidad(ctx.engine),
+        "ruta_por_eps": tablero.ruta_por_eps(ctx, sin_estado, _cfg_dinero(s)["parametros"], _cfg_dinero(s)["textos"],
+                                             cod_eps),
+        "por_paso": por_paso([f.exp for f in sin_estado], cat_pasos(Path(s.rules_dir) / "pasos_procedimiento.yaml"),
+                             ctx.corte),
         "naturaleza": "sintético",
     })
 
@@ -188,6 +193,25 @@ def buscar_localidades(q: str = Query(..., min_length=2), s: Settings = Depends(
     """Búsqueda por localidad, ubigeo, distrito, provincia o departamento. Solo campos públicos."""
     _carga(s)
     return a_json(ciudadana.buscar(get_engine(s.database_url), _vis(s), q))
+
+
+@router.get("/publico/ubicaciones", tags=["vista ciudadana"])
+def ver_ubicaciones(s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
+    """Departamento → provincia → distritos de la muestra (DS01), para los selectores."""
+    _carga(s)
+    return a_json(ciudadana.ubicaciones(get_engine(s.database_url)))
+
+
+@router.get("/publico/mapa", tags=["vista ciudadana"])
+def ver_mapa(departamento: str, provincia: str, s: Settings = Depends(get_settings)) -> dict[str, Any]:
+    """Mapa esquemático de una provincia: obras por distrito y etapa. Solo campos públicos."""
+    _carga(s)
+    cfg = _cfg_dinero(s)
+    r = ciudadana.mapa(get_engine(s.database_url), _vis(s), tablas(s.database_url), cfg["parametros"], cfg["textos"],
+                       departamento, provincia)
+    if not r["distritos"]:
+        raise HTTPException(404, f"No hay distritos de {provincia} ({departamento}) en la muestra.")
+    return a_json(r)
 
 
 @router.get("/publico/localidades/{ubigeo}", tags=["vista ciudadana"])

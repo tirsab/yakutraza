@@ -100,6 +100,17 @@ categorias:
     pronunciamiento: "Pronunciamiento de la DRE"
     informe_ep: "Informe de la EP"
 
+  # Qué debe hacer la EP en cada hito a su cargo (hoja Hitos, columna Descripción, en forma de acción).
+  accion_ep:
+    solicitud: "Presentar la solicitud por mesa de partes"
+    subsanacion_ep: "Subsanar las observaciones de Sunass"
+    informacion_ep: "Enviar la información adicional que pidió Sunass"
+    sustento_ep: "Enviar el sustento de cumplimiento"
+    presentacion: "Presentar el reporte trimestral"
+    comunicacion_ep: "Comunicar a Sunass y publicar el reajuste"
+    aplicacion: "Aplicar el reajuste en la facturación"
+    comentarios: "Enviar comentarios al proyecto de tarifas"
+
   # Hoja «Léame», fila «Siglas».
   responsable:
     EP: "Empresa prestadora (EP)"
@@ -225,6 +236,17 @@ categorias:
     ACTIVO: "Activa"
     CERRADO: "Cerrada"
     DESACTIVADO: "Desactivada"
+
+  # rules/prechequeo_pi.yaml (tipos_cambio).
+  tipo_cambio:
+    incremento_monto: "Aumento del monto de una inversión"
+    sustitucion_93_1_3: "Sustitución por un proyecto alternativo (art. 93.1, numeral 3)"
+    sustitucion_93_1_4: "Sustitución por un proyecto del Plan de Acciones de Urgencia o de Reflotamiento (art. 93.1, numeral 4)"
+    recursos_liberados_93_2: "Destino de recursos liberados por donación o transferencia (art. 93.2)"
+    adelanto_94_2: "Adelanto en la ejecución (art. 94, numeral 2)"
+    reprogramacion_94_4: "Reprogramación de dos o más inversiones sin cambiar los montos anuales (art. 94, numeral 4)"
+    cambio_nombre_94_5: "Cambio de nombre aprobado en el SNPMGI (art. 94, numeral 5)"
+    otro_93_1: "Otro caso del párrafo 93.1"
 
   rol:
     especialista_srt: "Especialista SRT"

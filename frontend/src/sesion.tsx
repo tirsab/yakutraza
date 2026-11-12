@@ -65,23 +65,42 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     return u;
   }, []);
 
+  const [intento, setIntento] = useState(0);
   useEffect(() => {
     (async () => {
       try {
-        const [cfg, etq] = await Promise.all([
-          pedir<Config>("/config"),
-          pedir<{ categorias: Record<string, Record<string, string>> }>("/etiquetas"),
-        ]);
+        // La API puede estar arrancando (por ejemplo, justo después de levantar Docker): se reintenta unas veces.
+        let ultimo: unknown = null;
+        let datos: [Config, { categorias: Record<string, Record<string, string>> }] | null = null;
+        for (let i = 0; i < 6 && !datos; i++) {
+          try {
+            datos = await Promise.all([
+              pedir<Config>("/config"),
+              pedir<{ categorias: Record<string, Record<string, string>> }>("/etiquetas"),
+            ]);
+          } catch (e) {
+            ultimo = e;
+            await new Promise((r) => setTimeout(r, 1500));
+          }
+        }
+        if (!datos) throw ultimo;
+        const [cfg, etq] = datos;
         cargarEtiquetas(etq.categorias);
         setConfig(cfg);
-        setCorte(cfg.fecha_corte_muestra);
-        const inicial = cfg.modo_demo ? leerGuardado() ?? idDeRol(cfg, "especialista_srt") : null;
+        // Enlaces de demo: ?como=<usuario ficticio> y ?corte=AAAA-MM-DD (solo en modo demo).
+        const url = new URLSearchParams(window.location.search);
+        const corteUrl = url.get("corte");
+        setCorte(cfg.modo_demo && corteUrl && /^\d{4}-\d{2}-\d{2}$/.test(corteUrl) && corteUrl >= cfg.corte_min
+                 && corteUrl <= cfg.corte_max ? corteUrl : cfg.fecha_corte_muestra);
+        const comoUrl = cfg.modo_demo ? url.get("como") : null;
+        const inicial = !cfg.modo_demo || comoUrl === "ciudadania" ? null
+          : comoUrl ?? leerGuardado() ?? idDeRol(cfg, "especialista_srt");
         await entrar(inicial).catch(() => entrar(null));
       } catch (e) {
         setError((e as Error).message);
       }
     })();
-  }, [entrar]);
+  }, [entrar, intento]);
 
   const verComo = useCallback(async (rol: string, codEps?: string) => {
     if (!config) return;
@@ -98,7 +117,16 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     };
   }, [config, usuario, corte, verComo]);
 
-  if (error) return <p className="mensaje mensaje-error" role="alert">No se pudo iniciar YakuTraza: {error}</p>;
+  if (error) {
+    return (
+      <div className="pagina" style={{ paddingTop: 24 }}>
+        <p className="mensaje mensaje-error" role="alert">
+          No se pudo conectar con el servidor de YakuTraza ({error}). Si acaba de iniciar Docker, espere unos segundos.
+        </p>
+        <button type="button" onClick={() => { setError(null); setIntento((n) => n + 1); }}>Reintentar</button>
+      </div>
+    );
+  }
   if (!valor) return <p className="cargando">Cargando YakuTraza…</p>;
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

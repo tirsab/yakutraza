@@ -348,7 +348,9 @@ def test_ciudadana_solo_campos_publicos(cliente):
     publicos = {c for e in cat["entidades"].values() for c, r in e.items() if r["nivel"] == "publico"}
     contexto = {"localidad", "fecha_corte", "agregados", "proyectos", "por_etapa", "monto_programado_original",
                 "audiencias", "resumen_quechua", "avisos", "naturaleza", "fuente", "decisiones",
-                "naturaleza_poblacion", "texto", "estado"}
+                "naturaleza_poblacion", "texto", "estado",
+                # Seis etapas ciudadanas (lenguaje simple, por validar): describen la etapa, no son datos reservados.
+                "etapas", "n", "de", "clave", "nombre", "detalle", "detenida", "estado_validacion"}
     r = get(cliente, "/publico/localidades/100601").json()
     claves = _claves({**r, "agregados": {**r["agregados"], "por_etapa": {}}})  # por_etapa: claves son valores
     assert claves <= publicos | contexto, claves - publicos - contexto
@@ -427,3 +429,103 @@ def test_indicadores_markdown_y_cli(settings, tmp_path, monkeypatch):
     salida = tmp_path / "indicadores.md"
     assert cli.main(["indicadores", "--salida", str(salida)]) == 0
     assert salida.read_text(encoding="utf-8") == md
+
+
+# ============================================================ Fase 5b
+def test_corregir_registro_propuesto_con_motivo_y_bitacora(cliente):
+    r = cliente.post("/expedientes/CPI-2026-0004/documentos", headers={"X-Usuario": "eps-EPS02"},
+                     json={"tipo": "OF", "canal": "correo", "numero": "OF-EP-1", "hito": "elevacion_cd",
+                           "fecha_recepcion": "2026-09-15"})
+    did = r.json()["id"]
+    url = f"/documentos/{did}/corregir"
+    assert cliente.post(url, headers={"X-Usuario": ESP}, json={"numero": "OF-EP-2"}).status_code == 422  # sin motivo
+    assert cliente.post(url, headers={"X-Usuario": ESP}, json={"motivo": "abc", "numero": "x"}).status_code == 422
+    assert cliente.post(url, headers={"X-Usuario": "eps-EPS02"},
+                        json={"motivo": "La EPS se corrige sola", "numero": "OF-EP-3"}).status_code == 403
+    ok = cliente.post(url, headers={"X-Usuario": ESP},
+                      json={"motivo": "El número no coincide con el documento", "numero": "OF-EP-9", "pagina": 2})
+    assert ok.status_code == 200 and ok.json()["origen"] == "corregido" and ok.json()["estado_registro"] == "propuesto"
+    b = [x for x in get(cliente, "/bitacora", COORD).json() if x["accion"] == "corregir_documento"]
+    assert b and b[-1]["motivo"] == "El número no coincide con el documento" and b[-1]["despues"]["numero"] == "OF-EP-9"
+    assert cliente.post(f"/documentos/{did}/confirmar", headers={"X-Usuario": ESP}).status_code == 200
+    assert cliente.post(url, headers={"X-Usuario": ESP},
+                        json={"motivo": "Ya estaba confirmado", "numero": "OF-EP-10"}).status_code == 422
+    assert cliente.post("/documentos/9999/corregir", headers={"X-Usuario": ESP},
+                        json={"motivo": "No existe este registro", "numero": "x"}).status_code == 404
+    assert cliente.post(url, headers={"X-Usuario": ESP}, json={"motivo": "Campos no corregibles"}).status_code == 422
+
+
+def test_corregir_evento_y_la_carga_no_lo_sobrescribe(settings, cliente):
+    (settings.casos_reales_dir / "tacna_cpi_2026.yaml").write_text(
+        (Path(get_settings().casos_reales_dir) / "tacna_cpi_2026.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    servicio.seed(settings)
+    f = get(cliente, "/expedientes/REAL-TACNA-2026", ESP).json()
+    ev = f["eventos"][0]
+    r = cliente.post(f"/eventos/{ev['id']}/corregir", headers={"X-Usuario": ESP},
+                     json={"motivo": "El oficio dice otro plazo", "dias_dh": 4})
+    assert r.status_code == 200 and r.json()["dias_dh"] == 4
+    servicio.seed(settings)  # recargar el caso real no deshace la corrección de una persona
+    ev2 = next(e for e in get(cliente, "/expedientes/REAL-TACNA-2026", ESP).json()["eventos"] if e["id"] == ev["id"])
+    assert ev2["dias_dh"] == 4 and ev2["origen"] == "corregido"
+
+
+def test_pasos_del_procedimiento(cliente):
+    f = get(cliente, "/expedientes/CPI-2026-0004", COORD).json()
+    p = f["pasos"]
+    assert p["n"] == 7 and p["pasos"][p["actual"]]["clave"] == "consejo" and not p["terminado"]
+    assert get(cliente, "/expedientes/RP-2025-0001", COORD).json()["pasos"]["terminado"] is True
+    item = next(x for x in get(cliente, "/bandeja", COORD).json()["items"] if x["id_expediente"] == "CPI-2026-0005")
+    assert item["pasos"]["pasos"][item["pasos"]["actual"]]["clave"] == "evaluacion"
+    assert item["en_pausa"] is True and item["te_toca"] is False
+    pp = get(cliente, "/tablero", COORD).json()["por_paso"]
+    assert pp["cambio_programa_inversiones"]["total"] == 2
+    assert sum(x["n"] for x in pp["cambio_programa_inversiones"]["pasos"]) == 2
+
+
+def test_ruta_del_dinero_por_eps(cliente):
+    r = get(cliente, "/tablero", COORD).json()["ruta_por_eps"]
+    eps = {x["cod_eps"]: x for x in r["eps"]}
+    assert eps["EPS02"]["programado_vigente"] == 970000.0 and eps["EPS02"]["estado"] == "vencido"
+    assert eps["EPS02"]["uso_solicitado"] == 0  # los cambios al programa no se suman como «solicitado»
+    assert "no se suman" in r["nota"]
+
+
+def test_mi_eps_pausa_fondo_y_proyectos(cliente):
+    m = get(cliente, "/mi-eps", "eps-EPS02").json()
+    assert m["siguiente_accion"]["suspende_plazo"] is True
+    rf = m["resumen_fondo"]
+    assert set(rf) >= {"programado", "depositado", "autorizado", "usado", "aviso", "definiciones"}
+    assert {p["cod_proyecto"] for p in m["proyectos"]} == {"EPS02-P001", "EPS02-P014"}
+    assert {c["resultado"] for c in m["concluidos"]} == {"aprobado"}
+
+
+def test_prechequeo_lista_documentos_de_la_norma(cliente):
+    r = cliente.post("/prechequeo/programa-inversiones", headers={"X-Usuario": "eps-EPS02"},
+                     json={"cod_eps": "EPS02", "tipo_cambio": "cambio_nombre_94_5", "anio_solicitud": 2026}).json()
+    assert r["ruta"] == "solo_comunicacion_art_94"
+    assert r["documentos"][0]["fuente"] == "RGT art. 94 (encabezado)"
+    assert r["documentos_pendientes"]["pregunta_dre"] == "DRE-27" and "Sunass" in r["decision"]
+
+
+def test_ubicaciones_mapa_y_etapas_ciudadanas(cliente):
+    u = get(cliente, "/publico/ubicaciones").json()
+    assert [d["departamento"] for d in u] == ["HUANUCO", "LORETO"]
+    assert u[0]["provincias"][0]["distritos"][0]["ubigeo"] == "100601"
+    m = get(cliente, "/publico/mapa", params={"departamento": "HUANUCO", "provincia": "LEONCIO PRADO"}).json()
+    assert m["tipo"] == "esquemático" and "coordenadas" in m["aviso"]
+    obras = m["distritos"][0]["obras"]
+    assert {o["cod_proyecto"] for o in obras} == {"EPS02-P001", "EPS02-P014"}
+    assert all(o["etapa_ciudadana"]["n"] == 2 for o in obras)  # sin reporte de ejecución en la muestra de prueba
+    assert get(cliente, "/publico/mapa", params={"departamento": "X", "provincia": "Y"}).status_code == 404
+    loc = get(cliente, "/publico/localidades/100601").json()
+    assert [e["n"] for e in loc["etapas"]] == [1, 2, 3, 4, 5, 6]
+    assert all(p["etapa_ciudadana"]["n"] < 6 for p in loc["proyectos"])
+
+
+def test_etapa_ciudadana_nunca_afirma_funcionamiento():
+    from app.vistas.ciudadana import etapa_ciudadana
+    assert etapa_ciudadana({"estado_ejecucion": "concluido"})["nombre"] == "Terminada"
+    assert etapa_ciudadana({"estado_ejecucion": "paralizado"}) | {} == {
+        "n": 4, "de": 6, "clave": "en_obra", "nombre": "En obra", "detenida": True, "estado_validacion": "por validar (E-2)"}
+    assert etapa_ciudadana({"estado_ejecucion": "expediente_tecnico"})["n"] == 3
+    assert etapa_ciudadana({"estado_ejecucion": None})["n"] == 2

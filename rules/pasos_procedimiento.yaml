@@ -1,0 +1,56 @@
+# Pasos de cada procedimiento (Fase 5b): agrupa los hitos de DS02 en pocos pasos para la barra de
+# pasos de la bandeja, del portal EPS y del tablero («¿En qué paso están los expedientes?»).
+#
+# SUPUESTO DE PRESENTACIÓN: la agrupación no cambia ningún plazo ni regla; solo resume la hoja
+# «Hitos» del diccionario. La revisión periódica usa sus cuatro etapas oficiales (columna Etapa).
+
+version: 1
+estado_validacion: por validar
+fuente: "diccionario_variables.xlsx, hoja Hitos (agrupación propia, supuesto de presentación)"
+
+procedimientos:
+  cambio_programa_inversiones:
+    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion]}
+    - {clave: tupa, nombre: "Requisitos TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep]}
+    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep]}
+    - {clave: informe, nombre: "Informe", hitos: [informe, firma_informe]}
+    - {clave: memo_gg, nombre: "Memorándum a la GG", hitos: [memo_gg]}
+    - {clave: consejo, nombre: "Consejo Directivo", hitos: [elevacion_cd]}
+    - {clave: resolucion, nombre: "Resolución", hitos: [resolucion_cd, cierre]}
+
+  uso_excepcional_fondo:
+    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion]}
+    - {clave: tupa, nombre: "Requisitos TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep]}
+    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep]}
+    - {clave: informe, nombre: "Informe y firmas", hitos: [informe, visado_informe, firma_informe_dre, firma_informe_oaj]}
+    - {clave: memo_gg, nombre: "Memorándum a la GG", hitos: [memo_gg]}
+    - {clave: consejo, nombre: "Consejo Directivo", hitos: [elevacion_cd]}
+    - {clave: resolucion, nombre: "Resolución", hitos: [resolucion_cd]}
+
+  revision_periodica:
+    - {clave: inicio, nombre: "1. Inicio", hitos: [solicitud, derivacion, asignacion, evaluacion_requisitos, oficio_subsanacion,
+                                                   subsanacion_ep, informe_inicio, firma_informe_inicio, resolucion_inicio]}
+    - {clave: evaluacion, nombre: "2. Evaluación", hitos: [proyecto_estudio, oficio_informacion, informacion_ep, informe_difusion,
+                                                         firma_informe_difusion, memo_gg_difusion, elevacion_cd_difusion,
+                                                         resolucion_difusion]}
+    - {clave: difusion, nombre: "3. Difusión", hitos: [publicacion, audiencia_publica, comentarios]}
+    - {clave: aprobacion, nombre: "4. Aprobación", hitos: [evaluacion_comentarios, firma_informe_final, memo_gg_final,
+                                                         elevacion_cd_final, resolucion_tarifaria]}
+
+  reajuste_ipm:
+    - {clave: ipm, nombre: "IPM publicado", hitos: [publicacion_ipm]}
+    - {clave: comunicacion, nombre: "Comunicación de la EP", hitos: [comunicacion_ep, sin_comunicacion]}
+    - {clave: verificacion, nombre: "Verificación", hitos: [verificacion]}
+    - {clave: aplicacion, nombre: "Aplicación", hitos: [aplicacion]}
+
+  reporte_periodico:
+    - {clave: presentacion, nombre: "Presentación", hitos: [presentacion]}
+    - {clave: revision, nombre: "Revisión", hitos: [revision]}
+    - {clave: observaciones, nombre: "Observaciones", hitos: [observaciones]}
+    - {clave: subsanacion, nombre: "Subsanación", hitos: [subsanacion_ep]}
+
+  verificacion_incremento:
+    - {clave: inicio, nombre: "Inicio", hitos: [inicio, requerimiento]}
+    - {clave: sustento, nombre: "Sustento de la EP", hitos: [sustento_ep]}
+    - {clave: evaluacion, nombre: "Evaluación e informe", hitos: [evaluacion, informe]}
+    - {clave: pronunciamiento, nombre: "Pronunciamiento", hitos: [pronunciamiento]}
