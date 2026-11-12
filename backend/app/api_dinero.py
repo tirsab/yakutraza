@@ -19,8 +19,9 @@ from app.expediente import vivo
 from app.persistencia import leer_hallazgos, ultimo_lote
 from app.plazos.calendario import calendario_desde
 from app.plazos.catalogo import catalogo_desde
+from app.vistas.sesion import exige_vista
 
-router = APIRouter(prefix="/ruta-dinero", tags=["ruta del dinero"])
+router = APIRouter(prefix="/ruta-dinero", tags=["ruta del dinero"], dependencies=[Depends(exige_vista("ruta_dinero"))])
 
 router_contexto = APIRouter(tags=["ruta del dinero"])
 
@@ -110,7 +111,7 @@ def expediente(id_expediente: str, s: Settings = Depends(get_settings)) -> dict[
     return _json(r)
 
 
-@router_contexto.get("/contexto-financiero/{cod_eps}")
+@router_contexto.get("/contexto-financiero/{cod_eps}", dependencies=[Depends(exige_vista("ruta_dinero"))])
 def contexto(cod_eps: str, s: Settings = Depends(get_settings)) -> dict[str, Any]:
     """Indicadores de DS06 como contexto (nunca nota ni diagnóstico), con avisos del control de calidad."""
     t = _t(s)

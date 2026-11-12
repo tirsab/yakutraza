@@ -52,3 +52,38 @@ entidades:
 
   contexto_financiero:
     indicadores: {nivel: reservado, criterio: "Estados financieros e indicadores: solo contexto interno; nunca nota ni diagnóstico."}
+
+  # Fase 5: entidades de la vista ciudadana.
+  localidad:
+    localidad: {nivel: publico, criterio: "Nombre de la localidad atendida (DS01)."}
+    ubigeo: {nivel: publico, criterio: "Código INEI público."}
+    departamento: {nivel: publico, criterio: "División política pública."}
+    provincia: {nivel: publico, criterio: "División política pública."}
+    distrito: {nivel: publico, criterio: "División política pública."}
+    cod_eps: {nivel: publico, criterio: "Código de la EPS que atiende la localidad."}
+    nombre_eps: {nivel: publico, criterio: "Nombre de la empresa prestadora."}
+    poblacion_servida: {nivel: publico, estado: por validar, criterio: "Estimación agregada por localidad; se muestra rotulada «estimada» (E-2)."}
+    conexiones_agua: {nivel: reservado, estado: por validar, criterio: "Reporte operativo de la EPS (E-2)."}
+    conexiones_alcantarillado: {nivel: reservado, estado: por validar, criterio: "Reporte operativo de la EPS (E-2)."}
+
+  audiencia:
+    id_expediente: {nivel: publico, criterio: "Revisión periódica cuya resolución de difusión se publica."}
+    cod_eps: {nivel: publico, criterio: "EPS de la revisión periódica."}
+    nombre_eps: {nivel: publico, criterio: "Nombre de la empresa prestadora."}
+    hito: {nivel: publico, estado: por validar, criterio: "Audiencia pública y plazo de comentarios: se convocan con resolución publicada (E-2)."}
+    fecha_inicio: {nivel: publico, estado: por validar, criterio: "Fecha convocada en la resolución de difusión (E-2)."}
+    fecha_fin: {nivel: publico, estado: por validar, criterio: "Fecha de cierre convocada (E-2)."}
+    plazo_referencial_dh: {nivel: publico, criterio: "Plazo del diccionario (hoja Hitos)."}
+    estado: {nivel: publico, estado: por validar, criterio: "Próxima, en curso o realizada, según la fecha de corte (E-2)."}
+
+  decision_sunass:
+    id_expediente: {nivel: publico, criterio: "Identificador del trámite resuelto."}
+    tipo_procedimiento: {nivel: publico, criterio: "Tipo de trámite."}
+    documento_final: {nivel: publico, estado: por validar, criterio: "Resolución que resolvió el trámite; pública si se dispuso su publicación (E-2)."}
+    resultado: {nivel: publico, estado: por validar, criterio: "Sentido de la resolución (E-2)."}
+    fecha_conclusion: {nivel: publico, estado: por validar, criterio: "Fecha de la resolución (E-2)."}
+    monto_solicitado: {nivel: reservado, criterio: "Dato de la solicitud de la EPS."}
+
+  resumen_quechua:
+    texto: {nivel: publico, criterio: "Solo se publica cuando una persona lo validó. Nunca se traduce automáticamente."}
+    validado_por: {nivel: reservado, criterio: "Usuario interno."}

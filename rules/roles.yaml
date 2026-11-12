@@ -1,0 +1,55 @@
+# Roles y permisos (Fase 5). Matriz configurable: qué vistas lee cada rol, qué acciones
+# puede hacer y qué alcance de datos tiene.
+#
+# - alcance «todas»: todas las EPS. «propia_eps»: solo su cod_eps, sin documentos internos
+#   (informes y memorandos, marcados reservados). «publico»: solo campos públicos de
+#   rules/visibilidad.yaml.
+# - Los usuarios de demostración son FICTICIOS (rules/usuarios_demo.yaml).
+# - MODO_DEMO=false (variable de configuración) oculta el selector «Ver como» y hace que la
+#   API trate a toda persona como ciudadanía, aunque envíe el encabezado X-Usuario.
+
+version: 1
+
+roles:
+  especialista_srt:
+    nombre: "Especialista SRT"
+    inicio: /bandeja
+    alcance: todas
+    vistas: [bandeja, expedientes, ruta_dinero]
+    acciones: [registrar_documento, registrar_evento, confirmar_registro, prechequeo, proponer_resumen_quechua]
+
+  coordinacion_srt:
+    nombre: "Coordinación SRT"
+    inicio: /tablero
+    alcance: todas
+    vistas: [tablero, simulador, bandeja, expedientes, ruta_dinero]
+    acciones: [registrar_documento, registrar_evento, confirmar_registro, prechequeo, proponer_resumen_quechua,
+               validar_resumen_quechua]
+
+  direccion_dre:
+    nombre: "Dirección DRE"
+    inicio: /tablero
+    alcance: todas
+    vistas: [tablero, simulador, expedientes, ruta_dinero]
+    acciones: [prechequeo, validar_resumen_quechua]
+
+  otras_areas:
+    nombre: "Otras áreas (solo lectura)"
+    inicio: /expedientes
+    alcance: todas
+    vistas: [expedientes, ruta_dinero]
+    acciones: []
+
+  eps:
+    nombre: "EPS"
+    inicio: /mi-eps
+    alcance: propia_eps
+    vistas: [mi_eps, expedientes]
+    acciones: [registrar_documento, prechequeo]
+
+  ciudadania:
+    nombre: "Ciudadanía"
+    inicio: /ciudadania
+    alcance: publico
+    vistas: [ciudadania]
+    acciones: []

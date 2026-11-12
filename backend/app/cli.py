@@ -1,18 +1,21 @@
-"""Línea de comandos: python -m app.cli {seed|calidad|reporte|verificar-diccionario}."""
+"""Línea de comandos: python -m app.cli {seed|calidad|reporte|verificar-diccionario|indicadores}."""
 
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from app import servicio
-from app.config import get_settings
+from app.config import RAIZ_REPO, get_settings
 from app.ingesta.diccionario import verificar_contra_diccionario
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m app.cli", description="Tareas de YakuTraza")
-    p.add_argument("tarea", choices=["seed", "calidad", "reporte", "verificar-diccionario"])
+    p.add_argument("tarea", choices=["seed", "calidad", "reporte", "verificar-diccionario", "indicadores"])
+    p.add_argument("--salida", default=str(RAIZ_REPO / "docs" / "indicadores.md"),
+                   help="Archivo de la línea base (solo para «indicadores»).")
     a = p.parse_args(argv)
     s = get_settings()
     if hasattr(sys.stdout, "reconfigure"):
@@ -41,6 +44,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- {pr.dataset}: {pr.mensaje}")
         print("La especificación coincide con el diccionario." if not problemas else f"{len(problemas)} diferencias.")
         return 1 if problemas else 0
+    elif a.tarea == "indicadores":
+        from app.db import get_engine
+        from app.vistas import indicadores, tablero
+        from app.vistas.etiquetas import catalogo
+        ctx = tablero.contexto(get_engine(s.database_url), s)
+        Path(a.salida).write_text(indicadores.markdown(ctx, catalogo(Path(s.rules_dir) / "etiquetas.yaml")),
+                                  encoding="utf-8")
+        print(f"Línea base escrita en {a.salida}.")
     return 0
 
 

@@ -78,7 +78,7 @@ switch ($Tarea) {
   'calidad'   { Cargar-Env; Py @('-m', 'app.cli', 'calidad') }
   'reporte'   { Cargar-Env; Py @('-m', 'app.cli', 'reporte') }
   'test'      { Cargar-Env; Py @('-m', 'pytest', '-q') }
-  'cobertura' { Cargar-Env; Py @('-m', 'pytest', '-q', '--cov=app.calidad', '--cov=app.ingesta', '--cov=app.plazos', '--cov=app.expediente', '--cov=app.dinero', '--cov-report=term-missing') }
+  'cobertura' { Cargar-Env; Py @('-m', 'pytest', '-q', '--cov=app.calidad', '--cov=app.ingesta', '--cov=app.plazos', '--cov=app.expediente', '--cov=app.dinero', '--cov=app.vistas', '--cov-report=term-missing') }
   'api'       { Cargar-Env; Py @('-m', 'uvicorn', 'app.main:app', '--reload', '--port', '8000') }
   'web'       { Push-Location (Join-Path $Raiz 'frontend'); try { if (-not (Test-Path node_modules)) { npm install }; npm run dev } finally { Pop-Location } }
   'web-test'  { Push-Location (Join-Path $Raiz 'frontend'); try { if (-not (Test-Path node_modules)) { npm install }; npm test } finally { Pop-Location } }

@@ -17,7 +17,9 @@ from app.expediente import documentos as docs_srv
 from app.expediente import prechequeo as prechequeo_srv
 from app.expediente import vivo
 from app.expediente.documentos import ErrorRegistro
-from app.expediente.usuarios import ErrorPermiso, usuarios_desde
+from app.expediente.usuarios import ErrorPermiso, Usuario, resolver, usuarios_desde
+from app.vistas.sesion import alcance_eps, exige_vista
+from app.vistas.privacidad import ocultar_internos
 from app.persistencia import ultimo_lote
 from app.plazos.repositorio import expedientes_desde_bd
 
@@ -71,9 +73,9 @@ def _exigir_carga(s: Settings) -> None:
 
 
 def _usuario(s: Settings, x_usuario: str | None):
-    if not x_usuario:
+    if not x_usuario or not s.modo_demo:
         return None
-    u = usuarios_desde(Path(s.rules_dir) / "usuarios_demo.yaml").get(x_usuario)
+    u = resolver(Path(s.rules_dir) / "usuarios_demo.yaml", x_usuario)
     if u is None:
         raise HTTPException(401, f"Usuario de demostración desconocido: {x_usuario}")
     return u
@@ -102,26 +104,33 @@ def _ejecutar(f):
 @router.get("/usuarios-demo", tags=["expediente vivo"])
 def usuarios_demo(s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
     """Usuarios FICTICIOS de demostración. Se identifican con el encabezado X-Usuario."""
-    return [{**u.__dict__, "rotulo": "Usuario ficticio de demostración"}
-            for u in usuarios_desde(Path(s.rules_dir) / "usuarios_demo.yaml").values()]
+    if not s.modo_demo:
+        return []
+    return [u.como_dict() for u in usuarios_desde(Path(s.rules_dir) / "usuarios_demo.yaml").values()]
 
 
 @router.get("/expedientes", tags=["expediente vivo"])
 def expedientes(tipo: str | None = None, cod_eps: str | None = None, estado: str | None = None,
+                u: Usuario = Depends(exige_vista("expedientes")),
                 s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
     _exigir_carga(s)
-    return vivo.listado(get_engine(s.database_url), s, tipo=tipo, cod_eps=cod_eps, estado=estado)
+    return vivo.listado(get_engine(s.database_url), s, tipo=tipo, cod_eps=alcance_eps(u, cod_eps), estado=estado)
 
 
 @router.get("/expedientes/{id_expediente}", tags=["expediente vivo"])
 def expediente(id_expediente: str, fecha_corte: date | None = None,
+               u: Usuario = Depends(exige_vista("expedientes")),
                s: Settings = Depends(get_settings)) -> dict[str, Any]:
-    """Ficha completa: línea de tiempo con evidencia, tres relojes, documentos, proyectos, pre-chequeo y bitácora."""
+    """Ficha completa: línea de tiempo con evidencia, tres relojes, documentos, proyectos, pre-chequeo y bitácora.
+
+    Una EPS solo abre sus expedientes y no ve documentos internos (informes y memorandos)."""
     _exigir_carga(s)
+    if u.alcance == "propia_eps":
+        alcance_eps(u, _cod_eps_de(s, id_expediente))
     f = vivo.ficha(get_engine(s.database_url), s, id_expediente, fecha_corte)
     if f is None:
         raise HTTPException(404, f"No existe el expediente {id_expediente}.")
-    return f
+    return ocultar_internos(f) if u.alcance == "propia_eps" else f
 
 
 @router.post("/expedientes/{id_expediente}/documentos", status_code=201, tags=["expediente vivo"])
@@ -157,7 +166,10 @@ def confirmar_evento(evento_id: int, x_usuario: str | None = Header(None),
 
 
 @router.get("/bitacora", tags=["expediente vivo"])
-def leer_bitacora(id_expediente: str | None = None, s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
+def leer_bitacora(id_expediente: str | None = None, u: Usuario = Depends(exige_vista("expedientes")),
+                  s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
+    if not u.es_sunass:
+        raise HTTPException(403, "La bitácora completa es interna de Sunass.")
     return bitacora_srv.leer(get_engine(s.database_url), id_expediente=id_expediente)
 
 

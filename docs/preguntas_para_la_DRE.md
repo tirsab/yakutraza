@@ -227,6 +227,19 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
   - Hoy el peldaño «financiado» figura como «declarado» (supuesto en `rules/ruta_dinero.yaml`, parámetro `financiado`).
   - Con la evidencia definida, pasaría a «cumplido» solo cuando exista ese registro.
 
+### DRE-26 · Cómo mide la DRE la carga de cada especialista
+- **Pregunta.**
+  1. ¿Cómo mide hoy la DRE la carga de trabajo de cada especialista?
+  2. ¿Pesa igual una revisión periódica que un reporte periódico?
+- **Fuentes.**
+  - DS02 registra unidades (DRE, SRT, Equipo SRT), no personas: el prototipo usa especialistas ficticios.
+  - La hoja Hitos del diccionario muestra que la revisión periódica tiene cuatro etapas y audiencia pública, y que
+    el cambio al programa y el uso excepcional exigen informe, memorándum y resolución del Consejo Directivo.
+- **Qué cambia en el motor.**
+  - Hoy la carga usa pesos por tipo de trámite (supuesto, `rules/tablero.yaml`): revisión periódica 5; cambio al
+    programa y uso excepcional 3; verificación de incrementos 2; reporte periódico y reajuste por IPM 1.
+  - Con la respuesta cambian la carga por especialista y la propuesta de asignación del tablero.
+
 ### DRE-19 · Umbral de alerta «por vencer»
 - **Pregunta.** ¿Desde cuántos días hábiles restantes conviene avisar «por vencer»? Hoy usamos 5 DH, como supuesto.
 - **Fuentes.** Ninguna. Es un supuesto del equipo (`umbral_por_vencer_dh`).

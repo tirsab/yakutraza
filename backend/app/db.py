@@ -160,6 +160,22 @@ bitacora = Table(
     Column("hash", String(64), nullable=False, unique=True),
 )
 
+# Resumen en quechua de una localidad para la vista ciudadana (Fase 5). Lo escribe una persona
+# y solo se publica cuando otra lo valida: nunca hay traducción automática.
+resumenes_quechua = Table(
+    "resumenes_quechua",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("ubigeo", String(10), nullable=False, index=True),
+    Column("texto", Text, nullable=False),
+    Column("texto_castellano", Text),  # lo que resume, para que quien valida compare
+    Column("estado", String(15), nullable=False),  # propuesto, validado
+    Column("propuesto_por", String(60), nullable=False),
+    Column("propuesto_en", DateTime(timezone=True), nullable=False),
+    Column("validado_por", String(60)),
+    Column("validado_en", DateTime(timezone=True)),
+)
+
 TABLAS_FASE_1 = ("carga_lotes", "calidad_hallazgos")
 
 

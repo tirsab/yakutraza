@@ -111,7 +111,7 @@ def t(settings):
 @pytest.fixture
 def cliente(settings):
     app.dependency_overrides[get_settings] = lambda: settings
-    yield TestClient(app)
+    yield TestClient(app, headers={"X-Usuario": "coord-srt-01"})
     app.dependency_overrides.clear()
 
 
@@ -344,6 +344,6 @@ def test_sin_carga_devuelve_404(tmp_path):
     crear_esquema(get_engine(s.database_url))
     app.dependency_overrides[get_settings] = lambda: s
     try:
-        assert TestClient(app).get("/ruta-dinero/resumen").status_code == 404
+        assert TestClient(app, headers={"X-Usuario": "coord-srt-01"}).get("/ruta-dinero/resumen").status_code == 404
     finally:
         app.dependency_overrides.clear()

@@ -126,11 +126,31 @@ export interface UsuarioDemo {
   permisos: string[];
   cod_eps: string | null;
   rotulo: string;
+  vistas?: string[];
+  inicio?: string;
+  alcance?: string;
 }
 
-async function pedir<T>(ruta: string, init: RequestInit = {}, usuario?: string): Promise<T> {
+export interface Config {
+  modo_demo: boolean;
+  fecha_corte_muestra: string;
+  corte_min: string;
+  corte_max: string;
+  rotulo: string;
+  roles: { rol: string; nombre: string; inicio: string; vistas: string[]; usuario: string | null }[];
+  eps: { cod_eps: string; nombre_eps: string }[];
+}
+
+// Usuario de demostración activo (selector «Ver como»). Se envía en cada pedido.
+let usuarioActual: string | null = null;
+export function fijarUsuario(id: string | null) {
+  usuarioActual = id;
+}
+
+export async function pedir<T>(ruta: string, init: RequestInit = {}, usuario?: string): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (usuario) headers["X-Usuario"] = usuario;
+  const quien = usuario ?? usuarioActual;
+  if (quien) headers["X-Usuario"] = quien;
   const r = await fetch(`/api${ruta}`, { ...init, headers: { ...headers, ...(init.headers as object) } });
   if (!r.ok) {
     let detalle = `${r.status}`;
@@ -148,7 +168,8 @@ async function pedir<T>(ruta: string, init: RequestInit = {}, usuario?: string):
 export const api = {
   usuarios: () => pedir<UsuarioDemo[]>("/usuarios-demo"),
   expedientes: () => pedir<FilaExpediente[]>("/expedientes"),
-  ficha: (id: string) => pedir<Ficha>(`/expedientes/${encodeURIComponent(id)}`),
+  ficha: (id: string, corte?: string) =>
+    pedir<Ficha>(`/expedientes/${encodeURIComponent(id)}${corte ? `?fecha_corte=${corte}` : ""}`),
   registrarDocumento: (id: string, datos: Record<string, unknown>, usuario?: string) =>
     pedir<{ id: number }>(`/expedientes/${encodeURIComponent(id)}/documentos`, { method: "POST", body: JSON.stringify(datos) }, usuario),
   confirmarDocumento: (docId: number, usuario?: string) =>

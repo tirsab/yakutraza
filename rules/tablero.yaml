@@ -1,0 +1,54 @@
+# Tablero gerencial de la DRE (Fase 5): asignación ficticia, pesos de carga y embudo de firmas.
+# Todo lo de este archivo es SUPUESTO de la demo y está «por validar».
+
+version: 1
+
+# DS02 registra unidades (DRE, SRT, Equipo SRT), no personas. Para mostrar la carga por
+# especialista se reparten los expedientes entre especialistas FICTICIOS con un hash estable
+# del id_expediente (siempre da la misma asignación). No corresponde a ninguna persona real.
+asignacion:
+  especialistas: [esp-srt-01, esp-srt-02, esp-srt-03]
+  metodo: "hash SHA-256 estable del id_expediente, módulo el número de especialistas"
+  estado_validacion: por validar
+  rotulo: "Asignación ficticia de demostración"
+
+# Peso de cada tipo de expediente en la carga (supuesto). Pregunta DRE-26.
+pesos_carga:
+  valor:
+    revision_periodica: 5
+    cambio_programa_inversiones: 3
+    uso_excepcional_fondo: 3
+    verificacion_incremento: 2
+    reajuste_ipm: 1
+    reporte_periodico: 1
+  por_defecto: 2
+  sustento: >
+    Supuesto: la revisión periódica tiene cuatro etapas y audiencia pública; el cambio al programa y el
+    uso excepcional exigen informe, memorándum y resolución del Consejo Directivo; el reporte periódico
+    y el reajuste por IPM son revisiones de consistencia. Se valida con la DRE (DRE-26).
+  pregunta_dre: DRE-26
+  estado_validacion: por validar
+
+# Embudo de firmas: agrupación de hitos de DS02 (hoja Hitos del diccionario), en orden.
+embudo_firmas:
+  sustento: "Agrupación de los hitos del diccionario por quien firma (supuesto de presentación)."
+  etapas:
+    - clave: informe
+      nombre: "Informe técnico (Equipo SRT)"
+      hitos: [informe, informe_inicio, informe_difusion, evaluacion_comentarios]
+    - clave: firma_informe
+      nombre: "Firma o visado del informe (SRT, DRE, OAJ)"
+      hitos: [firma_informe, visado_informe, firma_informe_inicio, firma_informe_difusion, firma_informe_final,
+              firma_informe_dre, firma_informe_oaj]
+    - clave: memo_gg
+      nombre: "Memorándum a la Gerencia General (DRE o SRT)"
+      hitos: [memo_gg, memo_gg_difusion, memo_gg_final]
+    - clave: elevacion_cd
+      nombre: "Elevación al Consejo Directivo (GG)"
+      hitos: [elevacion_cd, elevacion_cd_difusion, elevacion_cd_final]
+    - clave: resolucion
+      nombre: "Resolución (Consejo Directivo o DRE)"
+      hitos: [resolucion_cd, resolucion_difusion, resolucion_tarifaria, resolucion_inicio, pronunciamiento]
+
+# Responsables que son la EP: su demora no es atribuible a la Sunass (suspensión).
+responsables_ep: [EP, "EP e interesados"]
