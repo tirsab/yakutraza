@@ -1,0 +1,16 @@
+# Contexto de construcción de la demo publicada: solo lo necesario. Los datos entran por el contexto «datos».
+**
+!backend/pyproject.toml
+!backend/app
+!backend/alembic.ini
+!backend/alembic
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/tsconfig.json
+!frontend/vite.config.ts
+!frontend/index.html
+!frontend/src
+!rules
+!casos_reales
+**/__pycache__
+**/*.pyc

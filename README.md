@@ -101,6 +101,35 @@ En Windows sin `make`:
 - PostgreSQL queda publicado en el puerto **5433** del host (para no chocar con un PostgreSQL local en
   5432); se cambia con `POSTGRES_PORT`.
 
+### Tomas públicas (casos reales sin su parte privada)
+
+Para grabar o publicar sin exponer los oficios intermedios, cargue los casos reales solo con su parte pública.
+La bitácora es de solo agregado y conserva lo cargado antes, así que hace falta una base nueva:
+
+```bash
+docker compose down -v
+```
+```bash
+set CASOS_REALES_PRIVADOS=false
+```
+```bash
+docker compose up -d --build db api web
+```
+```bash
+docker compose run --rm api python -m app.cli seed
+```
+
+(`set` es para CMD; también puede poner `CASOS_REALES_PRIVADOS=false` en `.env`.) Si la base aún tiene datos de la parte
+privada, `seed` se detiene con un mensaje y la interfaz muestra «No grabe todavía». Para volver a la demo completa,
+repita los pasos con `CASOS_REALES_PRIVADOS=true`.
+
+### Enlace público permanente (Render)
+
+Para que el jurado revise la demo sin depender de esta computadora, hay una imagen de un solo contenedor (interfaz,
+API y SQLite) que abre con «Ver como» y sin la parte privada de los casos reales. La muestra va dentro de la imagen y
+no en el repositorio, por eso la imagen se sube a un registro privado. Pasos en
+[deploy/render/README.md](deploy/render/README.md).
+
 ### Sin Docker (desarrollo y pruebas)
 
 ```powershell

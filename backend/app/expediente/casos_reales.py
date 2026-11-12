@@ -17,9 +17,10 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from sqlalchemy import select, update
+from sqlalchemy import String, cast, func, select, update
 from sqlalchemy.engine import Connection, Engine
 
+from app.db import bitacora as t_bitacora
 from app.db import documentos, eventos_plazo
 from app.expediente import bitacora
 from app.expediente.documentos import insertar_documento, insertar_evento
@@ -78,13 +79,14 @@ def _combinar_dict(base: dict, extra: dict | None, marcas: list[str], prefijo: s
             marcas.append(f"{prefijo}.{k}")
 
 
-def cargar_casos(dir_publico: Path, dir_privado: Path) -> dict[str, CasoReal]:
+def cargar_casos(dir_publico: Path, dir_privado: Path | None) -> dict[str, CasoReal]:
+    """Casos reales. Con dir_privado=None (CASOS_REALES_PRIVADOS=false) se carga solo la parte pública."""
     casos: dict[str, CasoReal] = {}
     for ruta in sorted(Path(dir_publico).glob("*.yaml")):
         datos = copy.deepcopy(yaml.safe_load(ruta.read_text(encoding="utf-8")))
-        privado = Path(dir_privado) / f"{ruta.stem}_detalle.yaml"
+        privado = Path(dir_privado) / f"{ruta.stem}_detalle.yaml" if dir_privado is not None else None
         caso = CasoReal(datos["caso"], datos, ruta.name)
-        if privado.exists():
+        if privado is not None and privado.exists():
             extra = yaml.safe_load(privado.read_text(encoding="utf-8")) or {}
             _combinar(datos["documentos"], extra.get("documentos"), "clave", caso.campos_privados, "documento")
             _combinar(datos.setdefault("eventos", []), extra.get("eventos"), "clave", caso.campos_privados, "evento")
@@ -98,10 +100,34 @@ def cargar_casos(dir_publico: Path, dir_privado: Path) -> dict[str, CasoReal]:
     return casos
 
 
+MARCA_PRIVADA = "parte privada, no versionada"
+
+
+def rastros_privados(engine: Engine) -> dict[str, int]:
+    """Cuántos registros de la base vienen de la parte privada (documentos, eventos y bitácora).
+
+    La bitácora es de solo agregado: si alguna vez se cargó la parte privada, sus rastros quedan ahí. Para
+    grabar tomas públicas hay que recrear la base (ver README, «Tomas públicas»).
+    """
+    patron = f"%{MARCA_PRIVADA}%"
+    res = {}
+    try:
+        with engine.connect() as cx:
+            res["documentos"] = cx.execute(select(func.count()).select_from(documentos)
+                                           .where(documentos.c.fuente.like(patron))).scalar() or 0
+            res["eventos"] = cx.execute(select(func.count()).select_from(eventos_plazo)
+                                        .where(eventos_plazo.c.fuente.like(patron))).scalar() or 0
+            res["bitacora"] = cx.execute(select(func.count()).select_from(t_bitacora)
+                                         .where(cast(t_bitacora.c.despues, String).like(patron))).scalar() or 0
+    except Exception:  # base sin tablas todavía: no hay rastros
+        return {"documentos": 0, "eventos": 0, "bitacora": 0}
+    return res
+
+
 def _fuente(caso: CasoReal, x: dict) -> str:
     texto = caso.datos["fuente_principal"] + (f", pág. {x['pagina']}" if x.get("pagina") else "")
     if x.get("fuente_detalle"):
-        texto += f"; detalle: {x['fuente_detalle']} (parte privada, no versionada)"
+        texto += f"; detalle: {x['fuente_detalle']} ({MARCA_PRIVADA})"
     return texto
 
 

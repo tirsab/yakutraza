@@ -17,6 +17,19 @@ import { Avatar, ToastProvider } from "./ui";
 const ROLES_SUNASS = ["especialista_srt", "coordinacion_srt", "direccion_dre", "otras_areas"];
 
 // ---------------------------------------------------------------- barra DEMO
+function AvisoPrivacidad() {
+  const { config } = useSesion();
+  const r = config.privacidad?.rastros_privados;
+  if (!r || !Object.values(r).some(Boolean)) return null;
+  return (
+    <div className="mensaje mensaje-error" role="alert" style={{ margin: 0, borderRadius: 0 }}>
+      <strong>No grabe todavía:</strong> se pidió cargar los casos reales sin su parte privada, pero la base aún tiene datos de los
+      oficios intermedios ({r.documentos} documentos, {r.eventos} eventos y {r.bitacora} entradas de bitácora). Recree la base con
+      <code> docker compose down -v </code> y vuelva a ejecutar <code>seed</code>.
+    </div>
+  );
+}
+
 function BarraDemo() {
   const { config, usuario, verComo, corte } = useSesion();
   const [aviso, setAviso] = useState("");
@@ -229,6 +242,7 @@ function Contenido() {
     <>
       <a className="saltar" href="#contenido">Saltar al contenido principal</a>
       <BarraDemo />
+      <AvisoPrivacidad />
       {portada || ciudadana ? principal : esEps ? <VistaEps>{principal}</VistaEps> : esSunass ? <VistaSunass>{principal}</VistaSunass> : principal}
       {!portada && !ciudadana && (
         <footer className="pie">

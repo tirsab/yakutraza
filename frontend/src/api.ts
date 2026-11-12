@@ -142,6 +142,7 @@ export interface Config {
   rotulo: string;
   roles: { rol: string; nombre: string; inicio: string; vistas: string[]; usuario: string | null }[];
   eps: { cod_eps: string; nombre_eps: string }[];
+  privacidad?: { casos_reales_privados: boolean; rastros_privados: Record<string, number> | null };
 }
 
 // Usuario de demostración activo (selector «Ver como»). Se envía en cada pedido.
