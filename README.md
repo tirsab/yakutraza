@@ -246,8 +246,9 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 ## Fuentes
 
 - Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>.
-- Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025): `docs/normas/RCD-124-2025-SUNASS-CD.pdf`.
-- Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026): `docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf`.
+- Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025).
+- Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026).
+- Enlaces oficiales y SHA-256 de cada copia leída: [`docs/normas/README.md`](docs/normas/README.md). Los PDF no se versionan.
 - TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS: <https://cdn.www.gob.pe/uploads/document/file/5320370/>. El DS 006-2026-JUS aprobó un TUO nuevo, que no se leyó.
 - Sunass (2026). Expediente General del Desafío 3, v1.0.
 - Sunass (2026). Diccionario de variables y datasets DS01–DS09, Desafío 3 (hojas Léame, Relaciones, Hitos,

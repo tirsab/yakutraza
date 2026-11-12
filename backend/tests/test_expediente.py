@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -26,6 +27,8 @@ from app.main import app
 from tests.conftest import escribir_csvs
 
 RULES = get_settings().rules_dir
+# Rastros de un bloque de firma digital: «(firm|vis)ado por», «motivo: firma», cargo del firmante, RUC de la FAU.
+FIRMAS = re.compile(r"(?i)\b(firm|vis)ado\s+por\b|motivo:\s*firm|presidente\s+ejecutivo|\bFAU\s*\d{11}")
 USUARIOS = usuarios_desde(RULES / "usuarios_demo.yaml")
 ESP, EPS02, LECTURA = USUARIOS["esp-srt-01"], USUARIOS["eps-02"], USUARIOS["area-01"]
 
@@ -191,8 +194,10 @@ def test_caso_tacna_solo_parte_publica(settings, cliente):
     assert r0["estado"] == "no_calculable" and "falta que una persona confirme" in r0["mensaje"]
     assert all(h["evidencia"]["estado"] == "registro propuesto, falta confirmar" for h in f["linea_de_tiempo"])
     texto = yaml.safe_dump(f, allow_unicode=True)
-    # Sin nombres de personas: ni bloques de firma ni cargos de firmantes transcritos.
-    assert not any(x in texto for x in ("Firmado por", "Visado por", "Presidente Ejecutivo", "Motivo: Firma"))
+    # Sin nombres de personas: ningún bloque de firma digital ni cargo de firmante transcrito.
+    # Los patrones se escriben como expresiones (sin la frase literal) para que el propio test
+    # no aparezca como un bloque de firma en las auditorías del repositorio.
+    assert not FIRMAS.search(texto), FIRMAS.search(texto)
     # Al confirmar todo con solo la parte pública, el reloj dice qué falta (no estima).
     H = {"X-Usuario": "esp-srt-01"}
     for d in f["documentos"]:
@@ -357,3 +362,12 @@ def test_api_prechequeo(settings, cliente):
     assert r.status_code == 200 and r.json()["ruta"] == SOLO_COMUNICACION
     assert cliente.post("/prechequeo/programa-inversiones", json={
         "cod_eps": "EPS02", "tipo_cambio": "x", "anio_solicitud": 2026}).status_code == 422
+
+
+def test_patron_de_firmas_detecta_bloques():
+    # Ejemplos armados por partes: el archivo no contiene la frase literal de un bloque de firma.
+    assert FIRMAS.search("Fir" + "mado por: X")
+    assert FIRMAS.search("Vis" + "ado  por Y")
+    assert FIRMAS.search("Mot" + "ivo: Fir" + "ma Digital")
+    assert FIRMAS.search("FA" + "U 20158219655")
+    assert not FIRMAS.search("Consejo Directivo aprueba la resolución")
