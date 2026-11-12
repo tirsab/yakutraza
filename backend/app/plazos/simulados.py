@@ -111,3 +111,23 @@ def reproducir_reajustes(rti: list[dict], ipm: list[dict], inicio_periodo: dict[
     return res
 
 
+
+
+def limites_informe_emergencia(inicio: date, termino: date | None, cal: Calendario, dias_dh: int = 10) -> list[date]:
+    """Vencimientos de los informes mensuales por uso del fondo durante una emergencia (RGT art. 90.3,
+    RCD 028-2026, vigente desde el 01.08.2026): 10 DH desde el último día de cada mes calendario de la
+    declaratoria y desde su término. Sin la declaratoria (inicio y término), no se puede calcular.
+    """
+    limites = []
+    mes = date(inicio.year, inicio.month, 1)
+    while True:
+        fin = fin_mes(f"{mes.year}-{mes.month:02d}")
+        if termino is not None and fin >= termino:
+            break
+        limites.append(cal.sumar_dias_habiles(fin, dias_dh))
+        mes = (fin + timedelta(days=1))
+        if termino is None and len(limites) >= 1:
+            break  # declaratoria vigente: solo el informe del mes en curso
+    if termino is not None:
+        limites.append(cal.sumar_dias_habiles(termino, dias_dh))
+    return limites

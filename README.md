@@ -16,7 +16,7 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 | Fase | Contenido | Estado |
 |---|---|---|
 | 1 | Ingesta de DS01–DS09 y control de calidad con reporte HTML | Lista |
-| 2 | Calendario de días hábiles y motor de tres relojes | Lista (por aprobar) |
+| 2 | Calendario de días hábiles y motor de tres relojes | Lista |
 | 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Pendiente |
 | 4 | Ruta del dinero | Pendiente |
 | 5 | Interfaz por rol (React) | Pendiente |
@@ -154,6 +154,7 @@ Cada expediente de DS02 tiene **tres relojes**:
   - De los reajustes por IPM, coinciden los 35 que tienen base conocida.
   - Los resultados aparecen en el reporte de calidad (reglas CAL-PLZ).
 - **Procedimientos sin flujograma** (reporte periódico, reajuste por IPM y verificación de incrementos): sus reglas vienen de la hoja Supuestos y se rotulan «supuesto de simulación». La excepción es el plazo de 90 días calendario para aplicar el reajuste, que sale del RGT, art. 82.3.
+- **Versiones por vigencia:** cuando una norma cambia un plazo, la versión anterior se conserva con su `vigente_hasta` y la nueva entra con su `vigente_desde`. El motor aplica la versión vigente cuando empezó cada etapa o hito. Por ejemplo, desde la RCD 124-2025 (27-10-2025) la audiencia tiene un máximo de 30 DH y los comentarios, 15 DH. Si el dato no permite comparar con la versión que regía entonces, el motor dice «no puedo comparar».
 - **Catálogo:** [`rules/plazos.yaml`](rules/plazos.yaml). Cada regla trae `tipo_reloj`, plazo, `vigente_desde` y `vigente_hasta`, sus fuentes con cita textual, su `respaldo` y su `estado_validacion`. **Todas están «por validar»**, porque la DRE aún no valida ninguna.
 - **Preguntas pendientes:** [`docs/preguntas_para_la_DRE.md`](docs/preguntas_para_la_DRE.md) reúne cada discrepancia, subplazo que no suma y plazo sin norma citada, con la pregunta concreta y lo que cambia en el motor según la respuesta.
 
@@ -191,7 +192,9 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 
 ## Fuentes
 
-- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>. No se pudo leer el texto de la RCD 124-2025 (ver `docs/preguntas_para_la_DRE.md`).
+- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>.
+- Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025): `docs/normas/RCD-124-2025-SUNASS-CD.pdf`.
+- Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026): `docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf`.
 - TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS: <https://cdn.www.gob.pe/uploads/document/file/5320370/>. El DS 006-2026-JUS aprobó un TUO nuevo, que no se leyó.
 - Sunass (2026). Expediente General del Desafío 3, v1.0.
 - Sunass (2026). Diccionario de variables y datasets DS01–DS09, Desafío 3 (hojas Léame, Relaciones, Hitos,

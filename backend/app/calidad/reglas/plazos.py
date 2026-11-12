@@ -50,7 +50,7 @@ def _normativos(m, ctx):
     for exp in expedientes_desde_muestra(m).values():
         if exp.plazo_maximo_dh is None:
             continue
-        alerta = next(a for a in mot.reloj_normativo(exp, ctx.fecha_corte) if a.etapa is None)
+        alerta = next(a for a in mot.reloj_normativo(exp, ctx.fecha_corte) if a.etapa is None and a.hito is None)
         pares.append((exp, alerta))
     return mot, pares
 

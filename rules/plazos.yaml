@@ -34,11 +34,22 @@ fuentes_documentales:
   RGT:
     titulo: "Reglamento General de Tarifas de los Servicios de Saneamiento brindados por Empresas Prestadoras, RCD 028-2021-SUNASS-CD (publicada el 27.07.2021; «entra en vigencia al día siguiente de su publicación», art. 3)"
     copia_leida: "Compendio del Reglamento General de Tarifas, Sunass, https://cdn.www.gob.pe/uploads/document/file/4388328/ (incluye modificatorias hasta la RCD 004-2023-SUNASS-CD, publicada el 20.01.2023)"
-    advertencia: "No incluye la RCD 124-2025-SUNASS-CD (23.10.2025), que según el expediente modificó los arts. 45, 47, 48 y 49. Su texto no se pudo obtener (gob.pe bloquea el acceso automatizado)."
+    advertencia: "El compendio no incluye las RCD 037-2024, 124-2025 ni 028-2026; las dos últimas se leyeron por separado (RCD_124_2025, RCD_028_2026). La RCD 037-2024 (art. 90) no se leyó."
   TUO_27444:
     titulo: "Texto Único Ordenado de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS"
     copia_leida: "https://cdn.www.gob.pe/uploads/document/file/5320370/4770872-decreto-supremo-n-004-2019-jus.pdf"
     advertencia: "El DS 006-2026-JUS (publicado el 30.04.2026) aprobó un nuevo TUO y derogó el DS 004-2019-JUS. No se leyó el nuevo texto: verificar que la numeración citada se mantenga."
+  RCD_124_2025:
+    titulo: "RCD 124-2025-SUNASS-CD (Lima, 23.10.2025; publicada en El Peruano el 26.10.2025, separata especial): modifica, entre otros, los arts. 31, 32, 37 a 41, 43, 45, 47, 48, 49 y 82 del RGT"
+    copia_leida: "docs/normas/RCD-124-2025-SUNASS-CD.pdf (descargada de gob.pe por el equipo)"
+    vigencia: "La resolución no fija su entrada en vigencia; se aplica la regla general (Constitución, art. 109): desde el día siguiente de su publicación, 27.10.2025. Por validar."
+  RCD_028_2026:
+    titulo: "RCD 028-2026-SUNASS-CD (Lima, 30.07.2026; publicada en El Peruano el 31.07.2026): modifica el art. 90 del RGT (uso excepcional por declaratoria de estado de emergencia)"
+    copia_leida: "docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf (págs. 9-10 de El Peruano)"
+    vigencia: "Art. 2: «entra en vigencia al día siguiente de su publicación» → 01.08.2026."
+  CONSTITUCION:
+    titulo: "Constitución Política del Perú, art. 109 (la ley es obligatoria desde el día siguiente de su publicación, salvo disposición que posterga su vigencia)"
+    copia_leida: "No se leyó una copia en esta sesión: regla general citada para fijar la vigencia de la RCD 124-2025. Por validar."
   RCD_108_2022:
     titulo: "RCD 108-2022-SUNASS-CD (publicada el 17.11.2022): modifica los numerales 3 y 4 del párrafo 93.1 e incorpora el numeral 6 al art. 94 del RGT"
     copia_leida: "Notas de modificación del Compendio del RGT (págs. 40-42)"
@@ -56,6 +67,7 @@ fuentes_documentales:
 reglas:
 
   # ===================================================== cómputo (transversal)
+
   - id: PLZ-COMPUTO
     procedimiento: todos
     tipo_reloj: normativo
@@ -99,6 +111,7 @@ reglas:
     vigente_desde: 2021-07-28
 
   # ================================================ reloj normativo por tipo
+
   - id: PLZ-N-CPI
     procedimiento: cambio_programa_inversiones
     tipo_reloj: normativo
@@ -154,15 +167,14 @@ reglas:
     plazo_dh: 30
     inicio_conteo: "día siguiente de presentada la solicitud"
     vigente_desde: 2021-07-28
-    vigente_hasta:
     respaldo: norma_leida
     fuentes:
       - {doc: RGT, ubicacion: "art. 45.1", cita: "en un plazo máximo de treinta días hábiles, contados a partir del día siguiente de presentada la referida solicitud"}
+      - {doc: RCD_124_2025, ubicacion: "art. 1 (texto del art. 45)", cita: "Artículo 45.- De la etapa de inicio (…) 45.4. En caso sea procedente la solicitud, mediante resolución, la Dirección de Regulación Tarifaria dispone el inicio"}
       - {doc: FLUJO_RP, ubicacion: "etapa 1", cita: "Máx. 30 DH"}
       - {doc: DICC_HITOS, ubicacion: "1_inicio, plazo de la etapa 30"}
     estado_validacion: por validar
-    nota: "Art. 45 modificado por la RCD 124-2025 (texto no obtenido): vigente_hasta y el texto nuevo quedan por validar."
-    pregunta_dre: DRE-04
+    nota: "La RCD 124-2025 solo reescribió el párrafo 45.4 (procedencia); los párrafos 45.1 y 45.2 siguen igual (el texto modificatorio los omite con «(…)»)."
 
   - id: PLZ-N-RP-2
     procedimiento: revision_periodica
@@ -180,37 +192,113 @@ reglas:
     nota: "Art. 46.4: 120 DH si se ejecutan mecanismos de consulta pública (no hay ese dato en la muestra). vigente_desde vacío: no se leyó la disposición de vigencia de la RCD 033-2022."
     pregunta_dre: DRE-05
 
-  - id: PLZ-N-RP-3
+  - id: PLZ-N-RP-3-V2021
+    familia: PLZ-N-RP-3
     procedimiento: revision_periodica
     etapa: 3_difusion
     tipo_reloj: normativo
     plazo_dh: 45
-    inicio_conteo: "día siguiente a la publicación en El Peruano de la resolución que dispone la difusión"
+    inicio_conteo: "dentro de los 45 DH siguientes a la publicación de la resolución que dispone la difusión"
     vigente_desde: 2021-07-28
+    vigente_hasta: 2025-10-26
     respaldo: norma_leida
     fuentes:
-      - {doc: RGT, ubicacion: "art. 47.6", cita: "La etapa de difusión se desarrolla dentro de los cuarenta y cinco días hábiles siguientes a la publicación de la resolución que dispone la difusión"}
+      - {doc: RGT, ubicacion: "art. 47.6 (texto anterior a la RCD 124-2025)", cita: "La etapa de difusión se desarrolla dentro de los cuarenta y cinco días hábiles siguientes a la publicación de la resolución que dispone la difusión"}
+    estado_validacion: por validar
+
+  - id: PLZ-N-RP-3-V2025
+    familia: PLZ-N-RP-3
+    procedimiento: revision_periodica
+    etapa: 3_difusion
+    tipo_reloj: normativo
+    plazo_dh: 45
+    inicio_conteo: "día siguiente de la publicación de la resolución que dispone la difusión"
+    vigente_desde: 2025-10-27
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_124_2025, ubicacion: "art. 47.5 del RGT", cita: "La etapa de difusión se desarrolla en un plazo máximo de cuarenta y cinco días hábiles contados a partir del día siguiente de la publicación de la resolución que dispone la difusión"}
       - {doc: FLUJO_RP, ubicacion: "etapa 3", cita: "Cómputo: desde el día siguiente de la publicación en el Peruano"}
       - {doc: DICC_HITOS, ubicacion: "3_difusion, plazo de la etapa 45"}
     estado_validacion: por validar
-    nota: "Art. 47 modificado por la RCD 124-2025 (texto no obtenido)."
-    pregunta_dre: DRE-04
+    nota: "Vigencia desde el día siguiente de la publicación de la RCD 124-2025 (regla general; la resolución no fija fecha)."
 
-  - id: PLZ-N-RP-4
+  - id: PLZ-N-RP-4-V2021
+    familia: PLZ-N-RP-4
     procedimiento: revision_periodica
     etapa: 4_aprobacion
     tipo_reloj: normativo
     plazo_dh: 60
-    inicio_conteo: "día siguiente de vencido el plazo de comentarios (art. 47.5)"
+    inicio_conteo: "día siguiente de vencido el plazo de comentarios de los interesados (art. 47.5 anterior: 5.º DH tras la audiencia)"
     vigente_desde: 2021-07-28
+    vigente_hasta: 2025-10-26
     respaldo: norma_leida
     fuentes:
-      - {doc: RGT, ubicacion: "art. 49.3", cita: "La etapa de aprobación se desarrolla en un plazo máximo de sesenta días hábiles, contados a partir del día siguiente de transcurrido el plazo señalado en el párrafo 47.5"}
+      - {doc: RGT, ubicacion: "art. 49.3 (texto anterior a la RCD 124-2025)", cita: "contados a partir del día siguiente de transcurrido el plazo señalado en el párrafo 47.5"}
+    estado_validacion: por validar
+
+  - id: PLZ-N-RP-4-V2025
+    familia: PLZ-N-RP-4
+    procedimiento: revision_periodica
+    etapa: 4_aprobacion
+    tipo_reloj: normativo
+    plazo_dh: 60
+    inicio_conteo: "día siguiente de transcurrido el plazo del párrafo 47.5, que ahora es la etapa de difusión de 45 DH"
+    vigente_desde: 2025-10-27
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_124_2025, ubicacion: "art. 49.3 del RGT", cita: "La etapa de aprobación se desarrolla en un plazo máximo de sesenta días hábiles, contados a partir del día siguiente de transcurrido el plazo señalado en el párrafo 47.5"}
       - {doc: FLUJO_RP, ubicacion: "etapa 4", cita: "Máx. 60 DH"}
       - {doc: DICC_HITOS, ubicacion: "4_aprobacion, plazo de la etapa 60"}
     estado_validacion: por validar
-    nota: "Art. 49 modificado por la RCD 124-2025 (texto no obtenido)."
-    pregunta_dre: DRE-04
+    nota: "Con la RCD 124-2025, el párrafo 47.5 ya no es el plazo de comentarios sino la etapa de difusión (45 DH): leída al pie de la letra, la aprobación empieza al vencer los 45 DH aunque los comentarios terminen antes. El motor, como DS02, la cuenta desde el primer hito de la etapa 4."
+    pregunta_dre: DRE-03
+
+  - id: PLZ-N-RP-AUDIENCIA-V2025
+    familia: PLZ-N-RP-AUDIENCIA
+    procedimiento: revision_periodica
+    hito: audiencia_publica
+    tipo_reloj: normativo
+    plazo_dh: 30
+    inicio_conteo: "inicio de la etapa de difusión (día siguiente de la publicación)"
+    vigente_desde: 2025-10-27
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_124_2025, ubicacion: "art. 47.2 del RGT", cita: "La audiencia pública debe celebrarse en un plazo máximo de treinta días hábiles contados desde el inicio de la etapa de difusión"}
+      - {doc: DICC_HITOS, ubicacion: "audiencia_publica, plazo referencial 30"}
+    estado_validacion: por validar
+    nota: "Antes del 27.10.2025 el RGT no fijaba un máximo (solo al menos 10 días calendario entre el aviso y la audiencia, art. 48.3 anterior; hoy art. 48.2)."
+
+  - id: PLZ-N-RP-COMENTARIOS-V2021
+    familia: PLZ-N-RP-COMENTARIOS
+    procedimiento: revision_periodica
+    hito: comentarios
+    tipo_reloj: normativo
+    plazo_dh: 5
+    inicio_conteo: "día siguiente a la audiencia pública"
+    vigente_desde: 2021-07-28
+    vigente_hasta: 2025-10-26
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 47.5 (texto anterior a la RCD 124-2025)", cita: "hasta el quinto día hábil siguiente a la realización de la audiencia pública"}
+    estado_validacion: por validar
+    no_comparable: "La norma vigente entonces fijaba plazos distintos para los interesados (5 DH tras la audiencia) y para la EP (40 DH desde la notificación del proyecto), y DS02 registra ambos en un solo hito «comentarios»: no se puede calificar el hito con un solo plazo."
+    nota: "Plazo de los interesados. La EP tenía además 40 DH improrrogables desde la notificación del proyecto (PLZ-O-RP-COMENTARIOS-EP-40). El motor no califica el hito combinado de DS02 con esta versión: lo informa como no comparable."
+
+  - id: PLZ-N-RP-COMENTARIOS-V2025
+    familia: PLZ-N-RP-COMENTARIOS
+    procedimiento: revision_periodica
+    hito: comentarios
+    tipo_reloj: normativo
+    plazo_dh: 15
+    inicio_conteo: "día siguiente a la audiencia pública"
+    vigente_desde: 2025-10-27
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_124_2025, ubicacion: "art. 47.4 del RGT", cita: "Los interesados y la empresa prestadora pueden formular comentarios hasta el decimoquinto día hábil siguiente a la realización de la audiencia pública"}
+      - {doc: DICC_HITOS, ubicacion: "comentarios", cita: "hasta 15 DH tras la audiencia"}
+      - {doc: FLUJO_RP, ubicacion: "EP e interesados", cita: "hasta 15 DH post audiencia"}
+    estado_validacion: por validar
+    nota: "Un solo plazo para interesados y EP; desaparece el plazo propio de 40 DH de la EP."
 
   - id: PLZ-N-VCI
     procedimiento: verificacion_incremento
@@ -221,7 +309,7 @@ reglas:
       - {doc: DICC_SUPUESTOS, ubicacion: "Verificación de incrementos", cita: "Plazo supuesto: 30 DH"}
       - {doc: DS02, ubicacion: "plazo_maximo_dh = 30"}
     estado_validacion: por validar
-    nota: "Supuesto de simulación. El RGT leído (arts. 19.2 y 19.3) regula la verificación pero no le fija un plazo."
+    nota: "Supuesto de simulación. El RGT no le fija plazo. Desde la RCD 124-2025 (art. 19.1, vigente desde el 27.10.2025) el incremento base se aplica sin verificar metas; solo el incremento condicionado requiere verificación (art. 19.2). La verificación por metas que simula DS02 corresponde al texto anterior."
     pregunta_dre: DRE-18
 
   - id: PLZ-N-RTI
@@ -234,10 +322,11 @@ reglas:
     respaldo: norma_leida
     fuentes:
       - {doc: RGT, ubicacion: "art. 82.3", cita: "El plazo máximo para aplicar el reajuste automático de tarifas y precios es de noventa días calendario posteriores al vencimiento del mes en el que se acumuló una variación de por lo menos 3% en el IPM"}
+      - {doc: RCD_124_2025, ubicacion: "art. 82.3 del RGT (texto reescrito, mismo plazo)", cita: "El plazo máximo para aplicar el reajuste automático de tarifas y precios es de noventa días calendario posteriores al vencimiento del mes en el que se acumuló una variación de por lo menos 3% en el IPM"}
       - {doc: RGT, ubicacion: "art. 80", cita: "cada vez que se acumule una variación de por lo menos tres por ciento (3%) en el Índice de Precios al por Mayor (IPM)"}
       - {doc: DICC_SUPUESTOS, ubicacion: "Reajuste por IPM", cita: "Se dispara cuando la variación acumulada del IPM desde el último reajuste aplicado (o desde el inicio del periodo regulatorio) llega a 3 %"}
     estado_validacion: por validar
-    nota: "DS02 no trae plazo para el reajuste; el plazo de 90 días calendario sale del RGT leído y corre a cargo de la EP."
+    nota: "DS02 no trae plazo para el reajuste; el plazo de 90 días calendario sale del RGT y corre a cargo de la EP. La RCD 124-2025 lo mantuvo y agregó el art. 82.6: «La inaplicación total o parcial del reajuste automático dentro de los plazos establecidos no acarrea su pérdida ni genera recuperos en la facturación»."
     pregunta_dre: DRE-17
 
   - id: PLZ-N-RPI
@@ -263,7 +352,41 @@ reglas:
     nota: "La hoja no dice que pase al día hábil siguiente si vence en día no hábil; no se supone (el TUO 145.2 sí lo haría)."
     pregunta_dre: DRE-06
 
+  # Uso excepcional del fondo por declaratoria de emergencia (art. 90): no
+  # requiere solicitud ni expediente; la EP informa a la Sunass.
+
+  - id: PLZ-N-FONDO-EMERGENCIA-V2021
+    familia: PLZ-N-FONDO-EMERGENCIA
+    procedimiento: uso_emergencia_fondo
+    tipo_reloj: normativo
+    plazo_dh: 7
+    activa: false
+    inicio_conteo: "uso de los recursos del fondo"
+    vigente_desde: 2021-07-28
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RGT, ubicacion: "art. 90.2 (texto original)", cita: "La empresa prestadora debe informar a la Sunass el uso excepcional por declaratoria de emergencia, dentro de los siete días hábiles de utilizados los recursos"}
+    estado_validacion: por validar
+    nota: "Inactiva: la RCD 037-2024 modificó el art. 90 (texto no leído, fecha de vigencia desconocida), así que no se conoce su vigente_hasta."
+    pregunta_dre: DRE-22
+
+  - id: PLZ-N-FONDO-EMERGENCIA-V2026
+    familia: PLZ-N-FONDO-EMERGENCIA
+    procedimiento: uso_emergencia_fondo
+    tipo_reloj: normativo
+    plazo_dh: 10
+    inicio_conteo: "último día de cada mes calendario de la declaratoria y término de la declaratoria"
+    vigente_desde: 2026-08-01
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_028_2026, ubicacion: "art. 90.3 del RGT", cita: "La empresa prestadora remite mensualmente un informe sobre el uso del fondo de inversiones y/o reservas durante la declaratoria de estado de emergencia, en un plazo máximo de diez días hábiles contados a partir del último día del mes calendario y desde el término de la declaratoria del estado de emergencia"}
+      - {doc: RCD_028_2026, ubicacion: "art. 90.1 y 90.2 del RGT", cita: "procede sin necesidad de la presentación de la solicitud señalada en el párrafo 89.1"}
+    estado_validacion: por validar
+    nota: "Amplía el supuesto a emergencias por peligro inminente (en ese caso, solo para reducción de riesgo y preparación) y limita el uso a «costos excedentes e inesperados». La muestra no registra declaratorias de emergencia: el motor no puede activar este reloj sin ese dato (ver E-4)."
+    pregunta_dre: E-4
+
   # ======================================================== reloj interno
+
   - id: PLZ-I-DERIVACION
     procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo, revision_periodica]
     hito: derivacion
@@ -363,8 +486,7 @@ reglas:
       - {doc: DICC_HITOS, ubicacion: "audiencia_publica, plazo referencial 30"}
       - {doc: FLUJO_RP, ubicacion: "DU fija día, hora y lugar", cita: "Máx. 30 dh"}
     estado_validacion: por validar
-    nota: "El RGT leído (art. 48.3) solo exige al menos 10 días calendario entre el aviso de convocatoria y la audiencia; no fija un máximo de 30 DH (podría venir de la RCD 124-2025)."
-    pregunta_dre: DRE-10
+    nota: "Desde el 27.10.2025 coincide con la norma (RGT art. 47.2, RCD 124-2025): ver PLZ-N-RP-AUDIENCIA-V2025."
 
   - id: PLZ-I-RP-COMENTARIOS
     procedimiento: revision_periodica
@@ -377,8 +499,7 @@ reglas:
       - {doc: DICC_HITOS, ubicacion: "comentarios, plazo referencial 15", cita: "hasta 15 DH tras la audiencia"}
       - {doc: FLUJO_RP, ubicacion: "EP e interesados", cita: "hasta 15 DH post audiencia"}
     estado_validacion: por validar
-    discrepancia: {fuente: RGT, valor: "5 DH (interesados) y 40 DH improrrogables (EP)", descripcion: "El RGT leído (versión anterior a la RCD 124-2025) dice: interesados «hasta el quinto día hábil siguiente a la realización de la audiencia pública» (art. 47.5) y la EP «un plazo improrrogable de cuarenta días hábiles [...] contados desde el día siguiente de notificado el proyecto» (art. 47.4)."}
-    pregunta_dre: DRE-10
+    nota: "Desde el 27.10.2025 coincide con la norma (RGT art. 47.4, RCD 124-2025). Antes regían 5 DH para interesados y 40 DH para la EP: ver PLZ-N-RP-COMENTARIOS-V2021."
 
   - id: PLZ-I-RP-EVAL-COMENTARIOS
     procedimiento: revision_periodica
@@ -393,6 +514,7 @@ reglas:
 
   # Bloques que solo están en los flujogramas (la hoja Hitos no les da plazo).
   # Se muestran como referencia secundaria, rotulados «solo flujograma».
+
   - id: PLZ-I-RP-BLOQUE-DIFUSION
     procedimiento: revision_periodica
     hitos: [memo_gg_difusion, elevacion_cd_difusion, resolucion_difusion]
@@ -461,6 +583,7 @@ reglas:
     pregunta_dre: DRE-12
 
   # ===================================================== reloj del oficio
+
   - id: PLZ-O-SUBSANACION-2
     procedimiento: [cambio_programa_inversiones, uso_excepcional_fondo]
     hito: subsanacion_ep
@@ -552,10 +675,11 @@ reglas:
     tipo_reloj: oficio
     plazo_dh: 40
     activa: false
+    vigente_desde: 2021-07-28
+    vigente_hasta: 2025-10-26
     inicio_conteo: "día siguiente de notificado el proyecto de resolución tarifaria"
     respaldo: norma_leida
     fuentes:
       - {doc: RGT, ubicacion: "art. 47.4", cita: "La empresa prestadora cuenta con un plazo improrrogable de cuarenta días hábiles para remitir sus comentarios"}
     estado_validacion: por validar
-    nota: "Inactiva: DS02 no tiene un hito para los comentarios de la EP separado del de los interesados. Puede haber cambiado con la RCD 124-2025."
-    pregunta_dre: DRE-10
+    nota: "Inactiva: DS02 no tiene un hito propio para los comentarios de la EP. Derogada en la práctica por la RCD 124-2025 (nuevo art. 47.4: un solo plazo de 15 DH para interesados y EP)."
