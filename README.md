@@ -17,7 +17,7 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 |---|---|---|
 | 1 | Ingesta de DS01–DS09 y control de calidad con reporte HTML | Lista |
 | 2 | Calendario de días hábiles y motor de tres relojes | Lista |
-| 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Pendiente |
+| 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista (por aprobar) |
 | 4 | Ruta del dinero | Pendiente |
 | 5 | Interfaz por rol (React) | Pendiente |
 | 6 | Extracción asistida de documentos (IA con cita) | Pendiente |
@@ -49,7 +49,7 @@ FastAPI (/docs)         /datasets, /calidad/*, /calendario/*, /reglas/plazos,
 - **Reglas:** catálogo YAML versionado en [`rules/`](rules/). Cada regla declara su fuente (hoja del
   diccionario o norma), su severidad y su estado de validación, y cada umbral dice si es **diccionario**,
   **derivado** (sale de un cálculo documentado) o **supuesto** (por validar con la DRE).
-- **Frontend:** React con TypeScript y Vite (Fase 5).
+- **Frontend:** React con TypeScript y Vite (`frontend/`), servido por nginx en Docker (<http://localhost:8080>).
 
 ## Datos
 
@@ -93,6 +93,7 @@ En Windows sin `make`:
 .\scripts\tareas.ps1 docker-seed
 ```
 
+- Interfaz: <http://localhost:8080>
 - API y documentación: <http://localhost:8000/docs>
 - Reporte de calidad: <http://localhost:8000/calidad/reporte.html> (agrega `?descargar=true` para bajarlo).
   También queda en `reportes/calidad.html`.
@@ -108,6 +109,8 @@ En Windows sin `make`:
 .\scripts\tareas.ps1 seed       # carga en la base de DATABASE_URL (SQLite si no hay .env)
 .\scripts\tareas.ps1 calidad    # vuelve a evaluar las reglas tras editar rules/calidad.yaml
 .\scripts\tareas.ps1 api        # API en http://localhost:8000
+.\scripts\tareas.ps1 web        # interfaz en http://localhost:5173 (necesita la API)
+.\scripts\tareas.ps1 web-test   # pruebas de la interfaz (Vitest)
 ```
 
 SQLite solo se usa para desarrollo y pruebas; el prototipo apunta a PostgreSQL 16.
@@ -162,6 +165,56 @@ Endpoints: `/calendario/feriados?anio=`, `/calendario/diferencias`, `/reglas/pla
 `/expedientes/{id}/relojes?fecha_corte=` y `/alertas?fecha_corte=&cod_eps=&reloj=`. Las alertas se ordenan por
 plazo restante, con las vencidas primero, y nunca por el tamaño de la EPS.
 
+## Expediente vivo (Fase 3)
+
+Para cada `id_expediente`, la ficha (`GET /expedientes/{id}` y la página «Expediente vivo» de la interfaz) muestra:
+
+- **Tres relojes** (Fase 2). Primero lo que requiere acción: vencido, no calculable, por vencer y en plazo. Los plazos cerrados quedan en un historial.
+- **Línea de tiempo con pasaporte de evidencia.** Cada hito muestra su responsable, sus fechas, su plazo referencial, si cuenta para el plazo y su evidencia, que tiene uno de cuatro estados:
+  - documento registrado;
+  - registro propuesto, falta confirmar;
+  - código en DS02, sin archivo;
+  - **declarado, no verificado**.
+- **Documentos registrados con su canal:** mesa de partes, correo, enlace externo, trámite u otro. Así se registra, por ejemplo, el correo del 20-08-2026 del caso Tacna.
+- **Reglas de registro:**
+  - Lo que registra una persona de Sunass entra «confirmado».
+  - Lo que registra una EPS, o lo que se transcribe con asistencia de IA, entra «propuesto» y solo cambia los relojes cuando una persona lo confirma.
+  - Un plazo fijado en un oficio (por ejemplo, 3 DH) reemplaza al máximo por defecto.
+  - Si se registra una prórroga sin su plazo, el motor dice «no puedo calcular».
+- **Bitácora de solo agregado.** Un trigger de base de datos impide UPDATE y DELETE, y cada entrada encadena el hash de la anterior. La cadena se comprueba con `GET /bitacora/verificacion`.
+- **Pre-chequeo art. 93/94** (`rules/prechequeo_pi.yaml`, por validar con la DRE). Cubre:
+  - incrementos (art. 94.1, 10 %);
+  - sustituciones (art. 94.6, RCD 108-2022: el menor valor entre el 10 % y S/ 5 000 000, y una suma de 10 %);
+  - recursos liberados (art. 93.2);
+  - otros supuestos del art. 94.
+
+  Además, advierte del art. 92 si el proyecto tiene meta asociada, y siempre muestra la regla aplicada y el texto citado. Es orientativo: no decide la vía del trámite.
+- **Proyectos afectados** (DS03), con la población beneficiaria rotulada como estimada.
+
+**Caso real de Tacna.** Se guarda en dos archivos y ninguno lleva nombres de personas:
+
+- `casos_reales/tacna_cpi_2026.yaml` (público, versionado): solo lo que cita la RCD 032-2026, con su página.
+- `DATA_DIR/casos_reales/tacna_cpi_2026_detalle.yaml` (privado, no versionado): detalles de los oficios intermedios, como la prórroga de 2 DH. La carpeta se cambia con `CASOS_REALES_PRIVADOS_DIR`.
+
+Todo entra «propuesto (transcrito con asistencia de IA)». Con solo la parte pública, los relojes dicen qué falta. Con la parte privada confirmada:
+- el plazo máximo se cumple (vencía el 08-09-2026 y el expediente concluyó el 28-08-2026);
+- el plazo del oficio se cumple (3 DH del Oficio 156, más 2 DH de prórroga).
+
+**Usuarios de demostración:** son ficticios y están en `rules/usuarios_demo.yaml`. La API los identifica con el encabezado `X-Usuario`, y la matriz completa de permisos llega en la Fase 5.
+
+Endpoints:
+- `GET /expedientes`
+- `GET /expedientes/{id}`
+- `POST /expedientes/{id}/documentos`
+- `POST /expedientes/{id}/eventos`
+- `POST /documentos/{id}/confirmar`
+- `POST /eventos/{id}/confirmar`
+- `GET /bitacora`
+- `GET /bitacora/verificacion`
+- `GET /prechequeo/tipos`
+- `POST /prechequeo/programa-inversiones`
+- `GET /usuarios-demo`
+
 ## Supuestos
 
 Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
@@ -193,8 +246,9 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 ## Fuentes
 
 - Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>.
-- Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025): `docs/normas/RCD-124-2025-SUNASS-CD.pdf`.
-- Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026): `docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf`.
+- Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025).
+- Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026).
+- Enlaces oficiales y SHA-256 de cada copia leída: [`docs/normas/README.md`](docs/normas/README.md). Los PDF no se versionan.
 - TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS: <https://cdn.www.gob.pe/uploads/document/file/5320370/>. El DS 006-2026-JUS aprobó un TUO nuevo, que no se leyó.
 - Sunass (2026). Expediente General del Desafío 3, v1.0.
 - Sunass (2026). Diccionario de variables y datasets DS01–DS09, Desafío 3 (hojas Léame, Relaciones, Hitos,

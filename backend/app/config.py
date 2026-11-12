@@ -18,12 +18,19 @@ class Settings(BaseSettings):
     data_dir: Path = RAIZ_REPO / "data"
     # Catálogos de reglas en YAML.
     rules_dir: Path = RAIZ_REPO / "rules"
+    # Casos reales: parte pública (versionada) y carpeta de la parte privada (no versionada).
+    casos_reales_dir: Path = RAIZ_REPO / "casos_reales"
+    casos_reales_privados_dir: Path | None = None  # por defecto, DATA_DIR/casos_reales
     # Carpeta donde se escribe el reporte HTML de calidad.
     reportes_dir: Path = RAIZ_REPO / "reportes"
     # "Hoy" para la demo: fecha de corte de la muestra (hoja Léame del diccionario).
     fecha_corte: date = date(2026, 9, 30)
     # PostgreSQL 16 en Docker; SQLite solo para desarrollo y pruebas sin Docker.
     database_url: str = f"sqlite:///{(RAIZ_REPO / 'yakutraza_local.db').as_posix()}"
+
+
+def dir_privado(s: "Settings") -> Path:
+    return Path(s.casos_reales_privados_dir) if s.casos_reales_privados_dir else Path(s.data_dir) / "casos_reales"
 
 
 @lru_cache

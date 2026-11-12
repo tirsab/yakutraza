@@ -1,0 +1,50 @@
+# Usuarios de demostración (Fase 3).
+#
+# TODOS SON FICTICIOS. No corresponden a personas reales de Sunass ni de las EPS.
+# DS02 registra unidades (DRE, SRT, Equipo SRT...), no personas: estos usuarios
+# solo sirven para que la bitácora diga quién hizo cada cambio en la demo.
+# La API los identifica con el encabezado HTTP «X-Usuario». La matriz completa
+# de roles y permisos llega en la Fase 5.
+
+version: 1
+rotulo: "Usuario ficticio de demostración"
+
+usuarios:
+  - id: esp-srt-01
+    nombre: "Especialista SRT 1 (ficticia)"
+    rol: especialista_srt
+    unidad: Equipo SRT
+    permisos: [registrar_documento, registrar_evento, confirmar_registro, prechequeo]
+
+  - id: esp-srt-02
+    nombre: "Especialista SRT 2 (ficticio)"
+    rol: especialista_srt
+    unidad: Equipo SRT
+    permisos: [registrar_documento, registrar_evento, confirmar_registro, prechequeo]
+
+  - id: coord-srt-01
+    nombre: "Coordinación SRT (ficticia)"
+    rol: coordinacion_srt
+    unidad: SRT
+    permisos: [registrar_documento, registrar_evento, confirmar_registro, prechequeo]
+
+  - id: dir-dre-01
+    nombre: "Dirección DRE (ficticia)"
+    rol: direccion_dre
+    unidad: DRE
+    permisos: [prechequeo]
+
+  - id: area-01
+    nombre: "Otra área de Sunass (ficticia, solo lectura)"
+    rol: otras_areas
+    unidad: Otras áreas
+    permisos: []
+
+  # Una EPS puede registrar sus documentos, pero entran como «propuesto»
+  # hasta que el equipo SRT los confirma.
+  - id: eps-02
+    nombre: "Usuario de EPS02 (ficticio)"
+    rol: eps
+    unidad: EP
+    cod_eps: EPS02
+    permisos: [registrar_documento, prechequeo]

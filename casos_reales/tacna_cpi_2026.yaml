@@ -1,0 +1,189 @@
+# Caso real: EPS TACNA S.A., cambio al programa de inversiones (2026).
+#
+# PARTE PÚBLICA. Solo contiene lo que cita la Resolución de Consejo Directivo
+# N.° 00032-2026-SUNASS-CD, que es una resolución publicada (art. 4: «DISPONER la
+# publicación [...] en la sede digital de la Sunass»). Fechas, números de
+# documento y montos se toman de esa resolución, con su página.
+#
+# Los detalles que solo aparecen en los oficios intermedios (por ejemplo, los
+# días de la prórroga) están en DATA_DIR/casos_reales/tacna_cpi_2026_detalle.yaml,
+# que no se versiona.
+#
+# - Sin nombres de personas.
+# - Transcrito con asistencia de IA: todo entra como «propuesto» y solo afecta
+#   a los relojes cuando una persona lo confirma (POST /registros/.../confirmar).
+# - Los hitos están reconstruidos a partir de los documentos: la resolución no
+#   detalla los hitos internos (derivación, asignación, informe).
+
+version: 1
+caso: TACNA-CPI-2026
+naturaleza: real
+origen: transcrito_ia
+estado_inicial: propuesto
+fuente_principal: "RCD N.° 00032-2026-SUNASS-CD (Lima, 28 de agosto de 2026), EXP. N.° 013-2026-SUNASS-DRE-PI"
+
+expediente:
+  id: REAL-TACNA-2026
+  numero_expediente_sunass: "013-2026-SUNASS-DRE-PI"
+  procedimiento: cambio_programa_inversiones
+  empresa: "EPS TACNA S.A."
+  periodo_regulatorio: "2024-2028"
+  fecha_inicio: 2026-07-17
+  fecha_conclusion: 2026-08-28
+  plazo_maximo_dh: 30
+  estado: concluido
+  resultado: "autorizado (art. 93.2 del RGT)"
+  fuente: {pagina: 1, cita: "Recibido por la Sunass el 17 de julio de 2026."}
+
+montos:
+  - concepto: "Recursos liberados por la RCD N.° 00015-2026-SUNASS-CD"
+    monto: 9538773
+    pagina: 4
+    cita: "se liberaron recursos por el monto ascendente a S/ 9 538 773"
+  - concepto: "Uso autorizado de recursos liberados para «Adquisición de medidores ultrasónicos» (19 935 medidores)"
+    monto: 3817752
+    pagina: 13
+    cita: "AUTORIZAR el uso de los recursos liberados por la Resolución de Consejo Directivo N.º 00015-2026-SUNASS-CD por un monto ascendente a S/ 3 817 752"
+  - concepto: "Saldo de los recursos liberados que debe mantenerse en el Fondo de Inversiones"
+    monto: 1503006
+    pagina: 12
+    cita: "el saldo de los recursos liberados ascendente a S/1 503 006 debe mantenerse en el Fondo de Inversiones"
+
+base_normativa:
+  articulo: "RGT art. 93.2"
+  pagina: 5
+  cita: "no corresponde exigir que la incorporación de la nueva inversión se sustente adicionalmente en una causal del párrafo 93.1, dado que el párrafo 93.2 regula específicamente el destino de los recursos liberados"
+
+documentos:
+  - clave: "TACNA:OF-1447-2025"
+    tipo: OF
+    numero: "Oficio N.º 1447-2025/300.600/EPS TACNA S.A."
+    hito: solicitud
+    asunto: "Solicitud de modificación del programa de inversiones (párrafo 93.2 del RGT)"
+    remitente: EP
+    fecha_recepcion: 2026-07-17
+    canal: no_indicado
+    pagina: 1
+    cita: "Recibido por la Sunass el 17 de julio de 2026."
+    nota: "Solicitud de 2026 con número de oficio de 2025."
+
+  - clave: "TACNA:OF-00156-2026"
+    tipo: OF
+    numero: "Oficio N.º 00156-2026-SUNASS-DRE-SRT"
+    hito: oficio_informacion
+    asunto: "Requerimiento de información adicional"
+    remitente: SRT
+    fecha_notificacion: 2026-08-11
+    plazo_otorgado_dh: 3
+    canal: no_indicado
+    pagina: 2
+    cita: "requirió a la empresa prestadora envíe información adicional para la evaluación de su solicitud y le otorgó un plazo de tres días hábiles para remitirla"
+
+  - clave: "TACNA:OF-1590-2026"
+    tipo: OF
+    numero: "Oficio N.º 1590-2026/300.600/EPS TACNA S.A."
+    hito: informacion_ep
+    asunto: "Solicitud de ampliación de plazo"
+    remitente: EP
+    fecha_recepcion: 2026-08-12
+    canal: no_indicado
+    pagina: 2
+    cita: "la empresa prestadora solicitó a la Sunass una ampliación de plazo para remitir la información solicitada mediante el Oficio 156"
+
+  - clave: "TACNA:OF-00162-2026"
+    tipo: OF
+    numero: "Oficio N.º 00162-2026-SUNASS-DRE-SRT"
+    hito: informacion_ep
+    asunto: "Concede la ampliación de plazo"
+    remitente: SRT
+    fecha_notificacion: 2026-08-14
+    canal: no_indicado
+    pagina: 2
+    cita: "la cual fue concedida mediante Oficio N.º 00162-2026-SUNASS-DRE-SRT"
+
+  - clave: "TACNA:OF-1628-2026"
+    tipo: OF
+    numero: "Oficio N.º 1628-2026/300.600/EPS TACNA S.A."
+    hito: informacion_ep
+    asunto: "Remite la información requerida mediante el Oficio 156"
+    remitente: EP
+    fecha_recepcion: 2026-08-14
+    canal: no_indicado
+    pagina: 2
+    cita: "la empresa prestadora remitió la información requerida mediante Oficio 156"
+
+  - clave: "TACNA:CORREO-2026-08-20"
+    tipo: CORREO
+    numero: "Correo electrónico del 20 de agosto de 2026"
+    hito: informe
+    asunto: "Información adicional y ficha de inversión actualizada"
+    remitente: EP
+    fecha_recepcion: 2026-08-20
+    canal: correo
+    pagina: 2
+    cita: "Mediante correo electrónico de fecha 20 de agosto de 2026, la empresa prestadora remitió información adicional"
+    nota: "Canal informal: la información llegó por correo electrónico, no por mesa de partes."
+
+  - clave: "TACNA:INF-031-2026"
+    tipo: INF
+    numero: "Informe N.º 031-2026-SUNASS-DRE-SRT"
+    hito: informe
+    asunto: "Opinión de la SRT sobre la solicitud"
+    remitente: SRT
+    canal: tramite
+    pagina: 2
+    cita: "elevó el Informe N.º 031-2026-SUNASS-DRE-SRT, de la Subdirección de Regulación Tarifaria"
+    nota: "La resolución no indica la fecha del informe."
+
+  - clave: "TACNA:MEM-00327-2026"
+    tipo: MEM
+    numero: "Memorando N.º 00327-2026-SUNASS-DRE"
+    hito: memo_gg
+    asunto: "Eleva el informe de la SRT"
+    remitente: DRE
+    canal: tramite
+    pagina: 2
+    cita: "Por medio del Memorando N.º 00327-2026-SUNASS-DRE, la Dirección de Regulación Económica elevó el Informe N.º 031-2026-SUNASS-DRE-SRT"
+    nota: "La resolución no indica la fecha del memorando."
+
+  - clave: "TACNA:RCD-00032-2026"
+    tipo: RCD
+    numero: "Resolución de Consejo Directivo N.° 00032-2026-SUNASS-CD"
+    hito: resolucion_cd
+    asunto: "Autoriza el uso de recursos liberados y aprueba la inclusión del proyecto en el programa de inversiones"
+    remitente: CD
+    fecha_emision: 2026-08-28
+    canal: tramite
+    pagina: 1
+    cita: "Lima, 28 de agosto de 2026"
+
+# Plazos fijados por documento.
+eventos:
+  - clave: "TACNA:PLAZO-OF-00156"
+    tipo: plazo_oficio
+    hito: informacion_ep
+    dias_dh: 3
+    documento: "TACNA:OF-00156-2026"
+    pagina: 2
+    cita: "le otorgó un plazo de tres días hábiles para remitirla"
+
+  - clave: "TACNA:PRORROGA-OF-00162"
+    tipo: prorroga
+    hito: informacion_ep
+    dias_dh:            # la resolución no indica cuántos días se concedieron
+    documento: "TACNA:OF-00162-2026"
+    documento_solicitud: "TACNA:OF-1590-2026"
+    fecha_solicitud: 2026-08-12
+    pagina: 2
+    cita: "la cual fue concedida mediante Oficio N.º 00162-2026-SUNASS-DRE-SRT"
+
+# Hitos reconstruidos a partir de los documentos (la resolución no detalla los
+# hitos internos). La fecha de fin de cada hito es la del documento que lo cierra.
+hitos:
+  - {nro: 1, hito: solicitud, responsable: EP, inicio: 2026-07-17, fin: 2026-07-17, cuenta_plazo: true, documento: "TACNA:OF-1447-2025"}
+  - {nro: 2, hito: oficio_informacion, responsable: SRT, inicio: 2026-07-17, fin: 2026-08-11, cuenta_plazo: true, documento: "TACNA:OF-00156-2026",
+     nota: "Agrupa derivación, asignación, verificación, evaluación y la firma del Oficio 156 (notificado el 11-08-2026)."}
+  - {nro: 3, hito: informacion_ep, responsable: EP, inicio: 2026-08-11, fin: 2026-08-14, cuenta_plazo: false, documento: "TACNA:OF-1628-2026"}
+  - {nro: 4, hito: informe, responsable: Equipo SRT, inicio: 2026-08-14, fin: , cuenta_plazo: true, documento: "TACNA:INF-031-2026",
+     nota: "La resolución no indica la fecha del informe ni la del memorando: el fin de este hito queda sin fecha en la parte pública."}
+  - {nro: 5, hito: resolucion_cd, responsable: CD, inicio: , fin: 2026-08-28, cuenta_plazo: true, documento: "TACNA:RCD-00032-2026"}

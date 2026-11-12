@@ -14,3 +14,10 @@ htmlcov/
 *.db
 # Salidas generadas (el reporte se regenera con `seed`)
 reportes/
+
+# Interfaz
+frontend/node_modules/
+frontend/dist/
+
+# Normas (PDF de publicaciones oficiales): no se versionan; ver docs/normas/README.md
+docs/normas/*.pdf

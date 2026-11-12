@@ -8,7 +8,8 @@ from pathlib import Path
 from app.calidad.base import cargar_catalogo
 from app.calidad.motor import evaluar
 from app.calidad.reporte import construir_html, escribir_reporte
-from app.config import Settings
+from app.config import Settings, dir_privado
+from app.expediente.casos_reales import cargar_casos, sincronizar
 from app.db import get_engine
 from app.ingesta.cargar import cargar_muestra
 from app.ingesta.diccionario import verificar_contra_diccionario
@@ -21,6 +22,7 @@ class ResultadoSeed:
     filas: dict[str, int]
     hallazgos: int
     reporte: Path
+    casos_reales: dict | None = None
 
 
 def _ruta_catalogo(s: Settings) -> Path:
@@ -40,8 +42,12 @@ def seed(s: Settings) -> ResultadoSeed:
     hallazgos = evaluar(muestra, _ruta_catalogo(s), s.fecha_corte)
     engine = get_engine(s.database_url)
     lote_id = guardar_carga(engine, muestra, hallazgos, s.fecha_corte)
+    casos = cargar_casos(Path(s.casos_reales_dir), dir_privado(s))
+    sync = sincronizar(engine, casos)
     ruta = generar_reporte(s)
-    return ResultadoSeed(lote_id, {n: len(t.datos) for n, t in muestra.tablas.items()}, len(hallazgos), ruta)
+    return ResultadoSeed(lote_id, {n: len(t.datos) for n, t in muestra.tablas.items()}, len(hallazgos), ruta,
+                         {"casos": len(casos), "con_detalle_privado": sum(c.con_detalle_privado for c in casos.values()),
+                          **sync})
 
 
 def recalcular_calidad(s: Settings) -> int:
