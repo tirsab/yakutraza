@@ -1,0 +1,79 @@
+# Caso real: EPSSMU S.A., uso excepcional del fondo de inversiones y reservas (2025).
+#
+# PARTE PÚBLICA. La RCD 126-2025-SUNASS-CD no dispone su publicación en su texto («Regístrese y
+# comuníquese»), así que aquí solo van los datos que YA figuran en documentos versionados del
+# proyecto: el documento técnico (docs/YakuTraza_Documento_tecnico.pdf, sección 7 y fuente [12]) y el
+# encargo (docs/Prompt_Claude_Code_YakuTraza.md, sección 10). El resto (números de oficio, plazos,
+# canal, saldo de la reserva y área que verifica) está en DATA_DIR/casos_reales/epssmu_ufi_2025_detalle.yaml,
+# que no se versiona.
+#
+# Sin nombres de personas. Transcrito con asistencia de IA: entra como «propuesto» y solo afecta
+# a los relojes cuando una persona lo confirma.
+
+version: 1
+caso: EPSSMU-UFI-2025
+naturaleza: real
+origen: transcrito_ia
+estado_inicial: propuesto
+fuente_principal: "RCD N.° 126-2025-SUNASS-CD (27-10-2025), según docs/Prompt_Claude_Code_YakuTraza.md (sección 10) y el documento técnico (sección 7)"
+
+expediente:
+  id: REAL-EPSSMU-2025
+  procedimiento: uso_excepcional_fondo
+  empresa: "EPSSMU S.A."
+  fecha_inicio: 2025-09-12
+  fecha_conclusion: 2025-10-27
+  plazo_maximo_dh: 30
+  estado: concluido
+  resultado: "autorizado desde una reserva (PCC/PAS), con exoneración de devolución"
+
+documentos:
+  - clave: "EPSSMU:SOLICITUD-2025"
+    tipo: OF
+    numero: "Solicitud de uso excepcional de la EPS"
+    hito: solicitud
+    remitente: EP
+    fecha_recepcion: 2025-09-12
+    canal: no_indicado
+    cita: "EPSSMU: solicitud recibida el 12 de septiembre de 2025"
+
+  - clave: "EPSSMU:RCD-126-2025"
+    tipo: RCD
+    numero: "Resolución de Consejo Directivo N.° 126-2025-SUNASS-CD"
+    hito: resolucion_cd
+    remitente: CD
+    fecha_emision: 2025-10-27
+    canal: tramite
+    cita: "RCD 126-2025 del 27 de octubre de 2025"
+
+hitos:
+  - {nro: 1, hito: solicitud, responsable: EP, inicio: 2025-09-12, fin: 2025-09-12, cuenta_plazo: true, documento: "EPSSMU:SOLICITUD-2025"}
+  - {nro: 2, hito: evaluacion, responsable: Equipo SRT, inicio: 2025-09-12, fin: , cuenta_plazo: true,
+     nota: "La parte pública no detalla los hitos intermedios."}
+  - {nro: 9, hito: resolucion_cd, responsable: CD, inicio: , fin: 2025-10-27, cuenta_plazo: true, documento: "EPSSMU:RCD-126-2025"}
+
+# De qué fondo o reserva sale cada sol (sección ruta_dinero de los casos reales).
+ruta_dinero:
+  articulo: "RGT art. 89"
+  solicitado:
+    estado: cumplido
+    monto: 217313.20
+    fondo: "no indicado en la parte pública"
+    detalle: "Monto solicitado por la EPS."
+    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"
+  autorizado:
+    estado: cumplido
+    monto: 217313.20
+    fondo: "reserva PCC/PAS (no el fondo de inversiones)"
+    detalle: "Se autorizaron S/ 217 313,20 desde una reserva (PCC/PAS), no desde el fondo."
+    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"
+  usado:
+    estado: sin_dato
+    detalle: "No hay registro del uso efectivo."
+  verificacion_posterior:
+    estado: pendiente
+    detalle: "Pendiente: no hay registro de la verificación posterior."
+  devolucion:
+    estado: exonerada
+    detalle: "Exoneración de devolución."
+    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"

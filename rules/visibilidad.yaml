@@ -1,0 +1,54 @@
+# Visibilidad de cada dato que podrá usar la vista ciudadana (Fase 5).
+#
+# Regla por defecto: RESERVADO. Un dato es «publico» solo si su fuente es un documento publicado
+# (estudio tarifario, resolución con orden de publicación, registro público del MEF). Lo dudoso queda
+# «reservado» con estado «por validar» y la pregunta E-2 para la DRE.
+#
+# La API agrega a cada respuesta un mapa `visibilidad` {campo: publico | reservado} y la función
+# app.dinero.visibilidad.solo_publico() devuelve solo los campos públicos de una entidad.
+
+version: 1
+por_defecto: reservado
+pregunta_dre: E-2
+
+entidades:
+  proyecto:
+    cod_proyecto: {nivel: publico, criterio: "Identificador del programa de inversiones del estudio tarifario (publicado)."}
+    nombre_proyecto: {nivel: publico, criterio: "Figura en el estudio tarifario publicado."}
+    localidad: {nivel: publico, criterio: "Figura en el estudio tarifario publicado."}
+    ubigeo: {nivel: publico, criterio: "Código INEI público."}
+    componente: {nivel: publico, criterio: "Figura en el estudio tarifario publicado."}
+    meta_asociada: {nivel: publico, criterio: "Las metas de gestión se aprueban en la resolución tarifaria publicada."}
+    poblacion_beneficiaria: {nivel: publico, criterio: "Estimación del estudio tarifario; se muestra rotulada «estimada»."}
+    monto_programado_original: {nivel: publico, criterio: "Programa de inversiones del estudio tarifario publicado."}
+    monto_programado_vigente: {nivel: reservado, estado: por validar, criterio: "Solo es público si la modificación se aprobó por una resolución publicada (E-2)."}
+    estado_ejecucion: {nivel: reservado, estado: por validar, criterio: "Lo reporta la EPS a Sunass (DS04); no hay orden de publicación (E-2)."}
+    avance_fisico: {nivel: reservado, estado: por validar, criterio: "Reportado por la EPS (DS04) (E-2)."}
+    ejecucion_financiera: {nivel: reservado, estado: por validar, criterio: "Reportada por la EPS (DS04) (E-2)."}
+    avance_financiero: {nivel: reservado, estado: por validar, criterio: "Se calcula con datos reportados por la EPS (E-2)."}
+    senal_revision: {nivel: reservado, criterio: "Señal interna de trabajo para la especialista."}
+    conciliacion_mef: {nivel: reservado, estado: por validar, criterio: "El registro del MEF es público, pero la comparación con lo reportado por la EPS es interna (E-2)."}
+    expediente_modificacion: {nivel: publico, criterio: "Número del expediente cuya resolución (publicada) cambió el programa."}
+    etapa_escalera: {nivel: publico, estado: por validar, criterio: "La etapa general (programado, en ejecución, concluido) es la pregunta central de la ciudadanía; validar con la DRE (E-2)."}
+    verificacion_posterior: {nivel: reservado, criterio: "Resultado de supervisión o fiscalización."}
+
+  fondo:
+    tipo_fondo: {nivel: publico, criterio: "Los fondos y reservas y su porcentaje de ingresos se aprueban en el estudio tarifario."}
+    porcentaje_ingresos: {nivel: publico, criterio: "Aprobado en el estudio tarifario publicado."}
+    deposito_programado: {nivel: reservado, estado: por validar, criterio: "Depende de los ingresos mensuales reportados por la EPS (E-2)."}
+    deposito_efectuado: {nivel: reservado, estado: por validar, criterio: "Reporte mensual de la EPS (E-2)."}
+    saldo_final: {nivel: reservado, estado: por validar, criterio: "Reporte mensual de la EPS (E-2)."}
+    uso_ordinario: {nivel: reservado, estado: por validar, criterio: "Reporte mensual de la EPS (E-2)."}
+    uso_excepcional_autorizado: {nivel: publico, estado: por validar, criterio: "El monto autorizado figura en la resolución del Consejo Directivo; es público si la resolución dispone su publicación (E-2)."}
+    uso_emergencia_art_90: {nivel: reservado, estado: por validar, criterio: "La EPS lo informa a Sunass sin resolución (art. 90.3) (E-2, E-4)."}
+
+  expediente_uso_fondo:
+    id_expediente: {nivel: publico, criterio: "Identificador del trámite."}
+    monto_solicitado: {nivel: reservado, criterio: "Dato de la solicitud de la EPS."}
+    monto_autorizado: {nivel: publico, estado: por validar, criterio: "Figura en la resolución; público si se dispone su publicación (E-2)."}
+    fondo_origen: {nivel: publico, estado: por validar, criterio: "Figura en la resolución (E-2)."}
+    devolucion: {nivel: publico, estado: por validar, criterio: "Figura en la resolución (E-2)."}
+    verificacion_posterior: {nivel: reservado, criterio: "Resultado de supervisión o fiscalización."}
+
+  contexto_financiero:
+    indicadores: {nivel: reservado, criterio: "Estados financieros e indicadores: solo contexto interno; nunca nota ni diagnóstico."}

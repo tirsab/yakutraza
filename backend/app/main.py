@@ -15,6 +15,8 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from app import servicio
+from app.api_dinero import router as router_dinero
+from app.api_dinero import router_contexto
 from app.api_expediente import router as router_expediente
 from app.calidad.base import ETIQUETA_TIPO, SEVERIDADES, TIPOS_ANUNCIADOS
 from app.config import Settings, get_settings
@@ -267,3 +269,5 @@ def alertas(
 
 
 app.include_router(router_expediente)
+app.include_router(router_dinero)
+app.include_router(router_contexto)

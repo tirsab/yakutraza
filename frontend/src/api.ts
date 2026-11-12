@@ -1,3 +1,4 @@
+import type { Proyecto, RutaUso } from "./dinero";
 // Cliente de la API de YakuTraza. En desarrollo y en Docker, /api se redirige a FastAPI.
 
 export type Estado = "vencido" | "por_vencer" | "en_plazo" | "no_calculable" | "cumplido" | "incumplido";
@@ -103,6 +104,7 @@ export interface Ficha {
   proyectos: Record<string, unknown>[];
   prechequeo: Prechequeo | null;
   bitacora: EntradaBitacora[];
+  ruta_dinero?: RutaUso | { proyectos: Proyecto[] } | null;
 }
 
 export interface FilaExpediente {

@@ -14,6 +14,11 @@ from sqlalchemy.engine import Engine
 
 from app.config import Settings, dir_privado
 from app.db import TABLAS_DATASETS, documentos, eventos_plazo
+import yaml
+
+from app.dinero import ruta
+from app.dinero.ruta import a_json as _json
+from app.dinero.datos import tablas
 from app.expediente import bitacora
 from app.expediente.casos_reales import cargar_casos, expediente_de, pendientes
 from app.expediente.documentos import eventos_para_motor, listar, tipo_desde_codigo
@@ -174,7 +179,22 @@ def ficha(engine: Engine, s: Settings, id_expediente: str, corte: date | None = 
         })
     return {"expediente": meta, "fecha_corte": corte, "linea_de_tiempo": linea, "relojes": relojes,
             "documentos": docs, "eventos": evs, "proyectos": proyectos, "prechequeo": pre,
+            "ruta_dinero": _json(_ruta_dinero(s, caso, exp, proyectos)),
             "bitacora": bitacora.leer(engine, id_expediente=id_expediente)}
+
+
+def _ruta_dinero(s: Settings, caso, exp: Expediente, proyectos: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Ruta del dinero del expediente (Fase 4): uso del fondo o proyectos afectados."""
+    cfg = yaml.safe_load((Path(s.rules_dir) / "ruta_dinero.yaml").read_text(encoding="utf-8"))
+    if caso is not None:
+        return ruta.ruta_caso_real(caso)
+    t = tablas(s.database_url)
+    if exp.tipo == "uso_excepcional_fondo":
+        return ruta.ruta_expediente_uso(t, exp.id, cfg["textos"])
+    if proyectos:
+        return {"proyectos": [ruta.detalle_proyecto(t, cfg["parametros"], cfg["textos"], p["cod_proyecto"])
+                              for p in proyectos]}
+    return None
 
 
 def listado(engine: Engine, s: Settings, tipo: str | None = None, cod_eps: str | None = None,

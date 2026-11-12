@@ -3,7 +3,7 @@
 - Parte pública (versionada): casos_reales/<caso>.yaml. Solo lo que cita una
   resolución publicada.
 - Parte privada (no versionada): <dir privado>/<caso>_detalle.yaml. Detalles de
-  los oficios intermedios; completa registros públicos, nunca crea nuevos.
+  los oficios intermedios; completa registros públicos y solo agrega los marcados «nuevo: true».
 
 Todo entra «propuesto (transcrito con asistencia de IA)» y solo afecta a los
 relojes cuando una persona confirma cada documento y cada evento.
@@ -52,15 +52,30 @@ class CasoReal:
 
 
 def _combinar(base: list[dict], extra: list[dict] | None, llave: str, marcas: list[str], prefijo: str) -> None:
+    """Completa registros públicos con la parte privada. Solo agrega registros marcados «nuevo: true»."""
     por_llave = {x[llave]: x for x in base}
     for e in extra or []:
         destino = por_llave.get(e[llave])
         if destino is None:
-            continue  # la parte privada solo completa registros públicos
+            if e.get("nuevo"):
+                nuevo = {k: v for k, v in e.items() if k != "nuevo"}
+                base.append(nuevo)
+                por_llave[e[llave]] = nuevo
+                marcas.append(f"{prefijo} {e[llave]}: registro nuevo (solo en la parte privada)")
+            continue  # sin «nuevo: true», la parte privada solo completa registros públicos
         for k, v in e.items():
-            if k != llave:
+            if k not in (llave, "nuevo"):
                 destino[k] = v
                 marcas.append(f"{prefijo} {e[llave]}: {k}")
+
+
+def _combinar_dict(base: dict, extra: dict | None, marcas: list[str], prefijo: str) -> None:
+    for k, v in (extra or {}).items():
+        if isinstance(v, dict) and isinstance(base.get(k), dict):
+            _combinar_dict(base[k], v, marcas, f"{prefijo}.{k}")
+        else:
+            base[k] = v
+            marcas.append(f"{prefijo}.{k}")
 
 
 def cargar_casos(dir_publico: Path, dir_privado: Path) -> dict[str, CasoReal]:
@@ -74,13 +89,17 @@ def cargar_casos(dir_publico: Path, dir_privado: Path) -> dict[str, CasoReal]:
             _combinar(datos["documentos"], extra.get("documentos"), "clave", caso.campos_privados, "documento")
             _combinar(datos.setdefault("eventos", []), extra.get("eventos"), "clave", caso.campos_privados, "evento")
             _combinar(datos["hitos"], extra.get("hitos"), "nro", caso.campos_privados, "hito")
+            datos["hitos"].sort(key=lambda h: int(h["nro"]))
+            _combinar_dict(datos["expediente"], extra.get("expediente"), caso.campos_privados, "expediente")
+            if extra.get("ruta_dinero"):
+                _combinar_dict(datos.setdefault("ruta_dinero", {}), extra["ruta_dinero"], caso.campos_privados, "ruta_dinero")
             caso.archivo_privado = privado.name
         casos[caso.id_expediente] = caso
     return casos
 
 
 def _fuente(caso: CasoReal, x: dict) -> str:
-    texto = f"{caso.datos['fuente_principal']}, pág. {x.get('pagina')}"
+    texto = caso.datos["fuente_principal"] + (f", pág. {x['pagina']}" if x.get("pagina") else "")
     if x.get("fuente_detalle"):
         texto += f"; detalle: {x['fuente_detalle']} (parte privada, no versionada)"
     return texto

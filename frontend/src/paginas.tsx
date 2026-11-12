@@ -4,6 +4,7 @@ import { api, type Ficha, type FilaExpediente, type UsuarioDemo } from "./api";
 import {
   AlertaReloj, Bitacora, fecha, FormularioDocumento, LineaDeTiempo, PanelPrechequeo, Rotulo, TablaDocumentos,
 } from "./componentes";
+import { pct, RutaDeUso, soles } from "./dinero";
 
 const TIPOS: Record<string, string> = {
   cambio_programa_inversiones: "Cambio al programa de inversiones",
@@ -143,7 +144,31 @@ export function ExpedienteVivo({ usuario }: { usuario: UsuarioDemo | null }) {
               {" "}· población beneficiaria {String(p.poblacion_beneficiaria ?? "—")} <Rotulo naturaleza="estimado" /> <Rotulo naturaleza="sintético" />
             </p>
           ))}
-          <p className="sub">La ruta del dinero completa llega en la Fase 4.</p>
+        </>
+      )}
+
+      {f.ruta_dinero && (
+        <>
+          <h2>Ruta del dinero</h2>
+          {"proyectos" in f.ruta_dinero ? (
+            <div className="tabla-wrap"><table aria-label="Ruta del dinero de los proyectos afectados">
+              <thead><tr><th>Proyecto</th><th>Programado vigente</th><th>Ejecutado</th><th>Avance financiero (base)</th><th>Avance físico</th><th>Etapa</th></tr></thead>
+              <tbody>{f.ruta_dinero.proyectos.map((p) => (
+                <tr key={p.cod_proyecto}>
+                  <td><Link to={`/proyectos/${p.cod_proyecto}`}>{p.cod_proyecto}</Link></td>
+                  <td>{soles(p.monto_programado_vigente)}{p.modificado && <div className="detalle">original: {soles(p.monto_programado_original)}</div>}</td>
+                  <td>{p.aviso_ejecucion ?? soles(p.ejecucion_financiera)}</td>
+                  <td>{pct(p.avance_financiero)} sobre programado vigente
+                    {p.avance_financiero_original != null && <div className="detalle">{pct(p.avance_financiero_original)} sobre el original</div>}</td>
+                  <td>{pct(p.avance_fisico)}</td>
+                  <td>{p.etapa_escalera}{p.senal_revision && ` · ⚠ señal para revisión (${p.diferencia_pp} pp)`}</td>
+                </tr>
+              ))}</tbody>
+            </table></div>
+          ) : (
+            <RutaDeUso r={f.ruta_dinero} />
+          )}
+          <p className="sub"><Link to="/ruta-del-dinero">Ver el tablero de la ruta del dinero</Link></p>
         </>
       )}
 

@@ -218,6 +218,15 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
   - Con la causal registrada, el pre-chequeo dejaría de suponer «incremento de monto» y aplicaría la rama correcta.
   - Hoy, para los expedientes de DS02, se muestra solo como contraste informativo.
 
+### DRE-25 · Qué evidencia confirma que un proyecto está financiado
+- **Pregunta.** En la escalera del proyecto, ¿qué documento o registro confirma que un proyecto está «financiado»? Por ejemplo: el estudio tarifario, un convenio de transferencia, un contrato de endeudamiento o el PIM del MEF.
+- **Fuentes.**
+  - DS03 solo trae `fuente_financiamiento` (fondo de inversiones, transferencia del gobierno nacional, endeudamiento o cooperación), declarada por la EPS.
+  - DS08 trae el PIM 2026 del MEF, pero solo para los proyectos con CUI.
+- **Qué cambia en el motor.**
+  - Hoy el peldaño «financiado» figura como «declarado» (supuesto en `rules/ruta_dinero.yaml`, parámetro `financiado`).
+  - Con la evidencia definida, pasaría a «cumplido» solo cuando exista ese registro.
+
 ### DRE-19 · Umbral de alerta «por vencer»
 - **Pregunta.** ¿Desde cuántos días hábiles restantes conviene avisar «por vencer»? Hoy usamos 5 DH, como supuesto.
 - **Fuentes.** Ninguna. Es un supuesto del equipo (`umbral_por_vencer_dh`).

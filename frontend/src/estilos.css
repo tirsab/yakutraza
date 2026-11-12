@@ -96,3 +96,17 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .cita { font-style: italic; color: var(--yt-slate-600); }
 footer.pie { color: var(--yt-slate-600); font-size: .85rem; border-top: 1px solid var(--yt-borde); margin-top: 40px; padding-top: 12px; }
 @media (max-width: 600px) { h1 { font-size: 1.3rem; } .relojes { grid-template-columns: 1fr; } }
+
+/* Fase 4: ruta del dinero (lo mínimo para que se lea; el diseño se pule en la Fase 5) */
+.encabezado nav a { font-size: .95rem; font-weight: 600; }
+.vis { display: inline-block; font-size: .7rem; padding: 0 4px; border-radius: 2px; vertical-align: middle; font-weight: 600; }
+.vis-publico { color: var(--yt-navy-900); border: 1px solid var(--yt-navy-900); }
+.vis-reservado { color: var(--yt-slate-600); border: 1px dashed var(--yt-slate-600); }
+.escalera { list-style: none; padding: 0; margin: 8px 0; counter-reset: paso; }
+.peldano { border-left: 4px solid var(--yt-borde); padding: 4px 10px; margin: 4px 0; }
+.peldano-cumplido, .peldano-exonerada { border-left-color: var(--yt-navy-900); }
+.peldano-pendiente, .peldano-no_verificado { border-left-style: dashed; border-left-color: var(--yt-violet-600); }
+.peldano-no_autorizado { border-left-style: double; border-left-width: 6px; border-left-color: var(--yt-navy-700); }
+.peldano .detalle, td .detalle, th .detalle { font-size: .85rem; color: var(--yt-slate-600); font-weight: 400; }
+.peldano .meta, .meta { font-size: .8rem; color: var(--yt-slate-600); }
+.fila-total th, .fila-total td { font-weight: 700; border-top: 2px solid var(--yt-navy-900); }

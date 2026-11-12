@@ -17,8 +17,8 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 |---|---|---|
 | 1 | Ingesta de DS01–DS09 y control de calidad con reporte HTML | Lista |
 | 2 | Calendario de días hábiles y motor de tres relojes | Lista |
-| 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista (por aprobar) |
-| 4 | Ruta del dinero | Pendiente |
+| 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista |
+| 4 | Ruta del dinero (tablero, escaleras, visibilidad) | Lista (por aprobar) |
 | 5 | Interfaz por rol (React) | Pendiente |
 | 6 | Extracción asistida de documentos (IA con cita) | Pendiente |
 | 7 | Demo, pruebas de interfaz y entrega | Pendiente |
@@ -214,6 +214,62 @@ Endpoints:
 - `GET /prechequeo/tipos`
 - `POST /prechequeo/programa-inversiones`
 - `GET /usuarios-demo`
+
+## Ruta del dinero (Fase 4)
+
+La página «Ruta del dinero» (`/ruta-del-dinero` en la interfaz) responde de qué fondo o reserva sale cada sol. Aprobado no es ejecutado.
+
+- **Totales por fondo o reserva** (DS05 y DS02), filtrables por EPS, año y fondo. Columnas:
+  - solicitado;
+  - autorizado;
+  - uso ordinario;
+  - uso excepcional (art. 89);
+  - **uso por emergencia (art. 90)**, que se muestra siempre, aunque la muestra no tenga casos;
+  - verificado.
+
+  Tres reglas de lectura:
+  - Lo solicitado va a «Fondo o reserva no indicado», porque DS02 no dice de qué fondo se pidió.
+  - Lo autorizado se asigna al fondo donde DS05 registra el uso (supuesto).
+  - Lo verificado aparece «pendiente», nunca cero.
+
+  Cada fila enlaza a sus expedientes.
+- **Uso por emergencia (art. 90, RCD 028-2026).** Un uso excepcional sin expediente no es un error: es un «uso que requiere informe mensual en 10 DH».
+  - Desde el 01-08-2026, el plazo del informe se calcula con la regla versionada de `rules/plazos.yaml`.
+  - Para un uso anterior a esa fecha, el motor dice «no puedo calcular» (DRE-22).
+- **Escalera de cada uso excepcional:** solicitado → autorizado (desde qué fondo o reserva) → usado → **verificación posterior** → devolución o exoneración.
+  - En la muestra, la verificación posterior está «pendiente».
+  - Si lo usado supera lo autorizado, aparece una señal para revisión.
+- **Caso real EPSSMU (RCD 126-2025).** Se pidió al fondo y se autorizaron S/ 217 313,20 desde la reserva PCC/PAS. Se guarda en dos archivos, igual que el caso de Tacna:
+  - `casos_reales/epssmu_ufi_2025.yaml` (público): solo hechos ya versionados.
+  - `DATA_DIR/casos_reales/epssmu_ufi_2025_detalle.yaml` (privado): oficios intermedios, saldo de la reserva y área que verifica.
+
+  La parte privada puede agregar registros (`nuevo: true`) y se combina en profundidad con las secciones `expediente` y `ruta_dinero`.
+- **Programado frente a ejecutado por proyecto** (DS03 y DS04), con barras SVG accesibles y filtros por fuente, etapa, periodo y «solo señales».
+  - El **avance financiero** es la ejecución acumulada ÷ **programado vigente**, y la base se indica junto al dato.
+  - Si hubo modificación, también se muestra el avance sobre el original.
+  - Hay señal para revisión si difiere del avance físico en más de 25 puntos (supuesto).
+  - Si el último trimestre está repetido en DS04 (CAL-DUP-02), no se elige una fila: el dato queda «no puedo determinar».
+- **Escalera del proyecto:** programado → aprobado → financiado → en ejecución → concluido → verificación posterior → beneficio verificado.
+  - «Financiado» es la fuente declarada en DS03: una declaración, no una verificación (DRE-25).
+  - El beneficio queda «no verificado».
+- **Ficha del proyecto** (`/proyectos/:cod`): series por año (original y vigente) y por trimestre, registro del MEF simulado y fuente con número de fila.
+- **Expediente vivo:** una nueva sección «Ruta del dinero» muestra la escalera del uso del fondo o los proyectos afectados.
+- **Visibilidad** (`rules/visibilidad.yaml`). Cada dato que usará la vista ciudadana (Fase 5) tiene la marca «público» o «reservado».
+  - Lo no catalogado es reservado.
+  - Lo dudoso queda «por validar» (E-2).
+  - `solo_publico()` devuelve únicamente los campos públicos.
+- **Contexto financiero** (DS06): indicadores con su fórmula y los avisos del control de calidad. No es una nota ni un diagnóstico.
+
+Parámetros y textos en `rules/ruta_dinero.yaml`.
+
+Endpoints:
+- `GET /ruta-dinero/resumen?cod_eps=&anio=&fondo=`
+- `GET /ruta-dinero/fondos/{cod_eps}`
+- `GET /ruta-dinero/proyectos?cod_eps=&fuente=&etapa=&periodo=&solo_senales=`
+- `GET /ruta-dinero/proyectos/{cod}`
+- `GET /ruta-dinero/expedientes/{id}`
+- `GET /contexto-financiero/{cod_eps}`
+- `GET /visibilidad`
 
 ## Supuestos
 
