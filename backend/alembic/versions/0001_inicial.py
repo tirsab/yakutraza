@@ -10,7 +10,7 @@ Create Date: 2026-11-10
 """
 from alembic import op
 
-from app.db import metadata
+from app.db import TABLAS_DATASETS, TABLAS_FASE_1, metadata
 
 revision = "0001"
 down_revision = None
@@ -18,9 +18,14 @@ branch_labels = None
 depends_on = None
 
 
+def _tablas():
+    # Solo las tablas de la Fase 1: las siguientes fases tienen su propia migración.
+    return [metadata.tables[n] for n in TABLAS_FASE_1] + list(TABLAS_DATASETS.values())
+
+
 def upgrade() -> None:
-    metadata.create_all(op.get_bind())
+    metadata.create_all(op.get_bind(), tables=_tablas())
 
 
 def downgrade() -> None:
-    metadata.drop_all(op.get_bind())
+    metadata.drop_all(op.get_bind(), tables=_tablas())

@@ -346,16 +346,27 @@ class MotorPlazos:
                 continue
             regla = self.cat.de_oficio(exp.tipo, h.hito, h.fecha_inicio)
             doc, est = self._documento_previo(exp, h)
-            if regla is None:
+            fijados = [e for e in eventos if e.hito == h.hito and e.tipo == "plazo_oficio" and e.dias_adicionales_dh is not None]
+            if regla is None and not fijados:
                 res.append(self._base(exp, "oficio", None, estado="no_calculable", titulo=f"Plazo del oficio: {h.hito}",
                                       hito=h.hito, fecha_inicio=h.fecha_inicio, documento_inicio=doc,
                                       documento_estado=est,
                                       mensaje=f"No puedo calcular: falta el plazo del oficio para {h.hito} (no hay "
                                               "regla en el catálogo ni documento registrado)."))
                 continue
-            limite = self.cal.sumar_dias_habiles(h.fecha_inicio, regla.plazo_dh)
-            plazo_txt = f"{_texto_dh(regla.plazo_dh)} (máximo por defecto; prima el plazo que fije el oficio)"
             detalle: dict[str, Any] = {}
+            if fijados:
+                f = fijados[-1]
+                plazo = f.dias_adicionales_dh
+                plazo_txt = f"{_texto_dh(plazo)} fijados por {f.documento} ({f.naturaleza})"
+                if regla is not None:
+                    plazo_txt += f"; el máximo de la regla {regla.id} es {regla.plazo_dh} DH"
+                detalle["plazo_fijado"] = {"documento": f.documento, "dias_dh": plazo, "naturaleza": f.naturaleza,
+                                           "fuente": f.fuente}
+            else:
+                plazo = regla.plazo_dh
+                plazo_txt = f"{_texto_dh(plazo)} (máximo por defecto; prima el plazo que fije el oficio)"
+            limite = self.cal.sumar_dias_habiles(h.fecha_inicio, plazo)
             prorrogas = [e for e in eventos if e.hito == h.hito and e.tipo == "prorroga"]
             avisos = []
             if prorrogas:
@@ -363,13 +374,21 @@ class MotorPlazos:
                 if p.fecha_solicitud and p.fecha_solicitud > limite:
                     avisos.append(f"La prórroga se pidió el {p.fecha_solicitud}, después del vencimiento ({limite}); "
                                   "la norma exige pedirla antes.")
-                limite = p.nueva_fecha_limite or self.cal.sumar_dias_habiles(limite, p.dias_adicionales_dh or 0)
-                plazo_txt += (f"; prorrogado por {p.documento} ({p.naturaleza}) hasta el {limite}")
                 detalle["prorroga"] = {"documento": p.documento, "fecha": str(p.fecha_documento),
                                        "naturaleza": p.naturaleza, "fuente": p.fuente}
+                if p.nueva_fecha_limite is None and p.dias_adicionales_dh is None:
+                    res.append(self._base(
+                        exp, "oficio", regla, estado="no_calculable", titulo=f"Plazo del oficio: {h.hito}",
+                        hito=h.hito, etapa=h.etapa, plazo_dh=plazo, fecha_inicio=h.fecha_inicio,
+                        documento_inicio=doc, documento_estado=est, detalle=detalle,
+                        mensaje=f"No puedo calcular el nuevo vencimiento: {p.documento} concedió una prórroga, pero "
+                                f"no se conoce su plazo. Plazo original: {plazo_txt}, vencía el {limite}."))
+                    continue
+                limite = p.nueva_fecha_limite or self.cal.sumar_dias_habiles(limite, p.dias_adicionales_dh or 0)
+                plazo_txt += (f"; prorrogado por {p.documento} ({p.naturaleza}) hasta el {limite}")
                 if len(prorrogas) > 1:
                     avisos.append("Hay más de una prórroga registrada: la norma la permite por única vez.")
-            comun = dict(titulo=f"Plazo del oficio: {h.hito}", hito=h.hito, etapa=h.etapa, plazo_dh=regla.plazo_dh,
+            comun = dict(titulo=f"Plazo del oficio: {h.hito}", hito=h.hito, etapa=h.etapa, plazo_dh=plazo,
                          fecha_inicio=h.fecha_inicio, fecha_limite=limite, documento_inicio=doc, documento_estado=est,
                          detalle=detalle)
             aviso = (" " + " ".join(avisos)) if avisos else ""

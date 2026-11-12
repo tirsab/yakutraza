@@ -82,6 +82,87 @@ calidad_hallazgos = Table(
 )
 
 
+# ---------------------------------------------------------------- Fase 3
+# Documentos registrados (además de los códigos que trae DS02 en cada hito).
+documentos = Table(
+    "documentos",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    # Clave estable para no duplicar registros al recargar (p. ej. «TACNA:OF-00156-2026»).
+    Column("clave", String(120), nullable=False, unique=True),
+    Column("id_expediente", String(40), nullable=False, index=True),
+    Column("hito", String(60)),
+    Column("tipo", String(20), nullable=False),  # OF, INF, MEM, RD, RCD, CARTA, CORREO, OTRO
+    Column("numero", Text),
+    Column("fecha_emision", Date),
+    Column("fecha_recepcion", Date),
+    Column("fecha_notificacion", Date),
+    Column("canal", String(30), nullable=False),  # mesa_partes, correo, enlace_externo, tramite, no_indicado, otro
+    Column("remitente", Text),
+    Column("asunto", Text),
+    Column("referencia", Text),  # enlace o ubicación del archivo (nunca el archivo en sí)
+    Column("plazo_otorgado_dh", Integer),
+    Column("reservado", Boolean, nullable=False, default=False),  # INF/MEM internos: no los ve la EPS
+    Column("naturaleza", String(20), nullable=False),  # real, sintético, registrado_demo
+    Column("origen", String(20), nullable=False),  # manual, transcrito_ia, caso_real
+    Column("estado_registro", String(15), nullable=False),  # propuesto, confirmado
+    Column("fuente", Text),
+    Column("cita", Text),
+    Column("pagina", Integer),
+    Column("registrado_por", String(60), nullable=False),
+    Column("registrado_en", DateTime(timezone=True), nullable=False),
+    Column("confirmado_por", String(60)),
+    Column("confirmado_en", DateTime(timezone=True)),
+)
+
+# Decisiones de plazo tomadas por documento: plazo fijado en un oficio o prórroga.
+eventos_plazo = Table(
+    "eventos_plazo",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("clave", String(120), nullable=False, unique=True),
+    Column("id_expediente", String(40), nullable=False, index=True),
+    Column("hito", String(60), nullable=False),
+    Column("tipo", String(20), nullable=False),  # plazo_oficio, prorroga
+    Column("dias_dh", Integer),
+    Column("nueva_fecha_limite", Date),
+    Column("documento_id", Integer, ForeignKey("documentos.id")),
+    Column("documento_solicitud_id", Integer, ForeignKey("documentos.id")),
+    Column("fecha_solicitud", Date),
+    Column("naturaleza", String(20), nullable=False),
+    Column("origen", String(20), nullable=False),
+    Column("estado_registro", String(15), nullable=False),
+    Column("fuente", Text),
+    Column("cita", Text),
+    Column("registrado_por", String(60), nullable=False),
+    Column("registrado_en", DateTime(timezone=True), nullable=False),
+    Column("confirmado_por", String(60)),
+    Column("confirmado_en", DateTime(timezone=True)),
+)
+
+# Bitácora de cambios: solo se agrega (un trigger impide UPDATE y DELETE) y cada
+# entrada encadena el hash de la anterior para detectar alteraciones.
+bitacora = Table(
+    "bitacora",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("cuando", DateTime(timezone=True), nullable=False),
+    Column("usuario", String(60), nullable=False),
+    Column("rol", String(40), nullable=False),
+    Column("accion", String(40), nullable=False),
+    Column("entidad", String(40), nullable=False),
+    Column("entidad_id", String(120), nullable=False, index=True),
+    Column("id_expediente", String(40), index=True),
+    Column("antes", JSON),
+    Column("despues", JSON),
+    Column("motivo", Text),
+    Column("hash_anterior", String(64), nullable=False),
+    Column("hash", String(64), nullable=False, unique=True),
+)
+
+TABLAS_FASE_1 = ("carga_lotes", "calidad_hallazgos")
+
+
 def _tabla_dataset(ds) -> Table:
     cols = [
         Column("id", Integer, primary_key=True, autoincrement=True),

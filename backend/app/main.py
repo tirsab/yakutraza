@@ -15,6 +15,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from app import servicio
+from app.api_expediente import router as router_expediente
 from app.calidad.base import ETIQUETA_TIPO, SEVERIDADES, TIPOS_ANUNCIADOS
 from app.config import Settings, get_settings
 from app.db import get_engine
@@ -263,3 +264,6 @@ def alertas(
                 continue
             res.append(a)
     return [a.como_dict() for a in sorted(res, key=_orden)]
+
+
+app.include_router(router_expediente)

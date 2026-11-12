@@ -11,6 +11,8 @@
     test       Corre pytest.
     cobertura  Corre pytest con cobertura de calidad, ingesta y plazos.
     api        Levanta la API en http://localhost:8000 (documentación en /docs).
+    web        Levanta la interfaz en http://localhost:5173 (instala dependencias si faltan).
+    web-test   Corre las pruebas de la interfaz (Vitest).
 
   Tareas con Docker (equivalen a las del Makefile):
     up, down, docker-seed, docker-test
@@ -23,7 +25,7 @@
 #>
 param(
   [Parameter(Position = 0)]
-  [ValidateSet('instalar', 'seed', 'calidad', 'reporte', 'test', 'cobertura', 'api', 'up', 'down', 'docker-seed', 'docker-test', 'ayuda')]
+  [ValidateSet('instalar', 'seed', 'calidad', 'reporte', 'test', 'cobertura', 'api', 'web', 'web-test', 'up', 'down', 'docker-seed', 'docker-test', 'ayuda')]
   [string]$Tarea = 'ayuda'
 )
 
@@ -76,11 +78,13 @@ switch ($Tarea) {
   'calidad'   { Cargar-Env; Py @('-m', 'app.cli', 'calidad') }
   'reporte'   { Cargar-Env; Py @('-m', 'app.cli', 'reporte') }
   'test'      { Cargar-Env; Py @('-m', 'pytest', '-q') }
-  'cobertura' { Cargar-Env; Py @('-m', 'pytest', '-q', '--cov=app.calidad', '--cov=app.ingesta', '--cov=app.plazos', '--cov-report=term-missing') }
+  'cobertura' { Cargar-Env; Py @('-m', 'pytest', '-q', '--cov=app.calidad', '--cov=app.ingesta', '--cov=app.plazos', '--cov=app.expediente', '--cov-report=term-missing') }
   'api'       { Cargar-Env; Py @('-m', 'uvicorn', 'app.main:app', '--reload', '--port', '8000') }
-  'up'          { docker compose up -d --build db api }
+  'web'       { Push-Location (Join-Path $Raiz 'frontend'); try { if (-not (Test-Path node_modules)) { npm install }; npm run dev } finally { Pop-Location } }
+  'web-test'  { Push-Location (Join-Path $Raiz 'frontend'); try { if (-not (Test-Path node_modules)) { npm install }; npm test } finally { Pop-Location } }
+  'up'          { docker compose up -d --build db api web }
   'down'        { docker compose down }
-  'docker-seed' { docker compose up -d --build db api; docker compose run --rm api python -m app.cli seed }
+  'docker-seed' { docker compose up -d --build db api web; docker compose run --rm api python -m app.cli seed }
   'docker-test' { docker compose run --rm api python -m pytest -q }
   default { Get-Help $PSCommandPath -Detailed }
 }

@@ -1,0 +1,69 @@
+# Pre-chequeo de cambios al programa de inversiones: ¿art. 94 (solo comunicación)
+# o art. 93 (aprobación del Consejo Directivo)?
+#
+# TODAS las reglas están «por validar con la DRE». El pre-chequeo orienta a la
+# especialista y a la EPS; no decide la vía del trámite. Muestra siempre la regla
+# aplicada y el texto citado.
+#
+# Textos: Compendio del RGT (RCD 028-2021-SUNASS-CD con modificatorias hasta la
+# RCD 004-2023). El numeral 6 del art. 94 lo incorporó la RCD 108-2022-SUNASS-CD.
+# Las RCD 124-2025 y 028-2026 no modificaron los arts. 92, 93 ni 94.
+
+version: 1
+estado_validacion: por validar
+
+parametros:
+  umbral_incrementos_pct:
+    valor: 10
+    naturaleza: norma
+    fuente: "RGT art. 94, numeral 1"
+  tope_sustitucion_pct:
+    valor: 10
+    naturaleza: norma
+    fuente: "RGT art. 94, numeral 6 (RCD 108-2022)"
+  tope_sustitucion_soles:
+    valor: 5000000
+    naturaleza: norma
+    fuente: "RGT art. 94, numeral 6 (RCD 108-2022)"
+  base_monto_total:
+    valor: original
+    naturaleza: supuesto
+    sustento: >-
+      «Monto total del Programa de Inversiones» = suma del monto programado
+      ORIGINAL (DS03) del periodo regulatorio vigente de la EPS. La norma no dice
+      si es el original o el vigente tras modificaciones. Por validar (DRE-23).
+    pregunta_dre: DRE-23
+  incremento:
+    naturaleza: supuesto
+    sustento: >-
+      Incremento solicitado = nuevo monto pendiente del proyecto (DS02
+      monto_solicitado) menos el monto pendiente programado (años desde el de la
+      solicitud). Incrementos previos del periodo = suma, en los proyectos que
+      modificó otro expediente, de (vigente − original) cuando es positivo.
+
+textos:
+  art_92: "La relación de inversiones y medidas de mejora que conforman el programa de inversiones incluida en el Estudio Tarifario puede sufrir modificaciones o reprogramaciones, siempre que ello no implique la modificación de las metas de gestión"
+  art_93_1: "La empresa prestadora, previamente a su ejecución, puede solicitar la modificación o reprogramación de las inversiones y/o medidas de mejora contenidas en el programa de inversiones, en los siguientes casos"
+  art_93_1_3: "Sustitución por un proyecto alternativo focalizado en la mejora en la eficiencia de la prestación de servicios o con el mismo objetivo, a un costo similar o menor al previsto."
+  art_93_1_4: "Sustitución por un proyecto del Plan de Acciones de Urgencia o Plan de Reflotamiento focalizado en la mejora en la eficiencia de la prestación de servicios o con el mismo objetivo, a un costo similar o menor al previsto."
+  art_93_2: "En caso de que una o más de las inversiones y medidas de mejora programadas para realizarse con recursos propios, sean financiadas mediante recursos provenientes de donaciones o transferencias, previa autorización de la Sunass, la empresa prestadora puede destinar los recursos liberados para financiar otras inversiones o medidas de mejora."
+  art_93_6: "El Consejo Directivo, de ser el caso, autoriza, mediante resolución, el cambio del programa de inversiones."
+  art_94_encabezado: "Los cambios al Programa de Inversiones solo con comunicación mediante oficio dirigido al Gerente General de la Sunass se realizan en los siguientes casos"
+  art_94_1: "En caso el monto total de los incrementos del monto de inversión durante el periodo regulatorio no supere el 10% del monto total del Programa de Inversiones."
+  art_94_2: "En caso de existir adelantos en la ejecución de las inversiones y/o medidas de mejora previstas en el programa de inversiones."
+  art_94_3: "En caso de modificación del programa de inversiones y se cumplan simultáneamente las siguientes condiciones: a) [...] superen el monto previsto en el Estudio Tarifario. b) [...] cuente con la aprobación del Sistema Nacional de Programación Multianual y Gestión de Inversiones. c) Los recursos del Fondo de Inversiones no sean suficientes [...] d) [...] se deje de realizar algunas inversiones [...] e) No se afecte el cumplimiento de las metas de gestión."
+  art_94_4: "En caso de que durante el periodo regulatorio la empresa prestadora requiera reprogramar dos o más inversiones o medidas de mejora del programa de inversiones siempre que ello no modifique los montos anuales programados para el periodo regulatorio."
+  art_94_5: "En caso existan cambios en el nombre de una inversión aprobada por el Sistema Nacional de Programación Multianual y Gestión de Inversiones."
+  art_94_6: "En los casos establecidos en los numerales 3 y 4 del párrafo 93.1 y siempre que el costo individual del proyecto previsto en el Programa de Inversiones no supere el valor mínimo entre el 10% del monto total del Programa de Inversiones y S/. 5 000 000.00 (cinco millones y 00/100 soles). La suma de los costos de los proyectos sustituidos en el Programa de Inversiones durante el periodo regulatorio no debe superar el 10% del monto total del Programa de Inversiones."
+  rcd_032_2026_3_10: "no corresponde exigir que la incorporación de la nueva inversión se sustente adicionalmente en una causal del párrafo 93.1, dado que el párrafo 93.2 regula específicamente el destino de los recursos liberados y condiciona su utilización a la autorización previa de la Sunass"
+
+# Tipos de cambio que la EPS declara al consultar el pre-chequeo.
+tipos_cambio:
+  incremento_monto: "Incremento del monto de una inversión"
+  sustitucion_93_1_3: "Sustitución por un proyecto alternativo (93.1, numeral 3)"
+  sustitucion_93_1_4: "Sustitución por un proyecto del Plan de Acciones de Urgencia o Plan de Reflotamiento (93.1, numeral 4)"
+  recursos_liberados_93_2: "Destino de recursos liberados por donación o transferencia (93.2)"
+  adelanto_94_2: "Adelanto en la ejecución (94, numeral 2)"
+  reprogramacion_94_4: "Reprogramación de dos o más inversiones sin cambiar los montos anuales (94, numeral 4)"
+  cambio_nombre_94_5: "Cambio de nombre aprobado en el SNPMGI (94, numeral 5)"
+  otro_93_1: "Otro caso del párrafo 93.1 (fuente de financiamiento, expansión, emergencia, fuerza mayor u otros)"

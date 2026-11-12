@@ -197,6 +197,27 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
   - PLZ-N-VCI tendría dos versiones. Hasta el 26-10-2025 rige la verificación por metas (supuesto de simulación). Desde el 27-10-2025, solo la verificación del incremento condicionado.
   - Las verificaciones por metas de 2026 se rotularían como «regla anterior».
 
+### DRE-23 · Monto total del programa para el 10 % del art. 94
+- **Pregunta.** Para los topes del art. 94 (numerales 1 y 6), ¿el «monto total del Programa de Inversiones» es el programado original del estudio tarifario o el vigente tras las modificaciones aprobadas?
+- **Fuentes.**
+  - RGT art. 94, numerales 1 y 6: «el 10% del monto total del Programa de Inversiones». No precisa si es el original o el vigente.
+  - DS03 trae los dos montos (`monto_programado_original` y `monto_programado_vigente`).
+- **Qué cambia en el motor.**
+  - Hoy el pre-chequeo usa el **original** del periodo vigente, marcado como supuesto en `rules/prechequeo_pi.yaml`, con el parámetro `base_monto_total`.
+  - Si es el vigente, cambian los topes de 10 % y S/ 5 000 000 y, con ellos, algunas vías.
+
+### DRE-24 · Causal de los cambios al programa de inversiones
+- **Pregunta.**
+  1. ¿Dónde registra la DRE la causal del párrafo 93.1, o el 93.2, de cada solicitud de cambio al programa de inversiones?
+  2. ¿Por qué un cambio que cabría en el art. 94 llega por el art. 93?
+- **Fuentes.**
+  - DS02 no registra la causal; solo el proyecto y el «nuevo monto pendiente».
+  - Al leer los 9 cambios al programa de inversiones de la muestra como incrementos de monto, todos quedan por debajo del 10 % del art. 94.1 (solo comunicación), aunque DS02 los tramitó por el art. 93.
+  - El caso real de Tacna se tramitó por el art. 93.2 (recursos liberados), que según la RCD 032-2026 no exige causal del 93.1.
+- **Qué cambia en el motor.**
+  - Con la causal registrada, el pre-chequeo dejaría de suponer «incremento de monto» y aplicaría la rama correcta.
+  - Hoy, para los expedientes de DS02, se muestra solo como contraste informativo.
+
 ### DRE-19 · Umbral de alerta «por vencer»
 - **Pregunta.** ¿Desde cuántos días hábiles restantes conviene avisar «por vencer»? Hoy usamos 5 DH, como supuesto.
 - **Fuentes.** Ninguna. Es un supuesto del equipo (`umbral_por_vencer_dh`).

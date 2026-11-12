@@ -1,0 +1,98 @@
+/* Paleta tomada de los PDF oficiales del hackathon (por confirmar con el manual de marca de Sunass). */
+:root {
+  /* Línea institucional (Expediente Desafío 3) */
+  --yt-navy-900: #182C3E;   /* texto principal, encabezados */
+  --yt-navy-800: #17324D;
+  --yt-navy-700: #173A66;
+  --yt-blue-600: #245B85;   /* acciones primarias, enlaces */
+  --yt-blue-500: #087EA1;
+  --yt-teal-500: #008C95;   /* acento: solo texto grande, íconos, bordes o fondos */
+  --yt-slate-600: #526575;  /* texto secundario */
+  --yt-slate-500: #5F7180;
+  --yt-ice-100:  #EAF5F8;
+  --yt-ice-50:   #F2F7FA;
+  /* Línea de campaña "Lideresas por el Agua" (Guía Fase 2), uso puntual */
+  --yt-violet-600: #713BCE;
+  --yt-lilac-300:  #D09EFF;
+  --yt-borde: #c8d3db;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; color: var(--yt-navy-900); }
+body { font-family: "Noto Sans", Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+a { color: var(--yt-blue-600); }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--yt-blue-500); outline-offset: 2px;
+}
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+h2 { font-size: 1.25rem; margin: 32px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--yt-teal-500); }
+h3 { font-size: 1.05rem; margin: 16px 0 6px; }
+.sub { color: var(--yt-slate-600); margin: 0; }
+.pagina { max-width: 1180px; margin: 0 auto; padding: 16px 16px 64px; }
+
+/* Encabezado */
+.encabezado { background: var(--yt-navy-900); color: #fff; }
+.encabezado .pagina { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding-bottom: 12px; }
+.encabezado a { color: #fff; text-decoration: none; font-weight: 700; font-size: 1.15rem; }
+.encabezado label { font-size: .9rem; }
+.encabezado select { margin-left: 6px; font: inherit; padding: 4px; }
+.encabezado .corte { font-size: .9rem; opacity: .95; }
+
+/* Rótulos de naturaleza del dato */
+.rotulo { display: inline-block; border: 1px solid currentColor; border-radius: 2px; padding: 0 6px; font-size: .78rem;
+  font-weight: 600; margin: 0 4px 0 0; white-space: nowrap; }
+.rotulo-real { color: var(--yt-navy-900); background: var(--yt-ice-100); }
+.rotulo-sintetico { color: var(--yt-slate-600); border-style: dashed; }
+.rotulo-estimado { color: var(--yt-blue-600); border-style: dotted; }
+.rotulo-supuesto { color: var(--yt-violet-600); border-style: double; border-width: 3px; }
+
+.aviso { background: var(--yt-ice-100); border-left: 4px solid var(--yt-navy-700); padding: 10px 14px; margin: 12px 0; }
+.ficha-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 24px; margin: 8px 0; }
+.ficha-datos div { border-bottom: 1px solid var(--yt-borde); padding: 4px 0; }
+.ficha-datos dt { font-size: .82rem; color: var(--yt-slate-600); }
+.ficha-datos dd { margin: 0; font-weight: 600; }
+
+/* Estados: ícono + texto + patrón de borde (no dependen solo del color) */
+.estado { display: inline-flex; gap: 6px; align-items: center; font-weight: 700; white-space: nowrap; }
+.alerta { border: 1px solid var(--yt-borde); border-left-width: 8px; padding: 10px 12px; margin: 8px 0; background: #fff; }
+.alerta-vencido { border-left-style: solid; border-left-color: var(--yt-navy-900); background: var(--yt-ice-50); }
+.alerta-incumplido { border-left-style: solid; border-left-color: var(--yt-navy-700); }
+.alerta-por_vencer { border-left-style: dashed; border-left-color: var(--yt-violet-600); }
+.alerta-en_plazo { border-left-style: dotted; border-left-color: var(--yt-blue-600); }
+.alerta-cumplido { border-left-style: double; border-left-color: var(--yt-teal-500); }
+.alerta-no_calculable { border-left-style: dashed; border-left-color: var(--yt-slate-500); background: var(--yt-ice-50); }
+.alerta .meta { color: var(--yt-slate-600); font-size: .85rem; margin-top: 4px; }
+.alerta .discrepancia { font-size: .85rem; border-top: 1px dashed var(--yt-borde); margin-top: 6px; padding-top: 6px; }
+.relojes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 16px; }
+
+/* Línea de tiempo vertical */
+.linea { list-style: none; padding: 0; margin: 0; border-left: 3px solid var(--yt-teal-500); }
+.linea > li { position: relative; padding: 4px 0 16px 20px; }
+.linea > li::before { content: ""; position: absolute; left: -9px; top: 10px; width: 15px; height: 15px;
+  border-radius: 50%; border: 3px solid var(--yt-teal-500); background: #fff; }
+.linea > li.en-curso::before { background: var(--yt-teal-500); }
+.linea .titulo-hito { font-weight: 700; }
+.linea .detalle { color: var(--yt-slate-600); font-size: .9rem; }
+.evidencia { display: inline-block; font-size: .82rem; padding: 0 6px; border: 1px solid var(--yt-borde); margin-left: 6px; }
+.evidencia-declarado { border-style: dashed; color: var(--yt-slate-600); }
+.evidencia-propuesto { border-style: dotted; color: var(--yt-violet-600); }
+.evidencia-codigo { border-style: solid; }
+.evidencia-registrado { border: 2px solid var(--yt-navy-900); background: var(--yt-ice-100); }
+
+/* Tablas y formularios */
+.tabla-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { border: 1px solid var(--yt-borde); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: var(--yt-ice-100); }
+form.formulario { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 16px; align-items: end; }
+form.formulario label { display: flex; flex-direction: column; font-size: .9rem; gap: 2px; }
+input, select, textarea { font: inherit; padding: 6px; border: 1px solid var(--yt-slate-500); border-radius: 2px; }
+button { font: inherit; padding: 8px 14px; border: 0; border-radius: 2px; background: var(--yt-blue-600); color: #fff; cursor: pointer; }
+button.secundario { background: #fff; color: var(--yt-blue-600); border: 1px solid var(--yt-blue-600); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.mensaje { padding: 8px 12px; border: 1px solid var(--yt-borde); margin: 8px 0; }
+.mensaje-error { border-left: 6px solid var(--yt-navy-900); }
+.mensaje-ok { border-left: 6px double var(--yt-teal-500); }
+.cita { font-style: italic; color: var(--yt-slate-600); }
+footer.pie { color: var(--yt-slate-600); font-size: .85rem; border-top: 1px solid var(--yt-borde); margin-top: 40px; padding-top: 12px; }
+@media (max-width: 600px) { h1 { font-size: 1.3rem; } .relojes { grid-template-columns: 1fr; } }

@@ -2,7 +2,7 @@
 .PHONY: up down seed calidad reporte test cobertura logs
 
 up:
-	docker compose up -d --build db api
+	docker compose up -d --build db api web
 
 down:
 	docker compose down
@@ -20,7 +20,7 @@ test:
 	docker compose run --rm api python -m pytest -q
 
 cobertura:
-	docker compose run --rm api python -m pytest -q --cov=app.calidad --cov=app.ingesta --cov=app.plazos --cov-report=term-missing
+	docker compose run --rm api python -m pytest -q --cov=app.calidad --cov=app.ingesta --cov=app.plazos --cov=app.expediente --cov-report=term-missing
 
 logs:
 	docker compose logs -f api

@@ -24,6 +24,11 @@ def main(argv: list[str] | None = None) -> int:
         for nombre, n in r.filas.items():
             print(f"  {nombre}: {n} filas")
         print(f"Hallazgos de calidad: {r.hallazgos}")
+        if r.casos_reales:
+            cr = r.casos_reales
+            print(f"Casos reales: {cr['casos']} ({cr['con_detalle_privado']} con detalle privado); registros "
+                  f"insertados {cr['insertados']}, actualizados {cr['actualizados']}, confirmados intactos "
+                  f"{cr['confirmados_intactos']}.")
         print(f"Reporte: {r.reporte}")
     elif a.tarea == "calidad":
         n = servicio.recalcular_calidad(s)
