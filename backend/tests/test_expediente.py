@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from decimal import Decimal
 import re
@@ -371,3 +372,36 @@ def test_patron_de_firmas_detecta_bloques():
     assert FIRMAS.search("Mot" + "ivo: Fir" + "ma Digital")
     assert FIRMAS.search("FA" + "U 20158219655")
     assert not FIRMAS.search("Consejo Directivo aprueba la resolución")
+
+
+# ============================================ casos reales sin su parte privada
+def test_casos_reales_sin_parte_privada(settings, cliente):
+    _privado(settings)  # el archivo privado existe, pero no se debe leer
+    settings.casos_reales_privados = False
+    try:
+        casos = casos_reales.cargar_casos(settings.casos_reales_dir, None)
+        assert not casos["REAL-TACNA-2026"].con_detalle_privado
+        servicio.seed(settings)
+        f = cliente.get("/expedientes/REAL-TACNA-2026").json()
+        assert f["expediente"]["con_detalle_privado"] is False
+        texto = json.dumps(f, default=str)
+        assert casos_reales.MARCA_PRIVADA not in texto and "Oficio 162, pág. 1" not in texto
+        assert casos_reales.rastros_privados(get_engine(settings.database_url)) == {"documentos": 0, "eventos": 0, "bitacora": 0}
+        cfg = cliente.get("/config").json()["privacidad"]
+        assert cfg == {"casos_reales_privados": False, "rastros_privados": {"documentos": 0, "eventos": 0, "bitacora": 0}}
+    finally:
+        settings.casos_reales_privados = True
+
+
+def test_sin_parte_privada_rechaza_una_base_con_rastros(settings, cliente):
+    _privado(settings)
+    servicio.seed(settings)  # carga con la parte privada
+    rastros = casos_reales.rastros_privados(get_engine(settings.database_url))
+    assert rastros["documentos"] + rastros["eventos"] > 0 and rastros["bitacora"] > 0
+    settings.casos_reales_privados = False
+    try:
+        with pytest.raises(RuntimeError, match="docker compose down -v"):
+            servicio.seed(settings)
+        assert cliente.get("/config").json()["privacidad"]["rastros_privados"]["bitacora"] > 0
+    finally:
+        settings.casos_reales_privados = True

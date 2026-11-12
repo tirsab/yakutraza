@@ -32,6 +32,8 @@ services:
       FECHA_CORTE: ${FECHA_CORTE:-2026-09-30}
       # Modo demo (selector «Ver como»). En un enlace público: MODO_DEMO=false.
       MODO_DEMO: ${MODO_DEMO:-true}
+      # Casos reales sin su parte privada (tomas públicas): CASOS_REALES_PRIVADOS=false y una base nueva.
+      CASOS_REALES_PRIVADOS: ${CASOS_REALES_PRIVADOS:-true}
       TZ: America/Lima
     volumes:
       # Los datos se montan en solo lectura desde DATA_DIR (no están en el repositorio).

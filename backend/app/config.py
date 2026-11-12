@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     # Casos reales: parte pública (versionada) y carpeta de la parte privada (no versionada).
     casos_reales_dir: Path = RAIZ_REPO / "casos_reales"
     casos_reales_privados_dir: Path | None = None  # por defecto, DATA_DIR/casos_reales
+    # false: los casos reales se cargan SIN su parte privada (para grabar tomas públicas).
+    casos_reales_privados: bool = True
     # Carpeta donde se escribe el reporte HTML de calidad.
     reportes_dir: Path = RAIZ_REPO / "reportes"
     # "Hoy" para la demo: fecha de corte de la muestra (hoja Léame del diccionario).
@@ -32,7 +34,10 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{(RAIZ_REPO / 'yakutraza_local.db').as_posix()}"
 
 
-def dir_privado(s: "Settings") -> Path:
+def dir_privado(s: "Settings") -> Path | None:
+    """Carpeta de la parte privada, o None si CASOS_REALES_PRIVADOS=false."""
+    if not s.casos_reales_privados:
+        return None
     return Path(s.casos_reales_privados_dir) if s.casos_reales_privados_dir else Path(s.data_dir) / "casos_reales"
 
 
