@@ -5,20 +5,17 @@ import {
   AlertaReloj, Bitacora, fecha, FormularioDocumento, LineaDeTiempo, PanelPrechequeo, Rotulo, TablaDocumentos,
 } from "./componentes";
 import { pct, RutaDeUso, soles } from "./dinero";
+import { humanizar, t } from "./etiquetas";
+import { useSesion } from "./sesion";
 
-const TIPOS: Record<string, string> = {
-  cambio_programa_inversiones: "Cambio al programa de inversiones",
-  uso_excepcional_fondo: "Uso excepcional del fondo",
-  revision_periodica: "Revisión periódica",
-  reajuste_ipm: "Reajuste por IPM",
-  reporte_periodico: "Reporte periódico",
-  verificacion_incremento: "Verificación de incrementos",
-};
+const TIPOS = ["cambio_programa_inversiones", "uso_excepcional_fondo", "revision_periodica", "reajuste_ipm",
+  "reporte_periodico", "verificacion_incremento"];
 
 export function ListaExpedientes() {
   const [filas, setFilas] = useState<FilaExpediente[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tipo, setTipo] = useState("cambio_programa_inversiones");
+  const { usuario } = useSesion();
+  const [tipo, setTipo] = useState(usuario.rol === "eps" ? "" : "cambio_programa_inversiones");
   useEffect(() => {
     api.expedientes().then(setFilas).catch((e) => setError(e.message));
   }, []);
@@ -28,11 +25,11 @@ export function ListaExpedientes() {
   return (
     <>
       <h1>Expedientes</h1>
-      <p className="sub">La bandeja priorizada por plazo llega en la Fase 5. Aquí se abre cada expediente vivo.</p>
+      <p className="sub">Consulta de expedientes. Cada uno se abre como expediente vivo: relojes, evidencia y bitácora.</p>
       <label>Tipo de procedimiento{" "}
         <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
           <option value="">Todos</option>
-          {Object.entries(TIPOS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          {TIPOS.map((k) => <option key={k} value={k}>{t("tipo_procedimiento", k)}</option>)}
         </select>
       </label>
       <div className="tabla-wrap" style={{ marginTop: 12 }}>
@@ -43,10 +40,10 @@ export function ListaExpedientes() {
               <tr key={f.id_expediente}>
                 <td><Link to={`/expedientes/${f.id_expediente}`}>{f.id_expediente}</Link></td>
                 <td>{f.cod_eps ?? f.empresa}</td>
-                <td>{TIPOS[f.tipo_procedimiento] ?? f.tipo_procedimiento}</td>
-                <td>{f.estado}</td>
+                <td>{t("tipo_procedimiento", f.tipo_procedimiento)}</td>
+                <td>{t("estado_expediente", f.estado)}</td>
                 <td>{fecha(f.fecha_inicio)}</td>
-                <td>{f.responsable_actual ? `${f.responsable_actual} (${f.hito_actual})` : "—"}</td>
+                <td>{f.responsable_actual ? `${t("responsable", f.responsable_actual)} (${t("hito", f.hito_actual).toLowerCase()})` : "—"}</td>
                 <td><Rotulo naturaleza={f.naturaleza} /></td>
               </tr>
             ))}
@@ -65,9 +62,10 @@ export function ExpedienteVivo({ usuario }: { usuario: UsuarioDemo | null }) {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null);
 
+  const { corte } = useSesion();
   const cargar = useCallback(() => {
-    api.ficha(id).then(setF).catch((e) => setError(e.message));
-  }, [id]);
+    api.ficha(id, corte).then(setF).catch((e) => setError(e.message));
+  }, [id, corte]);
   useEffect(cargar, [cargar]);
 
   const accion = async (fn: () => Promise<unknown>, ok: string) => {
@@ -94,7 +92,7 @@ export function ExpedienteVivo({ usuario }: { usuario: UsuarioDemo | null }) {
       <p><Link to="/">← Expedientes</Link></p>
       <h1>Expediente {e.id_expediente}</h1>
       <p className="sub">
-        {TIPOS[e.tipo_procedimiento] ?? e.tipo_procedimiento} · {String(e.cod_eps ?? e.empresa ?? "")} · estado: {String(e.estado)}
+        {t("tipo_procedimiento", e.tipo_procedimiento)} · {String(e.cod_eps ?? e.empresa ?? "")} · estado: {t("estado_expediente", String(e.estado)).toLowerCase()}
         {" "}<Rotulo naturaleza={e.naturaleza} />
       </p>
       {"aviso" in e && e.aviso ? <div className="aviso">{String(e.aviso)}</div> : null}
@@ -103,7 +101,7 @@ export function ExpedienteVivo({ usuario }: { usuario: UsuarioDemo | null }) {
         <div><dt>Conclusión</dt><dd>{e.fecha_conclusion ? fecha(e.fecha_conclusion as string) : "en trámite"}</dd></div>
         <div><dt>Plazo máximo</dt><dd>{e.plazo_maximo_dh != null ? `${e.plazo_maximo_dh} DH` : "sin plazo en DH"}</dd></div>
         <div><dt>Base normativa</dt><dd>{typeof e.base_normativa === "string" ? e.base_normativa : (e.base_normativa as { articulo?: string })?.articulo ?? "—"}</dd></div>
-        <div><dt>Fuente</dt><dd>{String(e.fuente ?? "")}</dd></div>
+        <div><dt>Fuente</dt><dd>{humanizar(String(e.fuente ?? ""))}</dd></div>
         <div><dt>Fecha de corte («hoy»)</dt><dd>{fecha(f.fecha_corte)}</dd></div>
       </dl>
 

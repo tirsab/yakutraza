@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Ficha, UsuarioDemo } from "../api";
 import { ExpedienteVivo, ListaExpedientes } from "../paginas";
+import { ConSesion, sesionPrueba } from "./sesion";
 
 const especialista: UsuarioDemo = {
   id: "esp-srt-01", nombre: "Especialista SRT 1 (ficticia)", rol: "especialista_srt",
@@ -62,9 +63,11 @@ function respuesta(cuerpo: unknown, status = 200) {
 
 function montar(usuario: UsuarioDemo) {
   return render(
-    <MemoryRouter initialEntries={["/expedientes/CPI-2026-0004"]}>
-      <Routes><Route path="/expedientes/:id" element={<ExpedienteVivo usuario={usuario} />} /></Routes>
-    </MemoryRouter>,
+    <ConSesion sesion={sesionPrueba(usuario.rol === "otras_areas" ? "otras_areas" : "especialista_srt")}>
+      <MemoryRouter initialEntries={["/expedientes/CPI-2026-0004"]}>
+        <Routes><Route path="/expedientes/:id" element={<ExpedienteVivo usuario={usuario} />} /></Routes>
+      </MemoryRouter>
+    </ConSesion>,
   );
 }
 
@@ -153,7 +156,7 @@ describe("Lista de expedientes", () => {
       { id_expediente: "RP-2026-0001", cod_eps: "EPS03", tipo_procedimiento: "revision_periodica", estado: "en_tramite",
         fecha_inicio: "2026-01-02", hito_actual: "x", responsable_actual: "SRT", naturaleza: "sintético" },
     ]));
-    render(<MemoryRouter><ListaExpedientes /></MemoryRouter>);
+    render(<ConSesion sesion={sesionPrueba()}><MemoryRouter><ListaExpedientes /></MemoryRouter></ConSesion>);
     expect(await screen.findByText("REAL-TACNA-2026")).toBeInTheDocument();
     expect(screen.getByText("Dato real")).toBeInTheDocument();
     expect(screen.queryByText("RP-2026-0001")).not.toBeInTheDocument();

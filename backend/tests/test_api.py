@@ -28,7 +28,7 @@ def settings(tmp_path):
 @pytest.fixture
 def cliente(settings):
     app.dependency_overrides[get_settings] = lambda: settings
-    yield TestClient(app)
+    yield TestClient(app, headers={"X-Usuario": "coord-srt-01"})
     app.dependency_overrides.clear()
 
 

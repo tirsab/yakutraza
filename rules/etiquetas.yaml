@@ -1,0 +1,289 @@
+# Etiquetas en lenguaje claro para los códigos internos de la muestra (Fase 5).
+#
+# La interfaz nunca muestra un código con guion bajo: lo traduce con este catálogo.
+# Fuentes: diccionario_variables.xlsx (hojas «Léame», «Hitos» y descripción de cada
+# variable). Las etiquetas cortas resumen esas descripciones; no agregan significado.
+
+version: 1
+fuente: "diccionario_variables.xlsx (hojas Léame e Hitos)"
+
+categorias:
+  tipo_procedimiento:
+    cambio_programa_inversiones: "Cambio al programa de inversiones"
+    uso_excepcional_fondo: "Uso excepcional del fondo"
+    revision_periodica: "Revisión periódica de tarifas"
+    reajuste_ipm: "Reajuste por IPM"
+    reporte_periodico: "Reporte periódico"
+    verificacion_incremento: "Verificación de incrementos tarifarios"
+    uso_emergencia_fondo: "Uso del fondo por emergencia"
+
+  estado_expediente:
+    en_tramite: "En trámite"
+    concluido: "Concluido"
+    archivado: "Archivado"
+
+  resultado:
+    aprobado: "Aprobado"
+    aprobado_parcial: "Aprobado en parte"
+    archivado_no_subsana: "Archivado: la EP no subsanó"
+    denegado: "Denegado"
+    incremento_autorizado: "Incremento autorizado"
+    incremento_autorizado_parcial: "Incremento autorizado en parte"
+    incremento_no_autorizado: "Incremento no autorizado"
+    no_aplicado_por_la_ep: "La EP no lo aplicó"
+    presentado_a_tiempo: "Presentado a tiempo"
+    presentado_fuera_de_plazo: "Presentado fuera de plazo"
+    reajuste_aplicado: "Reajuste aplicado"
+
+  origen:
+    de_oficio: "De oficio"
+    obligacion_periodica: "Obligación periódica"
+    solicitud_ep: "A solicitud de la EP"
+
+  etapa:
+    unica: "Etapa única"
+    1_inicio: "1. Inicio"
+    2_evaluacion: "2. Evaluación"
+    3_difusion: "3. Difusión"
+    4_aprobacion: "4. Aprobación"
+    concluido: "Concluido"
+
+  # Hoja «Hitos» del diccionario (columna Descripción).
+  hito:
+    solicitud: "Solicitud por mesa de partes"
+    derivacion: "Derivación de la DRE a la SRT"
+    asignacion: "Asignación al equipo SRT"
+    verificacion_tupa: "Verificación de requisitos del TUPA"
+    oficio_subsanacion: "Oficio de subsanación"
+    subsanacion_ep: "Subsanación de la EP"
+    cierre: "Cierre y archivo"
+    evaluacion: "Evaluación del equipo SRT"
+    oficio_informacion: "Oficio de información adicional"
+    informacion_ep: "Información adicional de la EP"
+    informe: "Informe y proyecto de resolución"
+    firma_informe: "Firma del informe (SRT)"
+    visado_informe: "Visado del informe (SRT)"
+    firma_informe_dre: "Firma del informe (DRE)"
+    firma_informe_oaj: "Firma del informe (OAJ)"
+    memo_gg: "Memorándum a la Gerencia General"
+    elevacion_cd: "Elevación al Consejo Directivo"
+    resolucion_cd: "Resolución del Consejo Directivo"
+    publicacion_ipm: "Publicación del IPM (INEI)"
+    sin_comunicacion: "La EP no comunicó el reajuste"
+    comunicacion_ep: "Comunicación del reajuste por la EP"
+    verificacion: "Verificación del cálculo del reajuste"
+    aplicacion: "Aplicación del reajuste en la facturación"
+    presentacion: "Presentación del reporte por la EP"
+    revision: "Revisión de consistencia del reporte"
+    observaciones: "Observaciones al reporte"
+    evaluacion_requisitos: "Evaluación de requisitos"
+    informe_inicio: "Informe de inicio"
+    firma_informe_inicio: "Firma del informe de inicio (SRT)"
+    resolucion_inicio: "Resolución de inicio"
+    proyecto_estudio: "Proyecto de estudio tarifario"
+    informe_difusion: "Informe para la difusión"
+    firma_informe_difusion: "Firma del informe para la difusión (SRT)"
+    memo_gg_difusion: "Memorándum a la GG (difusión)"
+    elevacion_cd_difusion: "Elevación al Consejo Directivo (difusión)"
+    resolucion_difusion: "Resolución que dispone la difusión"
+    publicacion: "Publicación en El Peruano"
+    audiencia_publica: "Audiencia pública"
+    comentarios: "Comentarios de la EP e interesados"
+    evaluacion_comentarios: "Evaluación de comentarios"
+    firma_informe_final: "Firma del informe final (SRT)"
+    memo_gg_final: "Memorándum a la GG (final)"
+    elevacion_cd_final: "Elevación al Consejo Directivo (final)"
+    resolucion_tarifaria: "Resolución tarifaria"
+    inicio: "Inicio de la verificación"
+    requerimiento: "Requerimiento de sustento a la EP"
+    sustento_ep: "Sustento de la EP"
+    pronunciamiento: "Pronunciamiento de la DRE"
+    informe_ep: "Informe de la EP"
+
+  # Hoja «Léame», fila «Siglas».
+  responsable:
+    EP: "Empresa prestadora (EP)"
+    "EP e interesados": "EP e interesados"
+    "Equipo SRT": "Equipo SRT"
+    SRT: "Subdirección de Regulación Tarifaria (SRT)"
+    DRE: "Dirección de Regulación Económica (DRE)"
+    DU: "Dirección de Usuarios (DU)"
+    OAJ: "Oficina de Asesoría Jurídica (OAJ)"
+    GG: "Gerencia General (GG)"
+    CD: "Consejo Directivo (CD)"
+    INEI: "INEI"
+    DRT: "Dirección de Regulación Tarifaria (DRT)"
+
+  estado_reloj:
+    vencido: "Vencido"
+    por_vencer: "Por vencer"
+    en_plazo: "En plazo"
+    no_calculable: "No puedo calcular"
+    cumplido: "Cumplido"
+    incumplido: "Incumplido"
+
+  reloj:
+    normativo: "Plazo normativo"
+    interno: "Meta interna"
+    oficio: "Plazo del oficio"
+
+  estado_hito:
+    "no iniciado": "No iniciado"
+    "en curso": "En curso"
+    concluido: "Concluido"
+    "sin fecha de inicio": "Sin fecha de inicio"
+    "fecha inconsistente": "Fecha inconsistente"
+
+  canal:
+    mesa_partes: "Mesa de partes"
+    correo: "Correo electrónico"
+    enlace_externo: "Enlace externo"
+    tramite: "Trámite documentario"
+    otro: "Otro"
+    no_indicado: "No indicado"
+
+  tipo_documento:
+    OF: "Oficio"
+    INF: "Informe"
+    MEM: "Memorándum"
+    RCD: "Resolución de Consejo Directivo"
+    RD: "Resolución de Dirección"
+    CARTA: "Carta"
+    CORREO: "Correo"
+    OTRO: "Otro"
+
+  estado_registro:
+    propuesto: "Propuesto, falta confirmar"
+    confirmado: "Confirmado"
+
+  fondo:
+    fondo_inversiones: "Fondo de inversiones"
+    reserva_grd_acc: "Reserva de gestión del riesgo de desastres y cambio climático"
+    reserva_mrse: "Reserva de servicios ecosistémicos"
+    reserva_pcc: "Reserva del plan de control de calidad"
+    sin_fondo_indicado: "Fondo o reserva no indicado"
+
+  fuente_financiamiento:
+    fondo_inversiones: "Fondo de inversiones"
+    transferencia_gobierno_nacional: "Transferencia del Gobierno Nacional"
+    endeudamiento: "Endeudamiento"
+    cooperacion: "Cooperación"
+
+  componente:
+    agua_potable: "Agua potable"
+    alcantarillado: "Alcantarillado"
+    fortalecimiento_institucional: "Fortalecimiento institucional"
+    gestion_riesgo_desastres: "Gestión del riesgo de desastres"
+    medicion: "Medición"
+    tratamiento_aguas_residuales: "Tratamiento de aguas residuales"
+
+  estado_ejecucion:
+    no_iniciado: "No iniciado"
+    expediente_tecnico: "Expediente técnico"
+    en_ejecucion: "En ejecución"
+    paralizado: "Paralizado"
+    concluido: "Concluido"
+
+  tipo_periodo:
+    vigente: "Periodo vigente"
+    anterior: "Periodo anterior"
+
+  peldano:
+    solicitado: "Solicitado"
+    autorizado: "Autorizado"
+    usado: "Usado"
+    verificacion_posterior: "Verificación posterior"
+    devolucion: "Devolución o exoneración"
+    programado: "Programado"
+    aprobado: "Aprobado"
+    financiado: "Financiado"
+    en_ejecucion: "En ejecución"
+    concluido: "Concluido"
+    beneficio_verificado: "Beneficio verificado"
+    paralizado: "Paralizado"
+
+  estado_peldano:
+    cumplido: "Cumplido"
+    pendiente: "Pendiente"
+    declarado: "Declarado"
+    paralizado: "Paralizado"
+    no_aplica: "No aplica"
+    no_autorizado: "No autorizado"
+    sin_dato: "Sin dato"
+    exonerada: "Exonerada"
+    no_verificado: "No verificado"
+
+  # Registro del MEF (DS08).
+  campo_mef:
+    cui: "CUI"
+    estado_inversion: "Estado de la inversión"
+    devengado_acumulado: "Devengado acumulado"
+    avance_fisico_pct: "Avance físico (%)"
+    fecha_ultima_actualizacion: "Última actualización"
+    nota: "Nota"
+  estado_inversion_mef:
+    ACTIVO: "Activa"
+    CERRADO: "Cerrada"
+    DESACTIVADO: "Desactivada"
+
+  rol:
+    especialista_srt: "Especialista SRT"
+    coordinacion_srt: "Coordinación SRT"
+    direccion_dre: "Dirección DRE"
+    otras_areas: "Otras áreas"
+    eps: "EPS"
+    ciudadania: "Ciudadanía"
+
+  severidad:
+    alta: "Alta"
+    media: "Media"
+    baja: "Baja"
+    informativa: "Informativa"
+
+  # rules/calidad.yaml (campo tipo de cada regla).
+  tipo_hallazgo:
+    coherencia_aritmetica: "Coherencia aritmética"
+    cui_sin_mef: "CUI sin registro en el MEF"
+    duplicado: "Registro duplicado"
+    fecha_inconsistente: "Fecha inconsistente"
+    llave_sin_cruce: "Código sin cruce entre tablas"
+    unidad_sospechosa: "Monto en otra unidad"
+    calendario: "Calendario"
+    dato_no_registrado: "Dato no registrado"
+    desfase_mef: "Desfase con el MEF (informativo)"
+    plazo_ds02: "Plazo de DS02"
+    diferencia_mef: "Diferencia con el MEF"
+    reporte_faltante: "Reporte faltante"
+
+  # Nombres de columna que aparecen en fórmulas, mensajes y fuentes (diccionario, descripción de cada variable).
+  campo:
+    dias_habiles_sunass: "días hábiles atribuibles a la Sunass"
+    plazo_maximo_dh: "plazo máximo en días hábiles"
+    dias_suspension_dh: "días de suspensión"
+    fecha_limite: "fecha límite"
+    fecha_inicio: "fecha de inicio"
+    fecha_fin: "fecha de fin"
+    fecha_conclusion: "fecha de conclusión"
+    monto_solicitado: "monto solicitado"
+    monto_aprobado: "monto aprobado"
+    monto_programado_original: "monto programado original"
+    monto_programado_vigente: "monto programado vigente"
+    id_expediente_modificacion: "expediente de modificación"
+    resolucion_estudio_vigente: "resolución del estudio tarifario vigente"
+    tipo_periodo: "tipo de periodo"
+    uso_excepcional: "uso excepcional"
+    uso_ejecutado: "uso ejecutado"
+    deposito_programado: "depósito programado"
+    deposito_efectuado: "depósito efectuado"
+    saldo_final: "saldo final"
+    id_expediente_uso_excepcional: "expediente de uso excepcional"
+    plazo_referencial_dh: "plazo referencial en días hábiles"
+    cuenta_plazo: "cuenta para el plazo"
+    ds01_catalogo_eps: "catálogo de EPS"
+    ds02_procedimientos: "procedimientos"
+    ds02_hitos_procedimientos: "hitos de los procedimientos"
+    ds03_programa_inversiones: "programa de inversiones"
+    ds04_ejecucion_inversiones: "ejecución de inversiones"
+    ds05_fondo_inversiones_reservas: "fondo de inversiones y reservas"
+    ds06_estados_financieros: "estados financieros"
+    ds08_inversiones_mef: "inversiones del MEF"

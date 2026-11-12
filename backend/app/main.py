@@ -18,6 +18,9 @@ from app import servicio
 from app.api_dinero import router as router_dinero
 from app.api_dinero import router_contexto
 from app.api_expediente import router as router_expediente
+from app.api_vistas import router as router_vistas
+from app.expediente.usuarios import Usuario
+from app.vistas.sesion import alcance_eps, exige_vista
 from app.calidad.base import ETIQUETA_TIPO, SEVERIDADES, TIPOS_ANUNCIADOS
 from app.config import Settings, get_settings
 from app.db import get_engine
@@ -235,11 +238,13 @@ def reglas_plazos(s: Settings = Depends(get_settings)) -> dict[str, Any]:
 
 
 @app.get("/expedientes/{id_expediente}/relojes", response_model=list[AlertaOut], tags=["plazos"])
-def relojes(id_expediente: str, fecha_corte: date | None = None, s: Settings = Depends(get_settings)):
+def relojes(id_expediente: str, fecha_corte: date | None = None,
+            u: Usuario = Depends(exige_vista("expedientes")), s: Settings = Depends(get_settings)):
     _lote(s)
     exps = expedientes_desde_bd(get_engine(s.database_url), id_expediente=id_expediente)
     if id_expediente not in exps:
         raise HTTPException(404, f"No existe el expediente {id_expediente} en DS02.")
+    alcance_eps(u, exps[id_expediente].cod_eps)
     return [a.como_dict() for a in _motor(s).relojes(exps[id_expediente], fecha_corte or s.fecha_corte)]
 
 
@@ -249,6 +254,7 @@ def alertas(
     cod_eps: str | None = None,
     reloj: str | None = Query(None, description="normativo | interno | oficio"),
     solo_en_curso: bool = Query(True, description="Solo expedientes en trámite y alertas abiertas o no calculables"),
+    u: Usuario = Depends(exige_vista("expedientes")),
     s: Settings = Depends(get_settings),
 ):
     """Alertas ordenadas por plazo restante (vencidas primero), no por tamaño de la EPS."""
@@ -256,7 +262,7 @@ def alertas(
     corte = fecha_corte or s.fecha_corte
     motor = _motor(s)
     res = []
-    for exp in expedientes_desde_bd(get_engine(s.database_url), cod_eps=cod_eps).values():
+    for exp in expedientes_desde_bd(get_engine(s.database_url), cod_eps=alcance_eps(u, cod_eps)).values():
         if solo_en_curso and exp.estado != "en_tramite":
             continue
         for a in motor.relojes(exp, corte):
@@ -271,3 +277,4 @@ def alertas(
 app.include_router(router_expediente)
 app.include_router(router_dinero)
 app.include_router(router_contexto)
+app.include_router(router_vistas)

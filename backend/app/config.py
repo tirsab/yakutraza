@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     reportes_dir: Path = RAIZ_REPO / "reportes"
     # "Hoy" para la demo: fecha de corte de la muestra (hoja Léame del diccionario).
     fecha_corte: date = date(2026, 9, 30)
+    # Modo demo: muestra el selector «Ver como» y acepta el encabezado X-Usuario de los usuarios
+    # ficticios. En un enlace público se desactiva con MODO_DEMO=false: toda persona es ciudadanía.
+    modo_demo: bool = True
     # PostgreSQL 16 en Docker; SQLite solo para desarrollo y pruebas sin Docker.
     database_url: str = f"sqlite:///{(RAIZ_REPO / 'yakutraza_local.db').as_posix()}"
 

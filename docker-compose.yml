@@ -30,6 +30,8 @@ services:
       CASOS_REALES_PRIVADOS_DIR: /casos_reales_privados
       REPORTES_DIR: /reportes
       FECHA_CORTE: ${FECHA_CORTE:-2026-09-30}
+      # Modo demo (selector «Ver como»). En un enlace público: MODO_DEMO=false.
+      MODO_DEMO: ${MODO_DEMO:-true}
       TZ: America/Lima
     volumes:
       # Los datos se montan en solo lectura desde DATA_DIR (no están en el repositorio).

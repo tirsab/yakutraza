@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Alerta, Documento, EntradaBitacora, Evento, Hito, Prechequeo } from "./api";
+import { humanizar, t } from "./etiquetas";
 
 // ---------------------------------------------------------------- rótulos
 const NATURALEZAS: Record<string, { texto: string; clase: string }> = {
@@ -53,11 +54,11 @@ export function AlertaReloj({ a }: { a: Alerta }) {
   return (
     <article className={`alerta alerta-${a.estado}`} aria-label={`${RELOJES[a.reloj]}: ${ESTADOS[a.estado]?.texto ?? a.estado}`}>
       <div>
-        <EstadoAlerta estado={a.estado} /> · <strong>{RELOJES[a.reloj]}</strong> · {a.titulo}
+        <EstadoAlerta estado={a.estado} /> · <strong>{RELOJES[a.reloj]}</strong> · {humanizar(a.titulo)}
       </div>
-      <p style={{ margin: "4px 0" }}>{a.mensaje}</p>
+      <p style={{ margin: "4px 0" }}>{humanizar(a.mensaje)}</p>
       <div className="meta">
-        Regla: {a.regla_id ?? "—"} ({a.estado_validacion}) · Fuente: {a.fuente || "—"}
+        Regla: {a.regla_id ?? "—"} ({a.estado_validacion}) · Fuente: {humanizar(a.fuente) || "—"}
         {a.documento_estado && (
           <>
             {" "}
@@ -67,7 +68,7 @@ export function AlertaReloj({ a }: { a: Alerta }) {
       </div>
       {a.discrepancia && (
         <div className="discrepancia">
-          <strong>Discrepancia</strong> ({a.discrepancia.fuente}: {a.discrepancia.valor}): {a.discrepancia.descripcion}
+          <strong>Discrepancia</strong> ({humanizar(a.discrepancia.fuente)}: {humanizar(a.discrepancia.valor)}): {humanizar(a.discrepancia.descripcion)}
         </div>
       )}
     </article>
@@ -87,7 +88,7 @@ export function Evidencia({ h }: { h: Hito }) {
   return (
     <span className={`evidencia ${EVIDENCIA[e.estado] ?? ""}`}>
       {e.estado}
-      {e.referencia ? ` · ${e.referencia}${e.tipo ? ` (${e.tipo})` : ""}` : ""}
+      {e.referencia ? ` · ${e.referencia}${e.tipo ? ` (${t("tipo_documento", e.tipo)})` : ""}` : ""}
     </span>
   );
 }
@@ -98,16 +99,16 @@ export function LineaDeTiempo({ hitos }: { hitos: Hito[] }) {
       {hitos.map((h) => (
         <li key={h.nro} className={h.estado === "en curso" ? "en-curso" : ""}>
           <div className="titulo-hito">
-            {h.nro}. {h.hito.replace(/_/g, " ")} <Evidencia h={h} />
+            {h.nro}. {t("hito", h.hito)} <Evidencia h={h} />
           </div>
           <div className="detalle">
-            {h.responsable ?? "responsable no indicado"} · {fecha(h.fecha_inicio)} → {h.fecha_fin ? fecha(h.fecha_fin) : "en curso"}
-            {" · "}estado: {h.estado}
+            {h.responsable ? t("responsable", h.responsable) : "responsable no indicado"} · {fecha(h.fecha_inicio)} → {h.fecha_fin ? fecha(h.fecha_fin) : "en curso"}
+            {" · "}estado: {t("estado_hito", h.estado).toLowerCase()}
             {h.plazo_referencial_dh != null && ` · plazo referencial: ${h.plazo_referencial_dh} DH`}
             {h.cuenta_plazo === false && " · a cargo de la EP: suspende el plazo de Sunass"}
             {h.fila_ds02 != null && ` · DS02 fila ${h.fila_ds02}`}
           </div>
-          {h.descripcion && <div className="detalle">{h.descripcion}</div>}
+          {h.descripcion && <div className="detalle">{humanizar(h.descripcion)}</div>}
         </li>
       ))}
     </ol>
@@ -143,8 +144,8 @@ export function TablaDocumentos({ docs, eventos, puedeConfirmar, onConfirmarDoc,
         <tbody>
           {docs.map((d) => (
             <tr key={`d${d.id}`}>
-              <td>{d.tipo} · {d.numero ?? "sin número"}</td>
-              <td>{d.hito ?? "—"}</td>
+              <td>{t("tipo_documento", d.tipo)} · {d.numero ?? "sin número"}</td>
+              <td>{t("hito", d.hito)}</td>
               <td>{CANALES[d.canal] ?? d.canal}</td>
               <td>{fecha(d.fecha_notificacion ?? d.fecha_recepcion ?? d.fecha_emision)}</td>
               <td><Rotulo naturaleza={d.naturaleza} /> {d.origen === "transcrito_ia" && "Transcrito con asistencia de IA"}</td>
@@ -154,13 +155,13 @@ export function TablaDocumentos({ docs, eventos, puedeConfirmar, onConfirmarDoc,
                   <> <button className="secundario" onClick={() => onConfirmarDoc(d.id)}>Confirmar</button></>
                 )}
               </td>
-              <td>{d.fuente}{d.cita && <div className="cita">«{d.cita}»</div>}</td>
+              <td>{humanizar(d.fuente)}{d.cita && <div className="cita">«{d.cita}»</div>}</td>
             </tr>
           ))}
           {eventos.map((e) => (
             <tr key={`e${e.id}`}>
               <td>{e.tipo === "prorroga" ? "Prórroga" : "Plazo fijado por oficio"}: {e.dias_dh != null ? `${e.dias_dh} DH` : "plazo no indicado"}</td>
-              <td>{e.hito}</td>
+              <td>{t("hito", e.hito)}</td>
               <td>—</td>
               <td>—</td>
               <td><Rotulo naturaleza={e.naturaleza} /></td>
@@ -170,7 +171,7 @@ export function TablaDocumentos({ docs, eventos, puedeConfirmar, onConfirmarDoc,
                   <> <button className="secundario" onClick={() => onConfirmarEvento(e.id)}>Confirmar</button></>
                 )}
               </td>
-              <td>{e.fuente}{e.cita && <div className="cita">«{e.cita}»</div>}</td>
+              <td>{humanizar(e.fuente)}{e.cita && <div className="cita">«{e.cita}»</div>}</td>
             </tr>
           ))}
         </tbody>
@@ -197,7 +198,7 @@ export function FormularioDocumento({ hitos, onEnviar, deshabilitado }: {
     <form className="formulario" onSubmit={enviar} aria-label="Registrar un documento">
       <label>Tipo
         <select value={datos.tipo} onChange={cambiar("tipo")}>
-          {["OF", "INF", "MEM", "RD", "RCD", "CARTA", "CORREO", "OTRO"].map((t) => <option key={t}>{t}</option>)}
+          {["OF", "INF", "MEM", "RD", "RCD", "CARTA", "CORREO", "OTRO"].map((x) => <option key={x} value={x}>{t("tipo_documento", x)}</option>)}
         </select>
       </label>
       <label>Canal por el que llegó
@@ -207,7 +208,7 @@ export function FormularioDocumento({ hitos, onEnviar, deshabilitado }: {
       </label>
       <label>Hito
         <select value={datos.hito} onChange={cambiar("hito")}>
-          {hitos.map((h) => <option key={h} value={h}>{h.replace(/_/g, " ")}</option>)}
+          {hitos.map((h) => <option key={h} value={h}>{t("hito", h)}</option>)}
         </select>
       </label>
       <label>Número o descripción<input value={datos.numero ?? ""} onChange={cambiar("numero")} /></label>
@@ -230,9 +231,9 @@ export function Bitacora({ entradas }: { entradas: EntradaBitacora[] }) {
           {entradas.map((b) => (
             <tr key={b.id}>
               <td>{b.cuando.replace("T", " ").slice(0, 19)}</td>
-              <td>{b.usuario} ({b.rol})</td>
-              <td>{b.accion.replace(/_/g, " ")}</td>
-              <td>{b.entidad} {b.entidad_id}</td>
+              <td>{b.usuario} ({t("rol", b.rol)})</td>
+              <td>{humanizar(b.accion)}</td>
+              <td>{humanizar(b.entidad)} {b.entidad_id}</td>
               <td>{b.motivo ?? "—"}</td>
               <td><code>{b.hash.slice(0, 10)}…</code></td>
             </tr>
@@ -255,16 +256,16 @@ export function PanelPrechequeo({ p }: { p: Prechequeo }) {
     <section aria-label="Pre-chequeo art. 93/94">
       <div className="aviso">{p.aviso} Regla {p.estado_validacion}.</div>
       <p><strong>{RUTAS[p.ruta] ?? p.ruta}</strong>: {p.titulo}. Regla aplicada: {p.regla_aplicada}.</p>
-      <p>{p.explicacion}</p>
+      <p>{humanizar(p.explicacion)}</p>
       {p.texto_citado.map((t) => (
         <blockquote key={t.ubicacion} className="cita">«{t.texto}» ({t.ubicacion})</blockquote>
       ))}
-      {p.advertencias.map((a) => <p key={a} className="mensaje mensaje-error">⚠ {a}</p>)}
-      {p.faltantes.length > 0 && <p>Falta: {p.faltantes.join("; ")}.</p>}
+      {p.advertencias.map((a) => <p key={a} className="mensaje mensaje-error">⚠ {humanizar(a)}</p>)}
+      {p.faltantes.length > 0 && <p>Falta: {humanizar(p.faltantes.join("; "))}.</p>}
       {p.supuestos.length > 0 && (
         <details>
           <summary><span className="rotulo rotulo-supuesto">Supuesto</span> Supuestos usados</summary>
-          <ul>{p.supuestos.map((s) => <li key={s}>{s}</li>)}</ul>
+          <ul>{p.supuestos.map((s) => <li key={s}>{humanizar(s)}</li>)}</ul>
         </details>
       )}
     </section>

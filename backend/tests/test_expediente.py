@@ -22,7 +22,7 @@ from app.expediente.documentos import (
     ErrorRegistro, confirmar_documento, insertar_evento, registrar_documento, registrar_evento,
 )
 from app.expediente.prechequeo import CONSEJO_DIRECTIVO, NO_DETERMINABLE, SOLO_COMUNICACION, Entrada, catalogo_desde, prechequear
-from app.expediente.usuarios import ErrorPermiso, usuarios_desde
+from app.expediente.usuarios import ErrorPermiso, resolver, usuarios_desde
 from app.main import app
 from tests.conftest import escribir_csvs
 
@@ -30,7 +30,7 @@ RULES = get_settings().rules_dir
 # Rastros de un bloque de firma digital: «(firm|vis)ado por», «motivo: firma», cargo del firmante, RUC de la FAU.
 FIRMAS = re.compile(r"(?i)\b(firm|vis)ado\s+por\b|motivo:\s*firm|presidente\s+ejecutivo|\bFAU\s*\d{11}")
 USUARIOS = usuarios_desde(RULES / "usuarios_demo.yaml")
-ESP, EPS02, LECTURA = USUARIOS["esp-srt-01"], USUARIOS["eps-02"], USUARIOS["area-01"]
+ESP, EPS02, LECTURA = USUARIOS["esp-srt-01"], resolver(RULES / "usuarios_demo.yaml", "eps-EPS02"), USUARIOS["area-01"]
 
 
 def _hitos_cpi(exp="CPI-2026-0004"):
@@ -91,7 +91,7 @@ def _privado(settings):
 @pytest.fixture
 def cliente(settings):
     app.dependency_overrides[get_settings] = lambda: settings
-    yield TestClient(app)
+    yield TestClient(app, headers={"X-Usuario": "coord-srt-01"})
     app.dependency_overrides.clear()
 
 
@@ -274,8 +274,8 @@ def test_ficha_ds02_pasaporte_y_proyectos(settings, cliente):
     assert r.status_code == 201
     f = cliente.get("/expedientes/CPI-2026-0004").json()
     assert next(h for h in f["linea_de_tiempo"] if h["hito"] == "elevacion_cd")["evidencia"]["estado"] == "documento registrado"
-    assert cliente.post("/expedientes/CPI-2026-0004/documentos", json={"tipo": "OF", "canal": "correo",
-                                                                       "fecha_recepcion": "2026-09-15"}).status_code == 401
+    assert cliente.post("/expedientes/CPI-2026-0004/documentos", headers={"X-Usuario": ""},
+                        json={"tipo": "OF", "canal": "correo", "fecha_recepcion": "2026-09-15"}).status_code == 401
     assert cliente.post("/expedientes/CPI-2026-0004/documentos", headers={"X-Usuario": "nadie"},
                         json={"tipo": "OF", "canal": "correo", "fecha_recepcion": "2026-09-15"}).status_code == 401
     assert cliente.post("/expedientes/CPI-2026-0004/documentos", headers={"X-Usuario": "area-01"},
@@ -285,7 +285,7 @@ def test_ficha_ds02_pasaporte_y_proyectos(settings, cliente):
     assert cliente.post("/expedientes/NO-EXISTE/documentos", headers={"X-Usuario": "esp-srt-01"},
                         json={"tipo": "OF", "canal": "correo", "fecha_recepcion": "2026-09-15"}).status_code == 404
     assert cliente.post("/documentos/9999/confirmar", headers={"X-Usuario": "esp-srt-01"}).status_code == 404
-    assert cliente.post("/expedientes/REAL-TACNA-2026/eventos", headers={"X-Usuario": "eps-02"},
+    assert cliente.post("/expedientes/REAL-TACNA-2026/eventos", headers={"X-Usuario": "eps-EPS02"},
                         json={"hito": "informacion_ep", "tipo": "prorroga", "dias_dh": 1}).status_code == 403
     assert len(cliente.get("/usuarios-demo").json()) == 6
     assert cliente.get("/bitacora", params={"id_expediente": "CPI-2026-0004"}).json()[0]["accion"] == "registrar_documento"

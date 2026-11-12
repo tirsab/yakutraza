@@ -1,6 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { pedir } from "./api";
 import { Rotulo } from "./componentes";
+import { humanizar, t } from "./etiquetas";
 
 // ------------------------------------------------------------------ tipos
 type Mapa = Record<string, string>;
@@ -103,18 +105,12 @@ function numero(v: number, decimales: number): string {
   const miles = ent.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   return `${v < 0 ? "−" : ""}${miles}${dec ? `,${dec}` : ""}`;
 }
+export const entero = (v: number) => numero(v, 0);
 export const soles = (v: number | null | undefined) => (v == null ? "—" : `S/ ${numero(v, 2)}`);
 const uno = (v: number) => numero(v, 1).replace(/,0$/, "");
 export const pct = (v: number | null | undefined) => (v == null ? "—" : `${uno(v)} %`);
 
-async function obtener<T>(ruta: string): Promise<T> {
-  const r = await fetch(`/api${ruta}`);
-  if (!r.ok) {
-    const j = await r.json().catch(() => ({}));
-    throw new Error(typeof j.detail === "string" ? j.detail : `${r.status}`);
-  }
-  return r.json();
-}
+const obtener = <T,>(ruta: string) => pedir<T>(ruta);
 
 function Visible({ nivel }: { nivel?: string }) {
   if (!nivel) return null;
@@ -125,21 +121,15 @@ function Visible({ nivel }: { nivel?: string }) {
   );
 }
 
-const PELDANOS: Record<string, string> = {
-  solicitado: "Solicitado", autorizado: "Autorizado", usado: "Usado", verificacion_posterior: "Verificación posterior",
-  devolucion: "Devolución o exoneración", programado: "Programado", aprobado: "Aprobado", financiado: "Financiado",
-  en_ejecucion: "En ejecución", concluido: "Concluido", beneficio_verificado: "Beneficio verificado", paralizado: "Paralizado",
-};
-const ESTADO_PELDANO: Record<string, string> = {
-  cumplido: "✓ Cumplido", pendiente: "◷ Pendiente", declarado: "✎ Declarado", paralizado: "⏸ Paralizado",
-  no_aplica: "— No aplica", no_autorizado: "✗ No autorizado", sin_dato: "? Sin dato", exonerada: "✓ Exonerada",
-  no_verificado: "? No verificado",
+const ICONO_PELDANO: Record<string, string> = {
+  cumplido: "✓", pendiente: "◷", declarado: "✎", paralizado: "⏸", no_aplica: "—", no_autorizado: "✗", sin_dato: "?",
+  exonerada: "✓", no_verificado: "?",
 };
 
 function textoFondo(f: Peldano["fondo"], fondos?: Record<string, string>) {
   if (!f) return null;
   const lista = Array.isArray(f) ? f : [f];
-  return lista.map((x) => fondos?.[x] ?? x).join(", ");
+  return lista.map((x) => fondos?.[x] ?? t("fondo", x)).join(", ");
 }
 
 // ---------------------------------------------------------------- escalera
@@ -148,12 +138,12 @@ export function Escalera({ pasos, fondos, titulo }: { pasos: Peldano[]; fondos?:
     <ol className="escalera" aria-label={titulo}>
       {pasos.map((p) => (
         <li key={p.peldano} className={`peldano peldano-${p.estado}`}>
-          <strong>{PELDANOS[p.peldano] ?? p.peldano}</strong> · {ESTADO_PELDANO[p.estado] ?? p.estado}
+          <strong>{t("peldano", p.peldano)}</strong> · {ICONO_PELDANO[p.estado] ?? "•"} {t("estado_peldano", p.estado)}
           {p.monto != null && <> · {soles(p.monto)}</>}
           {p.fondo && <> · <span className="fondo">desde: {textoFondo(p.fondo, fondos)}</span></>}
           {p.area && <> · verifica: {p.area}</>}
-          {p.detalle && <div className="detalle">{p.detalle}</div>}
-          {p.fuente && p.fuente !== "—" && <div className="meta">Fuente: {p.fuente}</div>}
+          {p.detalle && <div className="detalle">{humanizar(p.detalle)}</div>}
+          {p.fuente && p.fuente !== "—" && <div className="meta">Fuente: {humanizar(p.fuente)}</div>}
         </li>
       ))}
     </ol>
@@ -296,7 +286,7 @@ export function TableroRutaDelDinero() {
         </table>
       </div>
       <ul className="sub">{res.notas.map((n) => <li key={n}>{n}</li>)}</ul>
-      <p className="meta">Fuente: {res.fuente}</p>
+      <p className="meta">Fuente: {humanizar(res.fuente)}</p>
 
       <h2>Usos por emergencia (art. 90, RCD 028-2026)</h2>
       {res.usos_emergencia.length === 0 ? (
@@ -309,7 +299,7 @@ export function TableroRutaDelDinero() {
           <article key={`${u.cod_eps}${u.anio_mes}${u.tipo_fondo}`} className="alerta alerta-por_vencer">
             <strong>{u.cod_eps} · {u.anio_mes} · {fondos?.[u.tipo_fondo] ?? u.tipo_fondo}</strong> · {soles(u.monto)}
             <p>{u.texto} {u.informe.mensaje}</p>
-            <div className="meta">Fuente: {u.fuente}</div>
+            <div className="meta">Fuente: {humanizar(u.fuente)}</div>
           </article>
         ))
       )}
@@ -328,13 +318,13 @@ export function TableroRutaDelDinero() {
         <label>Fuente de financiamiento
           <select value={fp.fuente} onChange={(e) => setFp({ ...fp, fuente: e.target.value })}>
             <option value="">Todas</option>
-            {["fondo_inversiones", "transferencia_gobierno_nacional", "endeudamiento", "cooperacion"].map((x) => <option key={x}>{x}</option>)}
+            {["fondo_inversiones", "transferencia_gobierno_nacional", "endeudamiento", "cooperacion"].map((x) => <option key={x} value={x}>{t("fuente_financiamiento", x)}</option>)}
           </select>
         </label>
         <label>Etapa
           <select value={fp.etapa} onChange={(e) => setFp({ ...fp, etapa: e.target.value })}>
             <option value="">Todas</option>
-            {["financiado", "en_ejecucion", "paralizado", "concluido"].map((x) => <option key={x} value={x}>{PELDANOS[x]}</option>)}
+            {["financiado", "en_ejecucion", "paralizado", "concluido"].map((x) => <option key={x} value={x}>{t("peldano", x)}</option>)}
           </select>
         </label>
         <label>Periodo
@@ -369,7 +359,7 @@ export function TableroRutaDelDinero() {
                   <tr key={p.cod_proyecto}>
                     <td><Link to={`/proyectos/${p.cod_proyecto}`}>{p.cod_proyecto}</Link><div className="detalle">{p.nombre_proyecto}</div></td>
                     <td>{p.cod_eps}</td>
-                    <td>{p.fuente_financiamiento}</td>
+                    <td>{t("fuente_financiamiento", p.fuente_financiamiento)}</td>
                     <td>
                       {soles(p.monto_programado_vigente)}
                       {p.modificado && <div className="detalle">original: {soles(p.monto_programado_original)}</div>}
@@ -381,7 +371,7 @@ export function TableroRutaDelDinero() {
                       {p.avance_financiero_original != null && <div className="detalle">{pct(p.avance_financiero_original)} sobre el original</div>}
                     </td>
                     <td>{pct(p.avance_fisico)}</td>
-                    <td>{PELDANOS[p.etapa_escalera] ?? p.etapa_escalera}</td>
+                    <td>{t("peldano", p.etapa_escalera)}</td>
                     <td>{p.senal_revision && p.diferencia_pp != null ? `⚠ ${uno(p.diferencia_pp)} pp` : "—"}</td>
                   </tr>
                 ))}
@@ -412,7 +402,7 @@ export function DetalleProyecto() {
       <p><Link to="/ruta-del-dinero">← Ruta del dinero</Link></p>
       <h1>{p.cod_proyecto} · {p.nombre_proyecto}</h1>
       <p className="sub">
-        {p.cod_eps} · {p.localidad} · fuente: {p.fuente_financiamiento} · meta asociada: {p.meta_asociada ?? "ninguna"} ·
+        {p.cod_eps} · {p.localidad} · fuente: {t("fuente_financiamiento", p.fuente_financiamiento)} · meta asociada: {p.meta_asociada ?? "ninguna"} ·
         población beneficiaria {p.poblacion_beneficiaria ?? "—"} <Rotulo naturaleza="estimado" /> <Rotulo naturaleza="sintético" />
       </p>
       <dl className="ficha-datos">
@@ -441,16 +431,17 @@ export function DetalleProyecto() {
       <div className="tabla-wrap"><table>
         <thead><tr><th>Trimestre</th><th>Estado</th><th>Ejecutado en el trimestre</th><th>Acumulado</th><th>Avance físico</th><th>DS04 fila</th></tr></thead>
         <tbody>{p.trimestres?.map((q) => (
-          <tr key={q.fila}><td>{q.anio_trimestre}</td><td>{q.estado}</td><td>{soles(q.ejecucion_trimestre)}</td><td>{soles(q.ejecucion_acumulada)}</td><td>{pct(q.avance_fisico)}</td><td>{q.fila}</td></tr>
+          <tr key={q.fila}><td>{q.anio_trimestre}</td><td>{t("estado_ejecucion", q.estado)}</td><td>{soles(q.ejecucion_trimestre)}</td><td>{soles(q.ejecucion_acumulada)}</td><td>{pct(q.avance_fisico)}</td><td>{q.fila}</td></tr>
         ))}</tbody>
       </table></div>
       {p.conciliacion_mef && (
         <>
           <h2>Registro del MEF (simulado)</h2>
-          <p>{Object.entries(p.conciliacion_mef).map(([k, val]) => `${k}: ${val ?? "—"}`).join(" · ")}</p>
+          <p>{Object.entries(p.conciliacion_mef).filter(([k]) => k !== "fila").map(([k, val]) =>
+            `${t("campo_mef", k)}: ${k === "estado_inversion" ? t("estado_inversion_mef", String(val)) : k === "devengado_acumulado" ? soles(val as number) : humanizar(String(val ?? "—"))}`).join(" · ")}</p>
         </>
       )}
-      <p className="meta">Fuente: {p.fuente}</p>
+      <p className="meta">Fuente: {humanizar(p.fuente)}</p>
     </>
   );
 }

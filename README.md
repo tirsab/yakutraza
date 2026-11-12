@@ -18,8 +18,8 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 | 1 | Ingesta de DS01–DS09 y control de calidad con reporte HTML | Lista |
 | 2 | Calendario de días hábiles y motor de tres relojes | Lista |
 | 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista |
-| 4 | Ruta del dinero (tablero, escaleras, visibilidad) | Lista (por aprobar) |
-| 5 | Interfaz por rol (React) | Pendiente |
+| 4 | Ruta del dinero (tablero, escaleras, visibilidad) | Lista |
+| 5 | Vistas por rol, tablero gerencial, simulador y diseño visual | Lista (por aprobar) |
 | 6 | Extracción asistida de documentos (IA con cita) | Pendiente |
 | 7 | Demo, pruebas de interfaz y entrega | Pendiente |
 
@@ -200,7 +200,7 @@ Todo entra «propuesto (transcrito con asistencia de IA)». Con solo la parte p�
 - el plazo máximo se cumple (vencía el 08-09-2026 y el expediente concluyó el 28-08-2026);
 - el plazo del oficio se cumple (3 DH del Oficio 156, más 2 DH de prórroga).
 
-**Usuarios de demostración:** son ficticios y están en `rules/usuarios_demo.yaml`. La API los identifica con el encabezado `X-Usuario`, y la matriz completa de permisos llega en la Fase 5.
+**Usuarios de demostración:** son ficticios y están en `rules/usuarios_demo.yaml`. La API los identifica con el encabezado `X-Usuario`; los permisos de cada rol están en `rules/roles.yaml` (Fase 5).
 
 Endpoints:
 - `GET /expedientes`
@@ -270,6 +270,66 @@ Endpoints:
 - `GET /ruta-dinero/expedientes/{id}`
 - `GET /contexto-financiero/{cod_eps}`
 - `GET /visibilidad`
+
+## Vistas por rol y tablero gerencial (Fase 5)
+
+**Criterio de éxito (la prueba memorable):** desde la bandeja, en menos de un minuto, la especialista responde qué
+expediente requiere su acción, qué evidencia falta y por qué importa.
+
+- **Portada** (`/`): nombre, propósito, las tres preguntas y un acceso a cada vista. Rótulo visible: «Prototipo con
+  datos sintéticos de la muestra del Hackathon Sunass».
+- **Selector «Ver como» (modo demo)** en la barra superior: Especialista SRT · Coordinación · Dirección DRE · Otras
+  áreas · EPS (elegir cuál) · Ciudadanía. Al cambiar de rol se cambia de vista y la API aplica los permisos de ese
+  rol, sin recargar. Los usuarios son ficticios.
+  - `MODO_DEMO=false` (variable de configuración) oculta el selector y hace que la API trate a toda persona como
+    ciudadanía, aunque envíe el encabezado `X-Usuario`. Es la opción para un enlace público.
+- **Permisos por rol** (`rules/roles.yaml`): qué vistas lee cada rol, qué acciones puede hacer y su alcance de datos.
+  La API los aplica en lectura y escritura:
+  - la EPS solo ve su `cod_eps` y no ve informes ni memorandos internos;
+  - otras áreas solo leen;
+  - la ciudadanía no inicia sesión y solo recibe campos públicos.
+- **Bandeja «mi siguiente acción»** (`/bandeja`): ordenada por plazo restante (vencidos primero), nunca por tamaño de
+  la EPS. Cada tarjeta responde las tres preguntas sin abrir el expediente: el siguiente paso, la evidencia que
+  falta (hitos «declarados, no verificados» y registros sin confirmar) y por qué importa (días, monto, proyecto,
+  meta y población estimada).
+- **Tablero gerencial de la DRE** (`/tablero`, coordinación y dirección):
+  - **selector de fecha de corte destacado** (fecha, deslizador y pasos de un día o una semana): los expedientes
+    pasan de «en plazo» a «por vencer» y a «vencido»; lo posterior a la fecha elegida no se conoce todavía;
+  - indicadores de expedientes en trámite, vencidos, por vencer y «no puedo calcular», con el cambio respecto de
+    la fecha anterior; cada indicador filtra la lista y cada fila lleva al expediente;
+  - % que supera el plazo máximo, por tipo y por EPS, rotulado «muestra simulada» (`docs/indicadores.md`);
+  - cuellos de botella por hito y por responsable, y embudo de firmas (agrupación en `rules/tablero.yaml`);
+  - carga por especialista (ficticios, asignación estable por hash) y propuesta de asignación por pesos
+    (supuesto, DRE-26);
+  - resumen de calidad de datos con enlace al reporte;
+  - filtros por tipo, EPS, responsable y especialista;
+  - **simulador de escenarios** (`POST /simulador`): días sin acción, umbral «por vencer» y especialistas
+    adicionales. Calcula en memoria: una prueba compara la huella de la base antes y después.
+- **Vista EPS** (`/mi-eps`, diseñada primero para el celular): una acción principal por pantalla (qué entregar y
+  hasta cuándo), sus trámites, su fondo y usos autorizados, y la vista previa de un aviso por correo, sin envío.
+- **Vista ciudadana** (`/ciudadania`, diseñada primero para el celular): búsqueda por localidad o ubigeo (sin
+  distinguir tildes), proyectos con su etapa, población estimada y decisión de Sunass vinculada, audiencias
+  públicas y plazos de comentarios. Solo lee campos públicos de `rules/visibilidad.yaml`; una prueba recorre cada
+  respuesta y falla si aparece un campo reservado.
+  - **Resumen en quechua:** una persona lo escribe y otra lo valida antes de publicarlo. No hay traducción
+    automática.
+- **Lenguaje claro:** `rules/etiquetas.yaml` traduce cada código de la muestra (estados, hitos, responsables, fondos,
+  resultados, columnas) con las descripciones del diccionario. Una prueba verifica que la interfaz no muestre
+  códigos con guion bajo.
+- **Diseño:** paleta del documento técnico, Noto Sans (`@fontsource/noto-sans`, licencia OFL, sin servicios
+  externos), estados con ícono, texto y patrón, contraste WCAG AA verificado por prueba, navegación completa con
+  teclado (enlace «Saltar al contenido», foco visible y foco al contenido al cambiar de página).
+
+Endpoints:
+- `GET /config`, `GET /sesion`, `GET /etiquetas`
+- `GET /bandeja?fecha_corte=&especialista=`
+- `GET /tablero?fecha_corte=&tipo=&cod_eps=&responsable=&especialista=&estado=`
+- `POST /simulador`
+- `GET /mi-eps?fecha_corte=`
+- `GET /publico/localidades?q=`, `GET /publico/localidades/{ubigeo}`
+- `GET|POST /resumenes-quechua`, `POST /resumenes-quechua/{id}/validar`
+
+Línea base: `python -m app.cli indicadores` escribe `docs/indicadores.md`.
 
 ## Supuestos
 
