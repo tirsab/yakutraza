@@ -1,0 +1,63 @@
+# Ruta del dinero (Fase 4): parámetros, supuestos y textos.
+#
+# Principio: que algo esté aprobado no significa que esté ejecutado. Cada monto dice de qué fondo o
+# reserva sale, su fuente (dataset y fila, o documento y página) y su naturaleza.
+# Todo lo marcado «supuesto» está por validar con la DRE.
+
+version: 1
+
+fondos:
+  # Códigos de DS05 (tipo_fondo) y su nombre en la interfaz.
+  fondo_inversiones: "Fondo de inversiones"
+  reserva_grd_acc: "Reserva de gestión del riesgo de desastres y adaptación al cambio climático"
+  reserva_mrse: "Reserva de retribución por servicios ecosistémicos"
+  reserva_pcc: "Reserva del plan de control de calidad"
+  sin_fondo_indicado: "Fondo o reserva no indicado en la solicitud"
+
+categorias_uso:
+  uso_ordinario: "Uso ordinario (programa de inversiones)"
+  uso_excepcional_art_89: "Uso excepcional autorizado (art. 89, con expediente)"
+  uso_emergencia_art_90: "Uso por emergencia (art. 90, sin expediente): requiere informe mensual en 10 DH"
+
+parametros:
+  umbral_senal_pp:
+    valor: 25
+    naturaleza: supuesto
+    sustento: >-
+      Diferencia entre avance financiero y avance físico (en puntos porcentuales) a partir de la cual el
+      proyecto se marca como «señal para revisión». Nunca se presenta como «problema».
+  base_avance_financiero:
+    valor: programado_vigente
+    naturaleza: supuesto
+    sustento: >-
+      Avance financiero = ejecución financiera acumulada (DS04, último trimestre reportado) ÷ suma del
+      monto programado VIGENTE del proyecto en DS03 × 100. Si hubo modificación, se muestra también el
+      avance sobre el programado original. La ejecución acumulada incluye lo ejecutado antes de 2022
+      (hoja ds04), así que puede superar el 100 %.
+  financiado:
+    naturaleza: supuesto
+    sustento: >-
+      El peldaño «financiado» se da por cumplido con la fuente de financiamiento declarada en DS03
+      (fuente_financiamiento). Es una declaración, no una verificación del financiamiento (DRE-25).
+    pregunta_dre: DRE-25
+
+escalera_proyecto:
+  - {peldano: programado, texto: "Programado en el estudio tarifario"}
+  - {peldano: aprobado, texto: "Aprobado (estudio tarifario o cambio aprobado)"}
+  - {peldano: financiado, texto: "Financiado (fuente declarada)"}
+  - {peldano: en_ejecucion, texto: "En ejecución (o paralizado)"}
+  - {peldano: concluido, texto: "Concluido"}
+  - {peldano: verificacion_posterior, texto: "Verificación posterior"}
+  - {peldano: beneficio_verificado, texto: "Beneficio verificado"}
+
+escalera_uso_fondo:
+  - {peldano: solicitado, texto: "Solicitado"}
+  - {peldano: autorizado, texto: "Autorizado (y desde qué fondo o reserva)"}
+  - {peldano: usado, texto: "Usado"}
+  - {peldano: verificacion_posterior, texto: "Verificación posterior"}
+  - {peldano: devolucion, texto: "Devolución o exoneración"}
+
+textos:
+  verificacion_pendiente: "Pendiente: la muestra no registra verificaciones posteriores (ver E-4)."
+  beneficio_no_verificado: "No verificado: la muestra no registra la verificación del beneficio."
+  senal: "Señal para revisión: el avance financiero y el físico difieren en más del umbral. No es un problema confirmado."
