@@ -147,6 +147,6 @@ describe("Detalle de proyecto", () => {
     expect(avance).toHaveTextContent("50 % sobre programado vigente · 41,7 % sobre el original");
     expect(screen.getByText("Programado original").nextElementSibling).toHaveTextContent("S/ 1 200,00");
     expect(screen.getByRole("link", { name: "CPI-2025-0002" })).toHaveAttribute("href", "/expedientes/CPI-2025-0002");
-    expect(screen.getByText(/Fuente: DS03 filas/)).toBeInTheDocument();
+    expect(screen.getByText(/Fuente: DS03 · Programa de inversiones, filas/)).toBeInTheDocument();
   });
 });

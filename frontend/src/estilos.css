@@ -496,3 +496,58 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .demo-barra select { max-width: 46vw; }
   .audio button { padding: 6px 12px; font-size: .86rem; }
 }
+
+/* ===================================================== Revisión de UX (íconos, bandeja, menú plegable) */
+.icono { flex: none; vertical-align: -0.2em; }
+.lateral-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lateral .plegar { background: rgba(255, 255, 255, .12); color: #fff; border: 0; border-radius: 10px; padding: 6px; display: inline-flex;
+  box-shadow: none; }
+.lateral .plegar:hover { background: rgba(255, 255, 255, .22); transform: none; }
+.item-ico { display: inline-flex; align-items: center; gap: 10px; }
+.sunass.menu-plegado { grid-template-columns: 72px 1fr; }
+.lateral.plegada { padding: 18px 10px; align-items: center; }
+.lateral.plegada .lateral-cabeza { flex-direction: column; }
+.lateral.plegada .marca small, .lateral.plegada .usuario-tarjeta div, .lateral.plegada h2, .lateral.plegada .recordatorio { display: none; }
+.lateral.plegada .marca { font-size: 0; }
+.lateral.plegada .marca::before { content: "YT"; font-size: 1.1rem; }
+.lateral.plegada .usuario-tarjeta { padding: 6px; background: none; }
+.lateral.plegada .item { justify-content: center; padding: 10px; position: relative; }
+.lateral.plegada .txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lateral.plegada .contador { position: absolute; top: 2px; right: 0; font-size: .62rem; padding: 0 5px; }
+
+.prox-accion .prox-sub { color: #fff; opacity: .92; font-size: .9rem; }
+.tres-respuestas { list-style: none; margin: 0 0 12px; padding: 4px 12px; background: rgba(7, 31, 61, .35); border-radius: 12px; }
+.tres-respuestas li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; font-size: .9rem; }
+.tres-respuestas li + li { border-top: 1px solid rgba(255, 255, 255, .16); }
+.tres-respuestas .icono { margin-top: 1px; }
+.enlace-claro { background: none; border: 0; padding: 0; color: #fff; font: inherit; font-weight: 700; text-decoration: underline;
+  text-underline-offset: 2px; cursor: pointer; box-shadow: none; }
+.enlace-claro:hover { transform: none; background: none; color: var(--c2); }
+
+.tres-relojes { display: block; padding: 4px 16px; }
+.tres-relojes ul { list-style: none; margin: 0; padding: 0; }
+.reloj-fila { display: grid; grid-template-columns: 190px 1fr auto auto; gap: 6px 14px; align-items: center; padding: 10px 0; }
+.reloj-fila + .reloj-fila { border-top: 1px solid var(--line); }
+.reloj-nombre { display: inline-flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 700; color: var(--n8);
+  text-transform: uppercase; letter-spacing: .04em; }
+.reloj-texto { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.reloj-texto .fecha-g { font-family: var(--f-titulo); font-size: 1.1rem; font-weight: 700; color: var(--n9); }
+.tarjeta-linea { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: var(--radio-s);
+  padding: 10px 14px; margin: 0 0 12px; color: var(--mut); font-size: .88rem; }
+
+@media (max-width: 860px) {
+  .sunass.menu-plegado { grid-template-columns: 1fr; }
+  .lateral .plegar { display: none; }
+  .lateral.plegada { align-items: stretch; padding: 18px 14px; }
+  .lateral.plegada .lateral-cabeza { flex-direction: row; }
+  .lateral.plegada .marca { font-size: 1.35rem; }
+  .lateral.plegada .marca::before { content: none; }
+  .lateral.plegada .marca small, .lateral.plegada .usuario-tarjeta div, .lateral.plegada h2 { display: block; }
+  .lateral.plegada .item { justify-content: space-between; }
+  .lateral.plegada .txt { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .reloj-fila { grid-template-columns: 1fr auto; }
+  .reloj-nombre { grid-column: 1 / -1; }
+  .reloj-texto { grid-column: 1; }
+  .reloj-estado { grid-column: 2; grid-row: 2; justify-self: end; }
+  .reloj-fuente { grid-column: 1 / -1; }
+}

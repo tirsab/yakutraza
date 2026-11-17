@@ -529,3 +529,33 @@ def test_etapa_ciudadana_nunca_afirma_funcionamiento():
         "n": 4, "de": 6, "clave": "en_obra", "nombre": "En obra", "detenida": True, "estado_validacion": "por validar (E-2)"}
     assert etapa_ciudadana({"estado_ejecucion": "expediente_tecnico"})["n"] == 3
     assert etapa_ciudadana({"estado_ejecucion": None})["n"] == 2
+
+
+# ================================================ fuentes visibles sin archivos internos
+INTERNOS = ("docs/", "rules/", "Prompt_Claude", ".md", ".yaml", "DATA_DIR")
+
+
+def test_ninguna_fuente_visible_cita_archivos_internos(tmp_path):
+    """Lo que muestra la interfaz cita normas y datasets, nunca archivos del proyecto (revisión de UX)."""
+    privado = tmp_path / "privado"
+    privado.mkdir()
+    s = Settings(data_dir=_muestra(tmp_path), rules_dir=RULES, reportes_dir=tmp_path / "reportes",
+                 casos_reales_privados_dir=privado, database_url=f"sqlite:///{(tmp_path / 'ux.db').as_posix()}")
+    servicio.seed(s)
+    app.dependency_overrides[get_settings] = lambda: s
+    try:
+        c = TestClient(app)
+        pedidos = [(COORD, "/bandeja"), (DIR, "/tablero"), (COORD, "/ruta-dinero/resumen"), (COORD, "/expedientes"),
+                   (COORD, "/expedientes/REAL-EPSSMU-2025"), (COORD, "/expedientes/REAL-TACNA-2026"),
+                   (COORD, "/expedientes/CPI-2026-0004"), ("eps-EPS02", "/mi-eps"), (None, "/publico/localidades/100601"),
+                   (COORD, "/calidad/hallazgos"), (COORD, "/alertas")]
+        for u, url in pedidos:
+            r = get(c, url, u)
+            assert r.status_code == 200, (url, r.status_code)
+            texto = r.text
+            for marca in INTERNOS:
+                assert marca not in texto, f"{url} cita «{marca}»"
+        epssmu = get(c, "/expedientes/REAL-EPSSMU-2025", COORD).text
+        assert "RCD N.° 126-2025-SUNASS-CD" in epssmu
+    finally:
+        app.dependency_overrides.clear()

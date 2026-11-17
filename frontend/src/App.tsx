@@ -7,6 +7,7 @@ import { VistaCiudadana } from "./ciudadana";
 import { fecha } from "./componentes";
 import { DetalleProyecto, TableroRutaDelDinero } from "./dinero";
 import { t } from "./etiquetas";
+import { Icono } from "./iconos";
 import { MiEps } from "./mieps";
 import { ExpedienteVivo, ListaExpedientes } from "./paginas";
 import { Portada } from "./portada";
@@ -80,34 +81,65 @@ function FechaCompacta() {
   );
 }
 
-function BarraLateral({ abierta, urgentes }: { abierta: boolean; urgentes: number | null }) {
+// Ítem del menú: ícono y texto. Con el menú plegado, el texto queda solo para lectores de pantalla y como tooltip.
+function Item({ to, icono, texto, end, extra }: { to: string; icono: string; texto: string; end?: boolean; extra?: ReactNode }) {
+  return (
+    <li><NavLink className="item" to={to} end={end} title={texto}>
+      <span className="item-ico"><Icono nombre={icono} /><span className="txt">{texto}</span></span>{extra}
+    </NavLink></li>
+  );
+}
+
+const CLAVE_PLEGADO = "yakutraza.menu_plegado";
+
+function leerPlegado(): boolean {
+  try {
+    return window.localStorage.getItem(CLAVE_PLEGADO) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function BarraLateral({ abierta, urgentes, plegada, onPlegar }: {
+  abierta: boolean; urgentes: number | null; plegada: boolean; onPlegar: () => void;
+}) {
   const { usuario, puedeVer, config, verComo } = useSesion();
   return (
-    <aside className={`lateral${abierta ? " abierta" : ""}`} aria-label="Menú de Sunass">
-      <Link to="/" className="marca" aria-label="YakuTraza, ir a la portada">YakuTraza<small>SUNASS · DRE</small></Link>
+    <aside className={`lateral${abierta ? " abierta" : ""}${plegada ? " plegada" : ""}`} aria-label="Menú de Sunass">
+      <div className="lateral-cabeza">
+        <Link to="/" className="marca" aria-label="YakuTraza, ir a la portada">YakuTraza<small>SUNASS · DRE</small></Link>
+        <button type="button" className="plegar" aria-expanded={!plegada} aria-controls="menu-trabajo" onClick={onPlegar}
+                title={plegada ? "Desplegar menú" : "Plegar menú"}>
+          <Icono nombre={plegada ? "desplegar" : "plegar"} titulo={plegada ? "Desplegar menú" : "Plegar menú"} />
+        </button>
+      </div>
       <div className="usuario-tarjeta">
         <Avatar nombre={usuario.nombre} claro />
         <div><strong>{usuario.nombre}</strong><span>{t("rol", usuario.rol)} · usuario ficticio</span></div>
       </div>
-      <nav aria-label="Trabajo">
+      <nav aria-label="Trabajo" id="menu-trabajo">
         <h2>Trabajo</h2>
         <ul>
           {puedeVer("bandeja") && (
-            <li><NavLink className="item" to="/bandeja">Mi bandeja
-              {urgentes ? <span className="contador" aria-label={`${urgentes} urgentes`}>{urgentes}</span> : null}</NavLink></li>
+            <Item to="/bandeja" icono="bandeja" texto="Mi bandeja"
+                  extra={urgentes ? <span className="contador" aria-label={`${urgentes} urgentes`}>{urgentes}</span> : null} />
           )}
-          {puedeVer("tablero") && <li><NavLink className="item" to="/tablero">Tablero de dirección</NavLink></li>}
-          {puedeVer("expedientes") && <li><NavLink className="item" to="/expedientes" end>Expedientes</NavLink></li>}
-          {puedeVer("ruta_dinero") && <li><NavLink className="item" to="/ruta-del-dinero">Ruta del dinero</NavLink></li>}
-          <li><NavLink className="item" to="/bitacora">Bitácora</NavLink></li>
+          {puedeVer("tablero") && <Item to="/tablero" icono="tablero" texto="Tablero de dirección" />}
+          {puedeVer("expedientes") && <Item to="/expedientes" icono="carpeta" texto="Expedientes" end />}
+          {puedeVer("ruta_dinero") && <Item to="/ruta-del-dinero" icono="dinero" texto="Ruta del dinero" />}
+          <Item to="/bitacora" icono="bitacora" texto="Bitácora" />
         </ul>
       </nav>
       <nav aria-label="Otras vistas">
         <h2>Otras vistas</h2>
         <ul>
-          {config.modo_demo && <li><button type="button" className="item" onClick={() => verComo("eps")}>Ver como EPS <span aria-hidden="true">→</span></button></li>}
-          <li><NavLink className="item" to="/ciudadania">Ver vista pública <span aria-hidden="true">→</span></NavLink></li>
-          <li><Link className="item" to="/">Salir a la portada</Link></li>
+          {config.modo_demo && (
+            <li><button type="button" className="item" title="Ver como EPS" onClick={() => verComo("eps")}>
+              <span className="item-ico"><Icono nombre="eps" /><span className="txt">Ver como EPS</span></span></button></li>
+          )}
+          <Item to="/ciudadania" icono="ojo" texto="Ver vista pública" />
+          <li><Link className="item" to="/" title="Salir a la portada">
+            <span className="item-ico"><Icono nombre="salir" /><span className="txt">Salir a la portada</span></span></Link></li>
         </ul>
       </nav>
       <div className="recordatorio">
@@ -122,6 +154,13 @@ function VistaSunass({ children }: { children: ReactNode }) {
   const { puedeVer, corte } = useSesion();
   const [abierta, setAbierta] = useState(false);
   const [urgentes, setUrgentes] = useState<number | null>(null);
+  const [plegada, setPlegada] = useState(leerPlegado);
+  const plegar = () => setPlegada((p) => {
+    try {
+      window.localStorage.setItem(CLAVE_PLEGADO, p ? "0" : "1");
+    } catch { /* sin almacenamiento: solo dura esta visita */ }
+    return !p;
+  });
   const { pathname } = useLocation();
   useEffect(() => setAbierta(false), [pathname]);
   useEffect(() => {
@@ -131,8 +170,8 @@ function VistaSunass({ children }: { children: ReactNode }) {
       .catch(() => setUrgentes(null));
   }, [corte, puedeVer]);
   return (
-    <div className="sunass">
-      <BarraLateral abierta={abierta} urgentes={urgentes} />
+    <div className={`sunass${plegada ? " menu-plegado" : ""}`}>
+      <BarraLateral abierta={abierta} urgentes={urgentes} plegada={plegada} onPlegar={plegar} />
       <div className="sunass-cuerpo">
         <header className="sunass-cabecera">
           <button type="button" className="secundario menu-movil" aria-expanded={abierta} onClick={() => setAbierta(!abierta)}>
@@ -182,7 +221,7 @@ function Vista({ nombre, children }: { nombre: string; children: ReactNode }) {
   return (
     <section className="tarjeta" aria-labelledby="sin-permiso">
       <h1 id="sin-permiso">Esta vista no está disponible para {t("rol", usuario.rol)}</h1>
-      <p>Los permisos se definen por rol en <code>rules/roles.yaml</code>.</p>
+      <p>Los permisos dependen de su rol.</p>
       {config.modo_demo && quien.length > 0 && (
         <p className="acciones">
           En el modo demo puede verla como:{" "}

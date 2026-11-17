@@ -254,7 +254,7 @@ describe("Bandeja maestro-detalle", () => {
     apiBandeja();
     render(<ConSesion sesion={sesionPrueba()}><ToastProvider><MemoryRouter><Bandeja /></MemoryRouter></ToastProvider></ConSesion>);
     expect(await screen.findByRole("heading", { level: 1, name: "Hola, Especialista SRT." })).toBeInTheDocument();
-    expect(screen.getByText(/Hoy tienes/).closest("p")).toHaveTextContent("Hoy tienes 1 expediente que necesita tu atención");
+    expect(screen.getByText(/Hoy tienes/).closest("p")).toHaveTextContent("Hoy tienes 1 urgente de 2 expedientes");
     const lista = screen.getByRole("list", { name: "Expedientes ordenados por plazo restante" });
     const [primero, segundo] = within(lista).getAllByRole("button");
     expect(primero).toHaveAttribute("aria-current", "true");
@@ -264,7 +264,8 @@ describe("Bandeja maestro-detalle", () => {
     expect(prox).toHaveTextContent("Próxima acción · está en Gerencia General (GG)");
     expect(prox).toHaveTextContent("paso 6 de 7 (Consejo Directivo)");
     expect(prox).toHaveTextContent("¿Qué requiere acción? Plazo normativo: vencido hace 7 días hábiles (vence el 21/09/2026).");
-    expect(prox).toHaveTextContent("¿Qué falta? 3 evidencias");
+    expect(prox).toHaveTextContent("¿Qué falta? 3 hitos sin documento · Ver");
+    expect(screen.getByRole("heading", { level: 2, name: "Hacer seguimiento" })).toBeInTheDocument();
     expect(prox).toHaveTextContent("¿Por qué importa? Vencido hace 7 días hábiles");
     expect(prox).toHaveTextContent("S/ 159 441,32");
     expect(screen.getByRole("list", { name: "Paso 6 de 7: Consejo Directivo" })).toBeInTheDocument();

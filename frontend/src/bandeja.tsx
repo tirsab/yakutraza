@@ -4,6 +4,7 @@ import { api, pedir, type Alerta, type Documento, type Evento, type Ficha, type 
 import { FormularioDocumento, Rotulo, fecha } from "./componentes";
 import { soles, type Peldano, type Proyecto, type RutaUso } from "./dinero";
 import { humanizar, t } from "./etiquetas";
+import { Icono } from "./iconos";
 import { useSesion } from "./sesion";
 import { BarraPasos, ChipFuente, Dialogo, PildoraPlazo, irA, useToast, type Pasos } from "./ui";
 
@@ -48,6 +49,23 @@ export function plazoEnPalabras(d: number | null | undefined): string {
 
 const URGENTES = ["vencido", "no_calculable", "por_vencer"];
 
+/** Título corto de la próxima acción: la primera frase, sin el detalle entre paréntesis ni tras los dos puntos. */
+export function corto(paso: string): string {
+  const s = paso.replace(/\.$/, "").split(/[:(]/)[0].trim();
+  return s || paso;
+}
+
+/** «10 hitos sin documento · 2 por confirmar». */
+export function resumenFaltante(faltan: { tipo: string }[]): string {
+  if (faltan.length === 0) return "No falta evidencia registrada.";
+  const sinDoc = faltan.filter((f) => f.tipo === "sin_documento").length;
+  const porConf = faltan.filter((f) => f.tipo === "por_confirmar").length;
+  const otros = faltan.length - sinDoc - porConf;
+  return [sinDoc && `${sinDoc} ${sinDoc === 1 ? "hito sin documento" : "hitos sin documento"}`,
+          porConf && `${porConf} por confirmar`,
+          otros && `${otros} ${otros === 1 ? "evidencia pendiente" : "evidencias pendientes"}`].filter(Boolean).join(" · ");
+}
+
 // ------------------------------------------------------------------ bandeja
 export function Bandeja() {
   const { usuario, corte, config } = useSesion();
@@ -79,8 +97,9 @@ export function Bandeja() {
       <div className="saludo">
         <h1>Hola, {nombre}.</h1>
         <p className="sub" role="status">
-          {urgentes === 0 ? "Hoy no tienes expedientes urgentes." : <>Hoy tienes <strong className="urgentes">{urgentes} {urgentes === 1 ? "expediente" : "expedientes"}</strong> que {urgentes === 1 ? "necesita" : "necesitan"} tu atención.</>}
-          {" "}Empecemos por el más urgente. <span className="rotulo rotulo-supuesto">{r.rotulo_asignacion}</span>
+          {urgentes === 0 ? <>Hoy no tienes expedientes urgentes de {r.items.length}.</>
+            : <>Hoy tienes <strong className="urgentes">{urgentes} {urgentes === 1 ? "urgente" : "urgentes"}</strong> de {r.items.length} {r.items.length === 1 ? "expediente" : "expedientes"}. Empecemos por el más urgente.</>}
+          {" "}<span className="rotulo rotulo-supuesto">{r.rotulo_asignacion}</span>
         </p>
         {corte !== config.fecha_corte_muestra && (
           <p className="aviso">Está viendo la bandeja a una fecha anterior a la de la muestra: lo posterior aún no se conoce.</p>
@@ -141,19 +160,20 @@ function DetalleExpediente({ x }: { x: ItemBandeja }) {
     <div className="detalle-col" aria-label={`Detalle de ${x.id_expediente}`}>
       <section className="prox-accion" aria-labelledby="prox-titulo">
         <span className="etq">Próxima acción · {etq}</span>
-        <h2 id="prox-titulo">{x.siguiente_paso.replace(/\.$/, "")} · {x.id_expediente}</h2>
-        <p>
-          {x.cod_eps ?? x.empresa} · {t("tipo_procedimiento", x.tipo_procedimiento)}
+        <h2 id="prox-titulo">{corto(x.siguiente_paso)}</h2>
+        <p className="prox-sub">
+          <strong>{x.id_expediente}</strong> · {x.cod_eps ?? x.empresa} · {t("tipo_procedimiento", x.tipo_procedimiento)}
           {x.base_normativa && <> · {x.base_normativa}</>}
           {p && <> · paso {p.actual + 1} de {p.n} ({p.pasos[p.actual]?.nombre})</>}
           {x.proyecto && <> · Proyecto: {x.proyecto.nombre} ({x.proyecto.localidad})</>}
         </p>
-        <div className="tres-respuestas-mini">
-          <p><strong>¿Qué requiere acción?</strong> {a ? `${t("reloj", a.reloj)}: ${plazoEnPalabras(a.dias_restantes)}${a.fecha_limite ? ` (vence el ${fecha(a.fecha_limite)})` : ""}.` : "Sin plazo abierto."}</p>
-          <p><strong>¿Qué falta?</strong> {x.evidencia_faltante.length === 0 ? "No falta evidencia registrada." :
-            `${x.evidencia_faltante.length} ${x.evidencia_faltante.length === 1 ? "evidencia" : "evidencias"}: ${humanizar(x.evidencia_faltante[0].texto)}${x.evidencia_faltante.length > 1 ? " …" : ""}`}</p>
-          <p><strong>¿Por qué importa?</strong> {x.por_que_importa.map(humanizar).join(" ")}</p>
-        </div>
+        <ul className="tres-respuestas" aria-label="Tres respuestas">
+          <li><Icono nombre="reloj" /><span><strong>¿Qué requiere acción?</strong>{" "}
+            {a ? `${t("reloj", a.reloj)}: ${plazoEnPalabras(a.dias_restantes)}${a.fecha_limite ? ` (vence el ${fecha(a.fecha_limite)})` : ""}.` : "Sin plazo abierto."}</span></li>
+          <li><Icono nombre="documento" /><span><strong>¿Qué falta?</strong>{" "}{resumenFaltante(x.evidencia_faltante)}
+            {x.evidencia_faltante.length > 0 && <>{" · "}<button type="button" className="enlace-claro" onClick={() => irA(document.getElementById("linea-titulo"))}>Ver<span className="oculto"> la línea de tiempo con evidencia</span></button></>}</span></li>
+          <li><Icono nombre="balanza" /><span><strong>¿Por qué importa?</strong> {x.por_que_importa.map(humanizar).join(" ")}</span></li>
+        </ul>
         <div className="acciones">
           {puede("registrar_documento") && <button type="button" className="claro" onClick={() => setRegistrar(true)}>Registrar documento o avance</button>}
           <Link className="boton fantasma" to={`/expedientes/${x.id_expediente}`}>Abrir expediente completo</Link>
@@ -217,25 +237,29 @@ function elegir(relojes: Alerta[], reloj: string): Alerta | undefined {
 
 export function TresRelojes({ relojes }: { relojes: Alerta[] }) {
   return (
-    <section className="tarjeta tres-relojes" aria-label="Tres relojes">
-      {RELOJES.map(({ clave, titulo }) => {
-        const a = elegir(relojes, clave);
-        return (
-          <div key={clave} className="reloj-col" aria-label={titulo}>
-            <div className="tit">{titulo}{a && <PildoraPlazo estado={a.estado} dias={a.dias_restantes} />}</div>
-            {!a ? <p className="detalle">{clave === "oficio" ? "No hay un plazo de oficio registrado." : "Sin plazo para este expediente."}</p>
-              : a.estado === "no_calculable" ? (
-                <p><strong>No puedo calcular:</strong> {humanizar(a.mensaje).replace(/^No puedo calcular( todavía)?:\s*/i, "")}</p>
-              ) : (
-                <>
-                  <span className="fecha-g">{a.fecha_limite ? fecha(a.fecha_limite) : a.dias_restantes != null ? `${Math.abs(a.dias_restantes)} DH` : "—"}</span>
-                  <span className="detalle">{a.dias_restantes != null ? plazoEnPalabras(a.dias_restantes) : t("estado_reloj", a.estado)} · {humanizar(a.titulo)}</span>
-                </>
-              )}
-            {a && <span><ChipFuente texto={a.fuente} detalle={<>Regla {a.regla_id ?? "—"} ({a.estado_validacion}). {humanizar(a.mensaje)}</>} /></span>}
-          </div>
-        );
-      })}
+    <section className="tarjeta tres-relojes" aria-labelledby="relojes-titulo">
+      <h3 id="relojes-titulo" className="oculto">Tres relojes</h3>
+      <ul>
+        {RELOJES.map(({ clave, titulo }) => {
+          const a = elegir(relojes, clave);
+          return (
+            <li key={clave} className="reloj-fila" aria-label={titulo}>
+              <span className="reloj-nombre"><Icono nombre="reloj" />{titulo}</span>
+              {!a ? <span className="reloj-texto detalle">{clave === "oficio" ? "No hay un plazo de oficio registrado." : "Sin plazo para este expediente."}</span>
+                : a.estado === "no_calculable" ? (
+                  <span className="reloj-texto"><strong>No puedo calcular:</strong> {humanizar(a.mensaje).replace(/^No puedo calcular( todavía)?:\s*/i, "")}</span>
+                ) : (
+                  <span className="reloj-texto">
+                    <span className="fecha-g">{a.fecha_limite ? fecha(a.fecha_limite) : a.dias_restantes != null ? `${Math.abs(a.dias_restantes)} DH` : "—"}</span>
+                    <span className="detalle">{a.dias_restantes != null ? plazoEnPalabras(a.dias_restantes) : t("estado_reloj", a.estado)} · {humanizar(a.titulo)}</span>
+                  </span>
+                )}
+              <span className="reloj-estado">{a && <PildoraPlazo estado={a.estado} dias={a.dias_restantes} />}</span>
+              <span className="reloj-fuente">{a && <ChipFuente texto={a.fuente} detalle={<>Regla {a.regla_id ?? "—"} ({a.estado_validacion}). {humanizar(a.mensaje)}</>} />}</span>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -313,6 +337,9 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
       onError((e as Error).message);
     }
   };
+  if (transcritos.length === 0) {
+    return <p className="tarjeta-linea"><Icono nombre="documento" /> IA: nada por confirmar en este expediente.</p>;
+  }
   return (
     <section className="tarjeta ia-tarjeta" aria-labelledby="ia-titulo">
       <div className="fila" style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
@@ -417,12 +444,7 @@ export function MiniRuta({ f }: { f: Ficha }) {
   const usado = proy ? proy.ejecucion_financiera : pel("usado")?.monto ?? null;
   const max = Math.max(1, ...[programado, solicitado, autorizado, usado].map((v) => Number(v ?? 0)));
   if (programado == null && solicitado == null && usado == null && !escalera) {
-    return (
-      <section className="tarjeta mini-ruta" aria-labelledby="ruta-mini">
-        <h3 id="ruta-mini" style={{ marginTop: 0 }}>Ruta del dinero</h3>
-        <p className="detalle">Este trámite no tiene montos de inversión asociados en la muestra (DS02 no registra monto solicitado ni proyecto).</p>
-      </section>
-    );
+    return <p className="tarjeta-linea"><Icono nombre="dinero" /> Ruta del dinero: este trámite no tiene montos en la muestra.</p>;
   }
   return (
     <section className="tarjeta mini-ruta" aria-labelledby="ruta-mini">

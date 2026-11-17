@@ -15,7 +15,8 @@ caso: EPSSMU-UFI-2025
 naturaleza: real
 origen: transcrito_ia
 estado_inicial: propuesto
-fuente_principal: "RCD N.° 126-2025-SUNASS-CD (27-10-2025), según docs/Prompt_Claude_Code_YakuTraza.md (sección 10) y el documento técnico (sección 7)"
+# Origen de estos datos (no se muestra): docs/Prompt_Claude_Code_YakuTraza.md (sección 10) y el documento técnico (sección 7).
+fuente_principal: "RCD N.° 126-2025-SUNASS-CD (27-10-2025)"
 
 expediente:
   id: REAL-EPSSMU-2025
@@ -60,13 +61,13 @@ ruta_dinero:
     monto: 217313.20
     fondo: "no indicado en la parte pública"
     detalle: "Monto solicitado por la EPS."
-    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"
+    fuente: "RCD N.° 126-2025-SUNASS-CD (27-10-2025)"
   autorizado:
     estado: cumplido
     monto: 217313.20
     fondo: "reserva PCC/PAS (no el fondo de inversiones)"
     detalle: "Se autorizaron S/ 217 313,20 desde una reserva (PCC/PAS), no desde el fondo."
-    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"
+    fuente: "RCD N.° 126-2025-SUNASS-CD (27-10-2025)"
   usado:
     estado: sin_dato
     detalle: "No hay registro del uso efectivo."
@@ -76,4 +77,4 @@ ruta_dinero:
   devolucion:
     estado: exonerada
     detalle: "Exoneración de devolución."
-    fuente: "docs/Prompt_Claude_Code_YakuTraza.md, sección 10"
+    fuente: "RCD N.° 126-2025-SUNASS-CD (27-10-2025)"
