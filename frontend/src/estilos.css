@@ -592,3 +592,10 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .detalle-fondo { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; margin: 4px 0; }
 .detalle-fondo dt { font-size: .76rem; color: var(--mut); }
 .detalle-fondo dd { margin: 0; font-weight: 600; }
+
+/* ---------------------------------------------------- Revisión de UX: portal EPS */
+.contador-dh.sin-fecha { display: grid; place-items: center; min-height: 64px; text-align: center; }
+.contador-dh.sin-fecha span { font-weight: 700; font-size: .95rem; }
+.grupo-tramites h3 { font-size: .9rem; margin: 12px 0 4px; color: var(--n8); }
+.historial { margin-top: 12px; }
+.historial summary { cursor: pointer; font-weight: 600; color: var(--b7); }

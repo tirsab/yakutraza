@@ -31,8 +31,12 @@ function AvisoPrivacidad() {
   );
 }
 
-function BarraDemo() {
+// En la vista pública el selector «Ver como» se oculta, salvo en un enlace de demo explícito (?como=…).
+const DEMO_EXPLICITO = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("como");
+
+function BarraDemo({ publica }: { publica?: boolean }) {
   const { config, usuario, verComo, corte } = useSesion();
+  const selector = config.modo_demo && (!publica || DEMO_EXPLICITO);
   const [aviso, setAviso] = useState("");
   const cambiar = async (rol: string, codEps?: string) => {
     await verComo(rol, codEps);
@@ -44,7 +48,7 @@ function BarraDemo() {
         <span className="demo-etq">{config.modo_demo ? "DEMO" : "PROTOTIPO"}</span>
         <span className="demo-largo">{config.rotulo} · Fecha de corte: {fecha(corte)} · Plazos en días hábiles (DH)</span>
         <span className="demo-corto">Datos sintéticos · Corte {fecha(corte)}</span>
-        {config.modo_demo && (
+        {selector && (
           <div className="demo-sel" role="group" aria-label="Modo demo: ver como">
             <label htmlFor="ver-como">Ver como:</label>
             <select id="ver-como" value={usuario.rol} onChange={(e) => cambiar(e.target.value)}>
@@ -309,7 +313,7 @@ function Contenido() {
   return (
     <>
       <a className="saltar" href="#contenido">Saltar al contenido principal</a>
-      <BarraDemo />
+      <BarraDemo publica={ciudadana} />
       <AvisoPrivacidad />
       {portada || ciudadana ? principal : esEps ? <VistaEps>{principal}</VistaEps> : esSunass ? <VistaSunass>{principal}</VistaSunass> : principal}
       {!portada && !ciudadana && (

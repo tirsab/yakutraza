@@ -62,6 +62,8 @@ function BarraEtapas({ e }: { e: Etapa }) {
 function useVoz() {
   const soporta = typeof window !== "undefined" && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
   const [aviso, setAviso] = useState<string | null>(null);
+  // «Detener» solo aparece mientras suena el audio.
+  const [hablando, setHablando] = useState(false);
   const leer = (texto: string) => {
     if (!soporta) {
       setAviso("Tu navegador no permite la lectura en voz alta. Prueba con otro navegador.");
@@ -70,11 +72,18 @@ function useVoz() {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-PE";
+    u.onend = () => setHablando(false);
+    u.onerror = () => setHablando(false);
     window.speechSynthesis.speak(u);
+    setHablando(true);
     setAviso(null);
   };
-  const parar = () => { if (soporta) window.speechSynthesis.cancel(); };
-  return { soporta, aviso, leer, parar };
+  const parar = () => {
+    if (soporta) window.speechSynthesis.cancel();
+    setHablando(false);
+  };
+  useEffect(() => () => { if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis?.cancel(); }, []);
+  return { soporta, aviso, leer, parar, hablando };
 }
 
 export function VistaCiudadana() {
@@ -176,7 +185,7 @@ export function VistaCiudadana() {
               <>
                 <div className="audio">
                   <button type="button" className="secundario" onClick={() => voz.leer(resumenLocalidad)}>▶ Escuchar resumen en español</button>
-                  {voz.soporta && <button type="button" className="secundario" onClick={voz.parar}>■ Detener</button>}
+                  {voz.soporta && voz.hablando && <button type="button" className="secundario" onClick={voz.parar}>■ Detener</button>}
                 </div>
                 {voz.aviso && <p className="aviso" role="alert">{voz.aviso}</p>}
                 <div className="filtros-pil" role="group" aria-label="Filtrar obras">
@@ -238,7 +247,7 @@ function FichaObra({ o, etapas, d, volver, voz }: { o: Obra; etapas: EtapaDef[];
       <p className="detalle">{d.localidad.localidad} · {nombre(d.localidad.provincia)}, {nombre(d.localidad.departamento)} · {d.localidad.nombre_eps}</p>
       <div className="audio">
         <button type="button" onClick={() => voz.leer(texto)}>▶ Escuchar resumen</button>
-        {voz.soporta && <button type="button" className="secundario" onClick={voz.parar}>■ Detener</button>}
+        {voz.soporta && voz.hablando && <button type="button" className="secundario" onClick={voz.parar}>■ Detener</button>}
       </div>
       {voz.aviso && <p className="aviso" role="alert">{voz.aviso}</p>}
       <section className="tarjeta" aria-labelledby="etapa-titulo">

@@ -58,7 +58,7 @@ export function MiEps() {
       <div className="eps-grid" style={{ marginTop: 14 }}>
         <div>
           <Pedido p={d.siguiente_accion} otros={d.pendientes.length - 1} onResponder={setRespondiendo} correo={d.aviso_correo} />
-          <RevisarVia codEps={d.cod_eps} proyectos={d.proyectos ?? []} />
+          {hash === "#via" && <RevisarVia codEps={d.cod_eps} proyectos={d.proyectos ?? []} />}
         </div>
         <div>
           <MisTramites d={d} />
@@ -98,10 +98,14 @@ function Pedido({ p, otros, onResponder, correo }: {
       <h2 id="pedido-titulo" style={{ marginTop: 10 }}>{p.accion.replace(/\.$/, "")}</h2>
       <p className="detalle">Trámite {p.id_expediente} · {t("tipo_procedimiento", p.tipo_procedimiento)}</p>
       <div className="pedido-cuerpo">
-        <div className={`contador-dh${vencido ? " vencido" : sinPlazo ? " sin_plazo" : ""}`}>
-          <strong>{sinPlazo ? "?" : Math.abs(p.dias_restantes!)}</strong>
-          <span>{sinPlazo ? "sin plazo registrado" : vencido ? "días hábiles de atraso" : "días hábiles"}</span>
-        </div>
+        {sinPlazo ? (
+          <div className="contador-dh sin_plazo sin-fecha"><span>Sin fecha límite registrada</span></div>
+        ) : (
+          <div className={`contador-dh${vencido ? " vencido" : ""}`}>
+            <strong>{Math.abs(p.dias_restantes!)}</strong>
+            <span>{vencido ? "días hábiles de atraso" : "días hábiles"}</span>
+          </div>
+        )}
         <div>
           {p.fecha_limite ? <p>{vencido ? "Venció el" : "Tienes hasta el"} <strong>{fecha(p.fecha_limite)}</strong> ({plazoEnPalabras(p.dias_restantes)}).</p>
             : <p>No hay un plazo registrado para esta respuesta.</p>}
@@ -294,26 +298,37 @@ function MisTramites({ d }: { d: MiEpsDatos }) {
     <section className="tarjeta" id="tramites" aria-labelledby="tramites-titulo">
       <h2 id="tramites-titulo">Mis trámites</h2>
       {d.tramites.length === 0 && <p className="detalle">No tienes trámites en curso a la fecha de corte.</p>}
-      {d.tramites.map((x) => (
-        <div key={x.id_expediente} className="tramite">
-          <div className="fila">
-            <strong><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link> · {t("tipo_procedimiento", x.tipo_procedimiento)}</strong>
-            {x.le_toca_a_la_eps ? <Pildora tono="warn" icono="✋">Te toca a ti</Pildora> : <Pildora tono="info" icono="◷">Sunass evalúa</Pildora>}
-          </div>
-          <BarraPasos p={x.pasos} compacto />
-          <p className="meta">{x.pasos ? `Paso ${x.pasos.actual + 1} de ${x.pasos.n} (${x.pasos.pasos[x.pasos.actual]?.nombre}) · ` : ""}{x.en_que_va}</p>
-        </div>
-      ))}
-      {d.concluidos.slice(0, 3).map((x) => (
-        <div key={x.id_expediente} className="tramite">
-          <div className="fila">
-            <strong><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link> · {t("tipo_procedimiento", x.tipo_procedimiento)}</strong>
-            <Pildora tono="ok" icono="✓">{x.resultado ? t("resultado", x.resultado) : "Concluido"}</Pildora>
-          </div>
-          <BarraPasos p={x.pasos} compacto />
-          <p className="meta">Concluido el {fecha(x.fecha_conclusion)}</p>
-        </div>
-      ))}
+      {[{ titulo: "Te toca a ti", id: "grupo-eps", xs: d.tramites.filter((x) => x.le_toca_a_la_eps) },
+        { titulo: "Sunass evalúa", id: "grupo-sunass", xs: d.tramites.filter((x) => !x.le_toca_a_la_eps) }]
+        .filter((g) => g.xs.length > 0).map((g) => (
+          <section key={g.id} className="grupo-tramites" aria-labelledby={g.id}>
+            <h3 id={g.id}>{g.titulo} ({g.xs.length})</h3>
+            {g.xs.map((x) => (
+              <div key={x.id_expediente} className="tramite">
+                <div className="fila">
+                  <strong><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link> · {t("tipo_procedimiento", x.tipo_procedimiento)}</strong>
+                  {x.le_toca_a_la_eps ? <Pildora tono="warn" icono="✋">Te toca a ti</Pildora> : <Pildora tono="info" icono="◷">Sunass evalúa</Pildora>}
+                </div>
+                <BarraPasos p={x.pasos} compacto />
+                <p className="meta">{x.pasos ? `Paso ${x.pasos.actual + 1} de ${x.pasos.n} (${x.pasos.pasos[x.pasos.actual]?.nombre}) · ` : ""}{x.en_que_va}</p>
+              </div>
+            ))}
+          </section>
+        ))}
+      {d.concluidos.length > 0 && (
+        <details className="historial">
+          <summary>Historial: {d.concluidos.length} {d.concluidos.length === 1 ? "trámite concluido" : "trámites concluidos"}</summary>
+          {d.concluidos.map((x) => (
+            <div key={x.id_expediente} className="tramite">
+              <div className="fila">
+                <strong><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link> · {t("tipo_procedimiento", x.tipo_procedimiento)}</strong>
+                <Pildora tono="ok" icono="✓">{x.resultado ? t("resultado", x.resultado) : "Concluido"}</Pildora>
+              </div>
+              <p className="meta">Concluido el {fecha(x.fecha_conclusion)}</p>
+            </div>
+          ))}
+        </details>
+      )}
       <p className="meta">Ves el mismo recorrido que Sunass, sin sus documentos internos (informes y memorandos).</p>
     </section>
   );

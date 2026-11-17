@@ -189,6 +189,21 @@ describe("Barra DEMO y vistas por rol", () => {
     expect((pedido?.[1]?.headers as Record<string, string>)["X-Usuario"]).toBe("coord-srt-01");
   });
 
+  it("menú lateral plegable a íconos, con nombres accesibles", async () => {
+    apiDeApp();
+    window.localStorage.removeItem("yakutraza.menu_plegado");
+    render(<MemoryRouter initialEntries={["/bandeja"]}><App /></MemoryRouter>);
+    await screen.findByRole("heading", { level: 1, name: "Hola, Especialista SRT." });
+    const plegar = screen.getByRole("button", { name: "Plegar menú" });
+    expect(plegar).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(plegar);
+    expect(screen.getByRole("complementary", { name: "Menú de Sunass" })).toHaveClass("plegada");
+    expect(screen.getByRole("button", { name: "Desplegar menú" })).toHaveAttribute("aria-expanded", "false");
+    expect(within(screen.getByRole("navigation", { name: "Trabajo" })).getByRole("link", { name: /Mi bandeja/ })).toBeInTheDocument();
+    expect(window.localStorage.getItem("yakutraza.menu_plegado")).toBe("1");
+    window.localStorage.removeItem("yakutraza.menu_plegado");
+  });
+
   it("al elegir EPS abre el portal EPS y la lista de empresas", async () => {
     apiDeApp();
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
@@ -466,9 +481,9 @@ function apiEps() {
   });
 }
 
-function montarEps() {
+function montarEps(ruta = "/mi-eps") {
   return render(<ConSesion sesion={sesionPrueba("eps", { usuario: usuarioPrueba("eps", { permisos: ["registrar_documento", "prechequeo"] }) })}>
-    <ToastProvider><MemoryRouter><MiEps /></MemoryRouter></ToastProvider></ConSesion>);
+    <ToastProvider><MemoryRouter initialEntries={[ruta]}><MiEps /></MemoryRouter></ToastProvider></ConSesion>);
 }
 
 describe("Portal EPS", () => {
@@ -508,7 +523,12 @@ describe("Portal EPS", () => {
 
   it("«¿Qué vía te corresponde?» con preguntas Sí/No, regla aplicada y documentos de la norma", async () => {
     const f = apiEps();
-    montarEps();
+    // Ya no está en el inicio: se abre desde el menú («Revisar mi vía»).
+    const { unmount } = montarEps();
+    await screen.findByRole("region", { name: "Mis trámites" });
+    expect(screen.queryByRole("region", { name: "¿Qué vía te corresponde?" })).not.toBeInTheDocument();
+    unmount();
+    montarEps("/mi-eps#via");
     const viaSec = await screen.findByRole("region", { name: "¿Qué vía te corresponde?" });
     for (let i = 0; i < 5; i++) {
       const grupos = within(viaSec).getAllByRole("group");
@@ -531,9 +551,12 @@ describe("Portal EPS", () => {
     apiEps();
     montarEps();
     const tram = await screen.findByRole("region", { name: "Mis trámites" });
-    expect(tram).toHaveTextContent("Te toca a ti");
-    expect(tram).toHaveTextContent("Sunass evalúa");
-    expect(tram).toHaveTextContent("Aprobado");
+    // Tres grupos: «Te toca a ti», «Sunass evalúa» y un «Historial» plegado con los concluidos.
+    expect(within(tram).getByRole("heading", { name: /^Te toca a ti/ })).toBeInTheDocument();
+    expect(within(tram).getByRole("heading", { name: /^Sunass evalúa/ })).toBeInTheDocument();
+    const historial = within(tram).getByText(/^Historial: 1 trámite concluido/).closest("details")!;
+    expect(historial).not.toHaveAttribute("open");
+    expect(historial).toHaveTextContent("Aprobado");
     expect(within(tram).getByRole("list", { name: "Paso 3 de 7: Evaluación" })).toBeInTheDocument();
     const fondo = screen.getByRole("region", { name: "Mi fondo de inversiones" });
     for (const x of ["Programado", "Depositado", "Autorizado", "Usado"]) expect(fondo).toHaveTextContent(x);
@@ -636,8 +659,13 @@ describe("Vista ciudadana", () => {
       apiCiudadana();
       montarCiudadana();
       await screen.findByRole("list", { name: "Obras del distrito" });
+      // «Detener» solo aparece mientras suena el audio.
+      expect(screen.queryByRole("button", { name: "■ Detener" })).not.toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "▶ Escuchar resumen en español" }));
       expect(speak).toHaveBeenCalledTimes(1);
+      const detener = screen.getByRole("button", { name: "■ Detener" });
+      await userEvent.click(detener);
+      expect(screen.queryByRole("button", { name: "■ Detener" })).not.toBeInTheDocument();
       expect(speak.mock.calls[0][0].lang).toBe("es-PE");
       expect(speak.mock.calls[0][0].text).toContain("Belén");
     } finally {
