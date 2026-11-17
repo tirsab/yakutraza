@@ -353,3 +353,27 @@ def test_informes_de_emergencia(cal):
     assert lims == [cal.sumar_dias_habiles(date(2026, 8, 31), 10), cal.sumar_dias_habiles(date(2026, 9, 30), 10),
                     cal.sumar_dias_habiles(date(2026, 10, 15), 10)]
     assert len(limites_informe_emergencia(date(2026, 9, 1), None, cal)) == 1
+
+
+def test_versiones_por_fecha_de_las_normas_leidas_en_la_fase_6b():
+    """Fechas de vigencia leídas en el texto de cada norma (RCD 028-2021, 033-2022, 037-2024 y 028-2026)."""
+    cat = catalogo_desde(RULES / "plazos.yaml")
+    etapa = lambda d: cat.etapa("revision_periodica", "2_evaluacion", d).id
+    assert etapa(date(2022, 5, 16)) == "PLZ-N-RP-2-V2021" and etapa(date(2021, 7, 28)) == "PLZ-N-RP-2-V2021"
+    assert etapa(date(2022, 5, 17)) == "PLZ-N-RP-2-V2022"
+    emergencia = lambda d: cat.normativa("uso_emergencia_fondo", d)
+    assert emergencia(date(2024, 7, 5)).id == "PLZ-N-FONDO-EMERGENCIA-V2021" and emergencia(date(2024, 7, 5)).plazo_dh == 7
+    assert emergencia(date(2024, 7, 6)).id == "PLZ-N-FONDO-EMERGENCIA-V2024" and emergencia(date(2024, 7, 6)).plazo_dh == 10
+    assert emergencia(date(2026, 7, 31)).id == "PLZ-N-FONDO-EMERGENCIA-V2024"
+    assert emergencia(date(2026, 8, 1)).id == "PLZ-N-FONDO-EMERGENCIA-V2026"
+
+
+def test_citas_del_tuo_con_la_numeracion_del_ds_006_2026():
+    """El DS 006-2026-JUS renumeró el TUO: cada cita da el número nuevo y el anterior; ningún plazo cambia."""
+    cat = catalogo_desde(RULES / "plazos.yaml")
+    assert "DS 006-2026-JUS" in cat.documentos["TUO_27444"]["titulo"]
+    citas = [f for r in cat.reglas.values() for f in r.fuentes if f["doc"] == "TUO_27444"]
+    assert citas and all("(antes art." in f["ubicacion"] for f in citas)
+    ubicaciones = {f["ubicacion"].split(" (")[0] for f in citas}
+    assert ubicaciones == {"art. 125.1", "art. 131.1", "art. 133.1", "art. 134.1", "art. 134.2", "art. 136.3"}
+    assert "TUO Ley 27444 (DS 006-2026-JUS), art. 133.1" in cat.reglas["PLZ-COMPUTO"].fuente_texto(cat.documentos)

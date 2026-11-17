@@ -175,9 +175,9 @@ Cada expediente de DS02 tiene **tres relojes**:
 |---|---|---|
 | Normativo | Plazo máximo del procedimiento y de cada etapa de la revisión periódica | RGT (arts. 45.1, 46.3, 47.6, 49.3, 89.7 y 93.8), hoja Hitos, DS02 |
 | Interno | Metas de gestión por hito | Hoja Hitos (principal). Si el flujograma del expediente dice otra cosa, se muestra al lado como «discrepancia». |
-| Del oficio | Plazo que se le da a la EP en un oficio o prórroga | RGT (arts. 34.2, 45.2, 89.6 y 93.7), TUO de la Ley 27444 (arts. 136.1 y 147), hoja Hitos. Si hay un documento registrado, prima el plazo que fija. |
+| Del oficio | Plazo que se le da a la EP en un oficio o prórroga | RGT (arts. 34.2, 45.2, 89.6 y 93.7), TUO de la Ley 27444 (arts. 125.1 y 136; antes 136.1 y 147), hoja Hitos. Si hay un documento registrado, prima el plazo que fija. |
 
-- **Cómputo:** días hábiles contados desde el día hábil siguiente (TUO de la Ley 27444, arts. 142.1, 144.1 y 145.1; RGT art. 45.1).
+- **Cómputo:** días hábiles contados desde el día hábil siguiente (TUO de la Ley 27444, arts. 131.1, 133.1 y 134.1, antes 142.1, 144.1 y 145.1; RGT art. 45.1).
   `fecha_limite = inicio + plazo + días de suspensión a cargo de la EP` (hoja Léame).
 - **Calendario:** librería `holidays` (versión fija) más los feriados con vigencia de la hoja Supuestos. Las dos fuentes coinciden; si difirieran, la diferencia se registraría como hallazgo.
 - **Alertas explicables:** «vence en N DH», «vencido hace N DH» o «no puedo calcular: falta X». Cada alerta trae su regla, su fuente, su estado de validación y el documento que inició el conteo. Si DS02 no trae el documento, la alerta dice «declarado, no verificado».
@@ -263,9 +263,10 @@ La página «Ruta del dinero» (`/ruta-del-dinero` en la interfaz) responde de q
   - Lo verificado aparece «pendiente», nunca cero.
 
   Cada fila enlaza a sus expedientes.
-- **Uso por emergencia (art. 90, RCD 028-2026).** Un uso excepcional sin expediente no es un error: es un «uso que requiere informe mensual en 10 DH».
-  - Desde el 01-08-2026, el plazo del informe se calcula con la regla versionada de `rules/plazos.yaml`.
-  - Para un uso anterior a esa fecha, el motor dice «no puedo calcular» (DRE-22).
+- **Uso por emergencia (art. 90).** Un uso excepcional sin expediente no es un error: es un «uso que requiere informe a la Sunass».
+  - Desde el 06-07-2024 (RCD 037-2024, que mantiene la RCD 028-2026), el informe es mensual, dentro de 10 DH del cierre de cada mes. El plazo se calcula con la regla versionada de `rules/plazos.yaml`.
+  - Hasta el 05-07-2024 (texto original), el plazo era de 7 DH desde el día del uso. DS05 solo registra el mes, así que para ese periodo el motor dice «no puedo calcular».
+  - Los plazos de la Sunass del mismo artículo (evaluación en 30 DH, 90.4; información complementaria en 10 DH, 90.5; notificación en 5 DH, 90.7) quedan anotados: la muestra no registra declaratorias de emergencia.
 - **Escalera de cada uso excepcional:** solicitado → autorizado (desde qué fondo o reserva) → usado → **verificación posterior** → devolución o exoneración.
   - En la muestra, la verificación posterior está «pendiente».
   - Si lo usado supera lo autorizado, aparece una señal para revisión.
@@ -436,11 +437,13 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 
 ## Fuentes
 
-- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>.
+- Sunass (2021). Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD. Se leyó el texto original (El Peruano, 27-07-2021) y el compendio oficial de Sunass, que incluye las modificatorias hasta la RCD 004-2023: <https://cdn.www.gob.pe/uploads/document/file/4388328/>.
+- Sunass (2022). RCD 033-2022-SUNASS-CD, que modifica, entre otros, el art. 46 del RGT (El Peruano, 16-05-2022).
+- Sunass (2024). RCD 037-2024-SUNASS-CD, que modifica, entre otros, el art. 90 del RGT (El Peruano, 05-07-2024).
 - Sunass (2025). RCD 124-2025-SUNASS-CD, que modifica el RGT (El Peruano, 26-10-2025).
 - Sunass (2026). RCD 028-2026-SUNASS-CD, que modifica el art. 90 del RGT (El Peruano, 31-07-2026).
 - Enlaces oficiales y SHA-256 de cada copia leída: [`docs/normas/README.md`](docs/normas/README.md). Los PDF no se versionan.
-- TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS: <https://cdn.www.gob.pe/uploads/document/file/5320370/>. El DS 006-2026-JUS aprobó un TUO nuevo, que no se leyó.
+- TUO de la Ley 27444, Ley del Procedimiento Administrativo General, DS 006-2026-JUS (El Peruano, separata especial del 30-04-2026). Renumeró los artículos sin cambiar su texto; las citas indican el número anterior (TUO del DS 004-2019-JUS, <https://cdn.www.gob.pe/uploads/document/file/5320370/>).
 - Sunass (2026). Expediente General del Desafío 3, v1.0.
 - Sunass (2026). Diccionario de variables y datasets DS01–DS09, Desafío 3 (hojas Léame, Relaciones, Hitos,
   Supuestos y una por dataset).

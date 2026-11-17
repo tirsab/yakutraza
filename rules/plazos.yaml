@@ -34,15 +34,31 @@ fuentes_documentales:
   RGT:
     titulo: "Reglamento General de Tarifas de los Servicios de Saneamiento brindados por Empresas Prestadoras, RCD 028-2021-SUNASS-CD (publicada el 27.07.2021; «entra en vigencia al día siguiente de su publicación», art. 3)"
     copia_leida: "Compendio del Reglamento General de Tarifas, Sunass, https://cdn.www.gob.pe/uploads/document/file/4388328/ (incluye modificatorias hasta la RCD 004-2023-SUNASS-CD, publicada el 20.01.2023)"
-    advertencia: "El compendio no incluye las RCD 037-2024, 124-2025 ni 028-2026; las dos últimas se leyeron por separado (RCD_124_2025, RCD_028_2026). La RCD 037-2024 (art. 90) no se leyó."
+    texto_original_leido: "Ver RCD_028_2021 (separata especial de El Peruano del 27.07.2021, texto original sin modificatorias)"
+    advertencia: "El compendio no incluye las RCD 037-2024, 124-2025 ni 028-2026; se leyeron por separado (RCD_037_2024, RCD_124_2025, RCD_028_2026)."
   TUO_27444:
-    titulo: "Texto Único Ordenado de la Ley 27444, Ley del Procedimiento Administrativo General, DS 004-2019-JUS"
+    titulo: "Texto Único Ordenado de la Ley 27444, Ley del Procedimiento Administrativo General, DS 006-2026-JUS (separata especial de El Peruano del 30.04.2026)"
+    copia_leida: "docs/normas/DECRETO-SUPREMO-006-2026-JUS-LPDerecho.pdf (copia de un sitio secundario, LP Derecho; su contenido es la separata oficial de El Peruano del 30.04.2026)"
+    vigencia: "El decreto no fija su entrada en vigencia; se aplica la regla general (Constitución, art. 109): desde el 01.05.2026. Por validar. Deroga el TUO del DS 004-2019-JUS (disposición complementaria derogatoria única)."
+    renumeracion: "El nuevo TUO renumeró los artículos sin cambiar su texto ni sus plazos (según sus considerandos, «no posee carácter innovador»). Cada cita indica el número anterior, del TUO del DS 004-2019-JUS."
+  TUO_27444_2019:
+    titulo: "TUO de la Ley 27444, DS 004-2019-JUS (derogado por el DS 006-2026-JUS)"
     copia_leida: "https://cdn.www.gob.pe/uploads/document/file/5320370/4770872-decreto-supremo-n-004-2019-jus.pdf"
-    advertencia: "El DS 006-2026-JUS (publicado el 30.04.2026) aprobó un nuevo TUO y derogó el DS 004-2019-JUS. No se leyó el nuevo texto: verificar que la numeración citada se mantenga."
   RCD_124_2025:
     titulo: "RCD 124-2025-SUNASS-CD (Lima, 23.10.2025; publicada en El Peruano el 26.10.2025, separata especial): modifica, entre otros, los arts. 31, 32, 37 a 41, 43, 45, 47, 48, 49 y 82 del RGT"
     copia_leida: "docs/normas/RCD-124-2025-SUNASS-CD.pdf (descargada de gob.pe por el equipo)"
     vigencia: "La resolución no fija su entrada en vigencia; se aplica la regla general (Constitución, art. 109): desde el día siguiente de su publicación, 27.10.2025. Por validar."
+  RCD_028_2021:
+    titulo: "RCD 028-2021-SUNASS-CD, texto original del RGT (separata especial de El Peruano del 27.07.2021; «entra en vigencia al día siguiente de su publicación», art. 3)"
+    copia_leida: "docs/normas/4097674-resolucion-de-consejo-directivo-n-028-2021-sunass-cd.pdf (descargada de gob.pe por el equipo; metadatos de Editora Perú del 27.07.2021, sin notas de modificación)"
+  RCD_033_2022:
+    titulo: "RCD 033-2022-SUNASS-CD (Lima, 12.05.2022; publicada en El Peruano el 16.05.2022): modifica los arts. 41, 42, 43, 44 y 46 del RGT, entre otros"
+    copia_leida: "docs/normas/RESOLUCION Nº 033-2022-SUNASS-CD.pdf.pdf.pdf (El Peruano del 16.05.2022, págs. 15-18 y anexos; entregada por el equipo)"
+    vigencia: "Art. 3: «entra en vigencia al día siguiente de su publicación» → 17.05.2022."
+  RCD_037_2024:
+    titulo: "RCD 037-2024-SUNASS-CD (Lima, 02.07.2024; publicada en El Peruano el 05.07.2024): modifica, entre otros, los arts. 19, 51 y 90 del RGT"
+    copia_leida: "docs/normas/5730324-res-037-2024-sunass-cd.pdf (El Peruano del 05.07.2024, págs. 30-34; descargada de gob.pe por el equipo)"
+    vigencia: "Art. 5: «entra en vigor al día siguiente de su publicación» → 06.07.2024."
   RCD_028_2026:
     titulo: "RCD 028-2026-SUNASS-CD (Lima, 30.07.2026; publicada en El Peruano el 31.07.2026): modifica el art. 90 del RGT (uso excepcional por declaratoria de estado de emergencia)"
     copia_leida: "docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf (págs. 9-10 de El Peruano)"
@@ -75,8 +91,8 @@ reglas:
     vigente_desde: 2021-07-28
     respaldo: norma_leida
     fuentes:
-      - {doc: TUO_27444, ubicacion: "art. 144.1", cita: "El plazo expresado en días es contado a partir del día hábil siguiente de aquel en que se practique la notificación o la publicación del acto"}
-      - {doc: TUO_27444, ubicacion: "art. 142.1", cita: "Los plazos para el pronunciamiento de las entidades, en los procedimientos administrativos, se contabilizan a partir del día siguiente de la fecha en la cual el administrado presentó su solicitud"}
+      - {doc: TUO_27444, ubicacion: "art. 133.1 (antes art. 144.1)", cita: "El plazo expresado en días es contado a partir del día hábil siguiente de aquel en que se practique la notificación o la publicación del acto"}
+      - {doc: TUO_27444, ubicacion: "art. 131.1 (antes art. 142.1)", cita: "Los plazos para el pronunciamiento de las entidades, en los procedimientos administrativos, se contabilizan a partir del día siguiente de la fecha en la cual el administrado presentó su solicitud"}
       - {doc: RGT, ubicacion: "art. 45.1", cita: "contados a partir del día siguiente de presentada la referida solicitud"}
       - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "fecha_limite = fecha_inicio + plazo_maximo_dh + dias_suspension_dh, en días hábiles"}
     estado_validacion: por validar
@@ -89,7 +105,7 @@ reglas:
     vigente_desde: 2021-07-28
     respaldo: norma_leida
     fuentes:
-      - {doc: TUO_27444, ubicacion: "art. 145.1", cita: "se entenderá por hábiles consecutivos, excluyendo del cómputo aquellos no laborables del servicio, y los feriados no laborables de orden nacional o regional"}
+      - {doc: TUO_27444, ubicacion: "art. 134.1 (antes art. 145.1)", cita: "se entenderá por hábiles consecutivos, excluyendo del cómputo aquellos no laborables del servicio, y los feriados no laborables de orden nacional o regional"}
       - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "En días hábiles (lunes a viernes, sin feriados nacionales)"}
       - {doc: DICC_SUPUESTOS, ubicacion: "Feriados", cita: "No incluye días no laborables decretados"}
     estado_validacion: por validar
@@ -104,9 +120,9 @@ reglas:
     fuentes:
       - {doc: DICC_LEAME, ubicacion: "Cómputo de plazos", cita: "Los hitos a cargo de la EP con cuenta_plazo = False suspenden el plazo de la Sunass"}
       - {doc: RGT, ubicacion: "art. 45.2 (revisión periódica)", cita: "Mientras esté pendiente la subsanación, se suspende el plazo señalado en el párrafo anterior"}
-      - {doc: TUO_27444, ubicacion: "art. 142.1", cita: "salvo que se haya requerido subsanación en cuyo caso se contabilizan una vez efectuada esta"}
+      - {doc: TUO_27444, ubicacion: "art. 131.1 (antes art. 142.1)", cita: "salvo que se haya requerido subsanación en cuyo caso se contabilizan una vez efectuada esta"}
     estado_validacion: por validar
-    discrepancia: {fuente: TUO_27444, valor: "contar desde la subsanación", descripcion: "Para CPI y UFI el RGT no dice expresamente que la información adicional suspenda el plazo; el TUO (art. 142.1) cuenta el plazo «una vez efectuada» la subsanación, lo que podría significar reiniciar y no suspender."}
+    discrepancia: {fuente: TUO_27444, valor: "contar desde la subsanación", descripcion: "Para CPI y UFI el RGT no dice expresamente que la información adicional suspenda el plazo; el TUO (art. 131.1, antes 142.1) cuenta el plazo «una vez efectuada» la subsanación, lo que podría significar reiniciar y no suspender."}
     pregunta_dre: DRE-02
     vigente_desde: 2021-07-28
 
@@ -126,7 +142,7 @@ reglas:
       - {doc: DICC_HITOS, ubicacion: "Plazo de la etapa (DH) = 30"}
       - {doc: DS02, ubicacion: "plazo_maximo_dh = 30"}
     estado_validacion: por validar
-    nota: "El art. 93.8 añade «sin perjuicio de» los arts. 87.3 y 147.4 del TUO (suspensiones por colaboración entre entidades y a pedido de la EP, hasta 30 DH): no hay datos de esas suspensiones en la muestra."
+    nota: "El art. 93.8 añade «sin perjuicio de» los arts. 87.3 y 147.4 del TUO del DS 004-2019-JUS, hoy arts. 76.3 y 136.4 del DS 006-2026-JUS (suspensiones por colaboración entre entidades y a pedido de la EP, hasta 30 DH): no hay datos de esas suspensiones en la muestra."
     pregunta_dre: DRE-15
 
   - id: PLZ-N-UFI
@@ -176,20 +192,39 @@ reglas:
     estado_validacion: por validar
     nota: "La RCD 124-2025 solo reescribió el párrafo 45.4 (procedencia); los párrafos 45.1 y 45.2 siguen igual (el texto modificatorio los omite con «(…)»)."
 
-  - id: PLZ-N-RP-2
+  - id: PLZ-N-RP-2-V2021
+    familia: PLZ-N-RP-2
     procedimiento: revision_periodica
     etapa: 2_evaluacion
     tipo_reloj: normativo
     plazo_dh: 60
     inicio_conteo: "día siguiente de emitida la resolución de inicio, hasta la RCD que dispone la difusión"
-    vigente_desde:
+    vigente_desde: 2021-07-28
+    vigente_hasta: 2022-05-16
     respaldo: norma_leida
     fuentes:
-      - {doc: RGT, ubicacion: "art. 46.3 (modificado por la RCD 033-2022-SUNASS-CD, publicada el 16.05.2022)", cita: "La etapa de evaluación se desarrolla en un plazo máximo de sesenta días hábiles"}
+      - {doc: RCD_028_2021, ubicacion: "art. 46.3 (texto original), pág. 11 de la separata", cita: "La etapa de evaluación se desarrolla en un plazo máximo de sesenta días hábiles, contados a partir del día siguiente de emitida la resolución de inicio del procedimiento de revisión periódica hasta la emisión de la resolución de Consejo Directivo que dispone la difusión del proyecto de resolución tarifaria y del Estudio Tarifario"}
       - {doc: FLUJO_RP, ubicacion: "etapa 2", cita: "Máx. 60 DH"}
       - {doc: DICC_HITOS, ubicacion: "2_evaluacion, plazo de la etapa 60"}
     estado_validacion: por validar
-    nota: "Art. 46.4: 120 DH si se ejecutan mecanismos de consulta pública (no hay ese dato en la muestra). vigente_desde vacío: no se leyó la disposición de vigencia de la RCD 033-2022."
+    nota: "El texto original del art. 46 no tenía el párrafo 46.4 (120 DH con consulta pública): lo incorporó la RCD 033-2022."
+
+  - id: PLZ-N-RP-2-V2022
+    familia: PLZ-N-RP-2
+    procedimiento: revision_periodica
+    etapa: 2_evaluacion
+    tipo_reloj: normativo
+    plazo_dh: 60
+    inicio_conteo: "día siguiente de emitida la resolución de inicio, hasta la RCD que dispone la difusión"
+    vigente_desde: 2022-05-17
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_033_2022, ubicacion: "art. 1 (texto del art. 46.3 del RGT), pág. 17", cita: "La etapa de evaluación se desarrolla en un plazo máximo de sesenta días hábiles, contados a partir del día siguiente de emitida la resolución de inicio del procedimiento de revisión periódica"}
+      - {doc: RCD_033_2022, ubicacion: "art. 1 (texto del art. 46.4 del RGT), pág. 17", cita: "El plazo señalado en el párrafo anterior es de ciento veinte días hábiles en caso se ejecuten mecanismos de consulta pública para la elaboración del Estudio Tarifario"}
+      - {doc: FLUJO_RP, ubicacion: "etapa 2", cita: "Máx. 60 DH"}
+      - {doc: DICC_HITOS, ubicacion: "2_evaluacion, plazo de la etapa 60"}
+    estado_validacion: por validar
+    nota: "Art. 46.4: 120 DH si se ejecutan mecanismos de consulta pública (no hay ese dato en la muestra, DRE-05). La RCD 124-2025 no modificó el art. 46."
     pregunta_dre: DRE-05
 
   - id: PLZ-N-RP-3-V2021
@@ -337,7 +372,7 @@ reglas:
     respaldo: supuesto_simulacion
     fuentes:
       - {doc: DICC_SUPUESTOS, ubicacion: "Reporte trimestral", cita: "Vence 30 días calendario después del cierre del trimestre (si cae en día no hábil, el siguiente hábil)"}
-      - {doc: TUO_27444, ubicacion: "art. 145.2", cita: "Cuando el último día del plazo o la fecha determinada es inhábil [...] son entendidos prorrogados al primer día hábil siguiente"}
+      - {doc: TUO_27444, ubicacion: "art. 134.2 (antes art. 145.2)", cita: "Cuando el último día del plazo o la fecha determinada es inhábil [...] son entendidos prorrogados al primer día hábil siguiente"}
     estado_validacion: por validar
 
   - id: PLZ-N-FONDO-MES
@@ -349,7 +384,7 @@ reglas:
     fuentes:
       - {doc: DICC_SUPUESTOS, ubicacion: "Reporte trimestral", cita: "El reporte mensual de fondos vence a los 15 días calendario"}
     estado_validacion: por validar
-    nota: "La hoja no dice que pase al día hábil siguiente si vence en día no hábil; no se supone (el TUO 145.2 sí lo haría)."
+    nota: "La hoja no dice que pase al día hábil siguiente si vence en día no hábil; no se supone (el TUO, art. 134.2, antes 145.2, sí lo haría)."
     pregunta_dre: DRE-06
 
   # Uso excepcional del fondo por declaratoria de emergencia (art. 90): no
@@ -360,15 +395,29 @@ reglas:
     procedimiento: uso_emergencia_fondo
     tipo_reloj: normativo
     plazo_dh: 7
-    activa: false
     inicio_conteo: "uso de los recursos del fondo"
     vigente_desde: 2021-07-28
+    vigente_hasta: 2024-07-05
     respaldo: norma_leida
     fuentes:
       - {doc: RGT, ubicacion: "art. 90.2 (texto original)", cita: "La empresa prestadora debe informar a la Sunass el uso excepcional por declaratoria de emergencia, dentro de los siete días hábiles de utilizados los recursos"}
     estado_validacion: por validar
-    nota: "Inactiva: la RCD 037-2024 modificó el art. 90 (texto no leído, fecha de vigencia desconocida), así que no se conoce su vigente_hasta."
-    pregunta_dre: DRE-22
+    nota: "Rige hasta el 05.07.2024: la RCD 037-2024 reemplazó el art. 90 desde el 06.07.2024. El plazo cuenta desde el día en que se usaron los recursos; DS05 solo registra el mes, así que el motor no puede calcular la fecha límite de un uso de este periodo."
+
+  - id: PLZ-N-FONDO-EMERGENCIA-V2024
+    familia: PLZ-N-FONDO-EMERGENCIA
+    procedimiento: uso_emergencia_fondo
+    tipo_reloj: normativo
+    plazo_dh: 10
+    inicio_conteo: "último día de cada mes calendario de la declaratoria y término de la declaratoria"
+    vigente_desde: 2024-07-06
+    vigente_hasta: 2026-07-31
+    respaldo: norma_leida
+    fuentes:
+      - {doc: RCD_037_2024, ubicacion: "art. 1 (texto del art. 90.3 del RGT), pág. 32", cita: "La empresa prestadora remite mensualmente un informe sobre el uso del fondo de inversiones y/o reservas durante la declaratoria de estado de emergencia, en un plazo máximo de diez hábiles contados a partir del último día del mes calendario y desde el término de la declaratoria del estado de emergencia"}
+      - {doc: RCD_037_2024, ubicacion: "art. 1 (texto del art. 90.1 del RGT), pág. 32", cita: "procede sin necesidad de la presentación de la solicitud señalada en el párrafo 89.1"}
+    estado_validacion: por validar
+    nota: "El texto publicado dice «diez hábiles» (sin «días»); la RCD 028-2026 lo escribe «diez días hábiles». El mismo art. 90 fija plazos de la Sunass que el motor todavía no usa, porque la muestra no registra declaratorias de emergencia: 30 DH para que la DRT evalúe el impacto (90.4), 10 DH para que la EP remita información complementaria, con suspensión de la evaluación (90.5), y 5 DH para notificar el informe de evaluación (90.7). La RCD 028-2026 no los modificó."
 
   - id: PLZ-N-FONDO-EMERGENCIA-V2026
     familia: PLZ-N-FONDO-EMERGENCIA
@@ -382,7 +431,7 @@ reglas:
       - {doc: RCD_028_2026, ubicacion: "art. 90.3 del RGT", cita: "La empresa prestadora remite mensualmente un informe sobre el uso del fondo de inversiones y/o reservas durante la declaratoria de estado de emergencia, en un plazo máximo de diez días hábiles contados a partir del último día del mes calendario y desde el término de la declaratoria del estado de emergencia"}
       - {doc: RCD_028_2026, ubicacion: "art. 90.1 y 90.2 del RGT", cita: "procede sin necesidad de la presentación de la solicitud señalada en el párrafo 89.1"}
     estado_validacion: por validar
-    nota: "Amplía el supuesto a emergencias por peligro inminente (en ese caso, solo para reducción de riesgo y preparación) y limita el uso a «costos excedentes e inesperados». La muestra no registra declaratorias de emergencia: el motor no puede activar este reloj sin ese dato (ver E-4)."
+    nota: "Mismo plazo que la versión de 2024. La RCD 028-2026 amplía el supuesto a emergencias por peligro inminente (en ese caso, solo para reducción de riesgo y preparación); el límite a «costos excedentes e inesperados» ya venía de la RCD 037-2024. La muestra no registra declaratorias de emergencia: el motor no puede activar este reloj sin ese dato (ver E-4)."
     pregunta_dre: E-4
 
   # ======================================================== reloj interno
@@ -399,7 +448,7 @@ reglas:
       - {doc: FLUJO_UFI, ubicacion: "DRE deriva a SRT", cita: "1 DH"}
       - {doc: FLUJO_RP, ubicacion: "etapa 1", cita: "1 DH"}
     estado_validacion: por validar
-    discrepancia: {fuente: TUO_27444, valor: "mismo día", descripcion: "A falta de plazo expreso, el TUO (art. 143.1) fija la recepción y derivación «dentro del mismo día de su presentación»."}
+    discrepancia: {fuente: TUO_27444, valor: "mismo día", descripcion: "A falta de plazo expreso, el TUO (art. 132, numeral 1; antes art. 143.1) fija la recepción y derivación «dentro del mismo día de su presentación»."}
     pregunta_dre: DRE-07
 
   - id: PLZ-I-RP-ASIGNACION
@@ -593,12 +642,12 @@ reglas:
     inicio_conteo: "día hábil siguiente a la notificación del oficio de subsanación"
     respaldo: norma_leida
     fuentes:
-      - {doc: TUO_27444, ubicacion: "art. 136.1", cita: "invitando al administrado a subsanarlas dentro de un plazo máximo de dos días hábiles"}
+      - {doc: TUO_27444, ubicacion: "art. 125.1 (antes art. 136.1)", cita: "invitando al administrado a subsanarlas dentro de un plazo máximo de dos días hábiles"}
       - {doc: DICC_HITOS, ubicacion: "subsanacion_ep", cita: "EP subsana las observaciones (máx. 2 DH)"}
       - {doc: FLUJO_CPI, ubicacion: "EP subsana", cita: "Máx. 2 DH"}
       - {doc: FLUJO_UFI, ubicacion: "EP subsana", cita: "Máx. 2 DH"}
     estado_validacion: por validar
-    nota: "El RGT leído no fija este plazo para CPI y UFI; el art. 136.1 del TUO se refiere a observaciones de la unidad de recepción (requisitos TUPA)."
+    nota: "El RGT leído no fija este plazo para CPI y UFI; el art. 125.1 del TUO (antes 136.1) se refiere a observaciones de la unidad de recepción (requisitos TUPA)."
     pregunta_dre: DRE-13
 
   - id: PLZ-O-INFORMACION-10
@@ -666,7 +715,7 @@ reglas:
     respaldo: norma_leida
     fuentes:
       - {doc: RGT, ubicacion: "arts. 89.6, 93.7 y 34.2", cita: "puede ser prorrogado, por única vez"}
-      - {doc: TUO_27444, ubicacion: "art. 147.3", cita: "La prórroga es concedida por única vez mediante decisión expresa"}
+      - {doc: TUO_27444, ubicacion: "art. 136.3 (antes art. 147.3)", cita: "La prórroga es concedida por única vez mediante decisión expresa"}
     estado_validacion: por validar
     nota: "Solo se aplica desde un documento registrado (fase 3). DS02 no registra prórrogas: no se inventan. Caso real de referencia: Tacna, Oficio 1590-2026 (solicitud) y Oficio 162-2026 (concesión)."
 

@@ -61,7 +61,7 @@ class ReglaPlazo:
         for f in self.fuentes:
             doc = documentos.get(f["doc"], {}).get("titulo", f["doc"])
             corto = doc.split(" (")[0].split(",")[0] if f["doc"] not in ("RGT", "TUO_27444") else (
-                "RGT (RCD 028-2021-SUNASS-CD)" if f["doc"] == "RGT" else "TUO Ley 27444 (DS 004-2019-JUS)")
+                "RGT (RCD 028-2021-SUNASS-CD)" if f["doc"] == "RGT" else "TUO Ley 27444 (DS 006-2026-JUS)")
             partes.append(f"{corto}, {f['ubicacion']}" if f.get("ubicacion") else corto)
         return "; ".join(partes)
 

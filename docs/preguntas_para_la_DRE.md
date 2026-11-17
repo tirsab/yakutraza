@@ -35,32 +35,12 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
   - La RCD 028-2026 modifica el art. 90, no los arts. 93 ni 94.
 - **Qué cambia en el motor.** Es la fuente y la vigencia de la regla del pre-chequeo art. 93/94 de la Fase 3. Si no hay respuesta, citaremos la RCD 108-2022 con la marca «por validar».
 
-### DRE-16 · Nuevo TUO de la Ley 27444 (DS 006-2026-JUS)
-- **Pregunta.** En el TUO aprobado por el DS 006-2026-JUS (publicado el 30-04-2026), ¿siguen numerados igual los arts. 136.1, 142.1, 143, 144.1, 145.1, 145.2 y 147? ¿Cambió algún plazo?
-- **Fuentes.**
-  - Leímos y citamos el TUO del DS 004-2019-JUS.
-  - Según fuentes secundarias, el DS 006-2026-JUS lo derogó, rige desde el 01-05-2026 y no renumeró.
-- **Qué cambia en el motor.** Solo las citas del catálogo, salvo que algún plazo haya cambiado.
-
-### DRE-22 · Art. 90 entre la RCD 037-2024 y la RCD 028-2026
-- **Pregunta.**
-  1. ¿Qué decía el art. 90 tras la RCD 037-2024 y desde qué fecha rigió?
-  2. ¿Qué plazo tenía la EP para informar el uso del fondo por emergencia antes del 01-08-2026?
-- **Fuentes.**
-  - Texto original del art. 90.2 (compendio): informar «dentro de los siete días hábiles de utilizados los recursos».
-  - La RCD 028-2026 cita que la RCD 037-2024 modificó el art. 90, pero no leímos esa resolución.
-  - Desde el 01-08-2026 rige el art. 90.3: informe mensual dentro de 10 DH.
-- **Qué cambia en el motor.**
-  - Hoy la versión original del plazo (PLZ-N-FONDO-EMERGENCIA-V2021) está desactivada, porque no sabemos cuándo dejó de regir.
-  - Con la respuesta se activaría esa versión y se agregaría la intermedia.
-
 ### DRE-05 · Etapa de evaluación (art. 46) y consulta pública
-- **Pregunta.**
-  1. ¿Desde qué fecha rige el art. 46 modificado por la RCD 033-2022?
-  2. ¿Cómo sabremos si una revisión periódica usó mecanismos de consulta pública? En ese caso el plazo de la etapa es de 120 DH, no 60 (art. 46.4).
+- **Pregunta.** ¿Cómo sabremos si una revisión periódica usó mecanismos de consulta pública? En ese caso el plazo de la etapa es de 120 DH, no 60 (art. 46.4).
 - **Fuentes.**
-  - Compendio del RGT, art. 46.3 y 46.4. La RCD 124-2025 no modificó el art. 46.
+  - RCD 033-2022, art. 1 (texto de los arts. 46.3 y 46.4). La RCD 124-2025 no modificó el art. 46.
   - DS02 no registra si hubo consulta pública.
+  - La primera parte de esta pregunta (desde cuándo rige el art. 46 modificado) ya se resolvió: ver [Resueltas](#resueltas).
 - **Qué cambia en el motor.** Habría que agregar un dato al expediente («con consulta pública: sí/no») y una regla de 120 DH.
 
 ---
@@ -96,13 +76,13 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Pregunta.** ¿La derivación de la DRE a la SRT tiene 1 DH como meta interna, o rige el «mismo día» del TUO?
 - **Fuentes.**
   - Hitos y los tres flujogramas: 1 DH.
-  - TUO 27444, art. 143.1: a falta de plazo expreso, «dentro del mismo día de su presentación».
+  - TUO 27444, art. 132, numeral 1 (antes art. 143.1): a falta de plazo expreso, «dentro del mismo día de su presentación».
 - **Qué cambia en el motor.** PLZ-I-DERIVACION pasaría a 0 DH y la alerta se activaría el mismo día.
 
 ### DRE-01 · Feriados regionales y días no laborables
 - **Pregunta.** ¿El cómputo debe excluir los feriados regionales del ámbito de la EPS y los días no laborables decretados?
 - **Fuentes.**
-  - TUO 27444, art. 145.1: excluye «los feriados no laborables de orden nacional o regional».
+  - TUO 27444, art. 134.1 (antes 145.1): excluye «los feriados no laborables de orden nacional o regional».
   - Léame: «sin feriados nacionales».
   - Supuestos: «No incluye días no laborables decretados».
 - **Qué cambia en el motor.** Habría que llevar un calendario por región (ubigeo de la sede, DS01) y uno de días no laborables decretados.
@@ -116,7 +96,7 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Fuentes.**
   - Léame: los hitos de la EP «suspenden el plazo de la Sunass».
   - RGT art. 45.2 (no lo modificó la RCD 124-2025): «se suspende el plazo», pero solo para la revisión periódica.
-  - TUO art. 142.1: los plazos «se contabilizan una vez efectuada» la subsanación.
+  - TUO art. 131.1 (antes 142.1): los plazos «se contabilizan una vez efectuada» la subsanación.
   - RGT arts. 89.6 y 93.7: no dicen si la información adicional suspende el plazo.
 - **Qué cambia en el motor.** Si es reinicio, la fórmula `inicio + plazo + suspensión` no sirve para la subsanación: el plazo se recalcularía desde la fecha de subsanación. Esto cambia la fecha límite de los expedientes con subsanación.
 
@@ -150,10 +130,10 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Qué cambia en el motor.** Si la respuesta es «la vigente al inicio del procedimiento», el motor elegiría la versión de cada regla con la fecha de inicio del expediente en lugar de la fecha de cada etapa o hito.
 
 ### DRE-13 · Base de los 2 DH de subsanación en CPI y UFI
-- **Pregunta.** ¿Los 2 DH de subsanación de requisitos TUPA salen del art. 136.1 del TUO o del TUPA de Sunass? ¿Aplican también cuando el equipo SRT observa los requisitos después de la recepción?
+- **Pregunta.** ¿Los 2 DH de subsanación de requisitos TUPA salen del art. 125.1 del TUO (antes 136.1) o del TUPA de Sunass? ¿Aplican también cuando el equipo SRT observa los requisitos después de la recepción?
 - **Fuentes.**
   - Hitos y Flujogramas CPI y UFI: «máx. 2 DH».
-  - TUO art. 136.1: 2 DH para observaciones de la unidad de recepción «al momento de su presentación».
+  - TUO art. 125.1 (antes 136.1): 2 DH para observaciones de la unidad de recepción «al momento de su presentación».
   - El RGT no fija este plazo para CPI ni UFI.
 - **Qué cambia en el motor.** Cambia la fuente citada y quizá el plazo por defecto de PLZ-O-SUBSANACION-2.
 
@@ -161,7 +141,7 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Pregunta.** Si el día 15 cae en día no hábil, ¿el reporte mensual del fondo vence el siguiente día hábil, como el trimestral?
 - **Fuentes.**
   - Supuestos: el trimestral se corre al siguiente hábil; el mensual «vence a los 15 días calendario».
-  - TUO art. 145.2: el vencimiento en día inhábil se prorroga al siguiente día hábil.
+  - TUO art. 134.2 (antes 145.2): el vencimiento en día inhábil se prorroga al siguiente día hábil.
 - **Qué cambia en el motor.** Cambiaría la regla PLZ-N-FONDO-MES y las alertas de reportes mensuales atrasados.
 
 ---
@@ -258,7 +238,7 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Pregunta.** Si la EP envía información por correo electrónico o por un enlace externo, como ocurrió en los casos de Tacna y EPSSMU, ¿desde cuándo corre el plazo: desde el envío o desde su ingreso por mesa de partes?
 - **Fuentes.**
   - Casos reales del expediente (Tacna, EPSSMU).
-  - TUO art. 144.1: el cómputo empieza desde la notificación o publicación del acto.
+  - TUO art. 133.1 (antes 144.1): el cómputo empieza desde la notificación o publicación del acto.
   - No encontramos una regla para la recepción por canales informales.
 - **Qué cambia en el motor.** Define qué fecha toma el registro de documentos de la Fase 3 como inicio del conteo cuando el canal no es la mesa de partes.
 
@@ -285,14 +265,14 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 
 ### E-4 · Verificación posterior del uso del fondo por emergencia (RCD 028-2026)
 - **Pregunta.** ¿Qué evidencia y qué área verifican después el uso del fondo de emergencia según la RCD 028-2026?
-- **Contexto.** Desde el 01-08-2026, el art. 90 permite usar el fondo sin solicitud ni expediente ante una declaratoria de emergencia por desastres o por peligro inminente.
+- **Contexto.** Desde el 06-07-2024 (RCD 037-2024), el art. 90 permite usar el fondo sin solicitud ni expediente ante una declaratoria de emergencia por desastres; desde el 01-08-2026 (RCD 028-2026), también por peligro inminente.
   - En el caso de peligro inminente, el uso se limita a la reducción del riesgo y la preparación.
   - Solo cubre «costos excedentes e inesperados».
   - La EP remite un informe mensual dentro de los 10 DH siguientes al cierre de cada mes y al término de la declaratoria.
   - La muestra no registra declaratorias, y los dos usos excepcionales de DS05 tienen expediente UFI (art. 89).
 - **Qué cambia.**
   - En la ruta del dinero (Fase 4), un uso excepcional sin expediente se mostraría como «uso por emergencia (art. 90): requiere informe mensual», no como error.
-  - Se activaría el reloj PLZ-N-FONDO-EMERGENCIA-V2026, siempre que tengamos la fecha y el ámbito de la declaratoria.
+  - Se activarían los relojes PLZ-N-FONDO-EMERGENCIA-V2024 y V2026, siempre que tengamos la fecha y el ámbito de la declaratoria.
   - El último peldaño, «beneficio verificado», necesita saber quién verifica y con qué evidencia.
 
 ### E-5 · Intercambio con el SIA, roles y permisos
@@ -306,7 +286,27 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 
 ## Resueltas
 
-Preguntas que respondieron las normas que el equipo descargó de gob.pe (`docs/normas/`).
+Preguntas que respondieron las normas que el equipo descargó (`docs/normas/`; origen de cada copia en `docs/normas/README.md`).
+
+### DRE-16 · Nuevo TUO de la Ley 27444, DS 006-2026-JUS (resuelta)
+- **Qué dice la norma.** El DS 006-2026-JUS se publicó en la separata especial de El Peruano del 30-04-2026 y deroga el TUO del DS 004-2019-JUS. No fija su entrada en vigencia, así que rige desde el 01-05-2026 por la regla general (Constitución, art. 109; por validar).
+  - **Sí renumeró los artículos**, aunque las fuentes secundarias decían lo contrario. El texto de cada artículo y sus plazos no cambian: según sus considerandos, el TUO «no posee carácter innovador».
+  - Correspondencia: 136.1 → 125.1; 142.1 → 131.1; 143.1 → 132 (numeral 1); 144.1 → 133.1; 145.1 → 134.1; 145.2 → 134.2; 147.3 → 136.3; 147.4 → 136.4; 87.3 → 76.3.
+- **Cómo quedó en el motor.** Solo cambian las citas: cada una indica el número nuevo y el anterior. Ningún plazo cambia.
+
+### DRE-22 · Art. 90 entre la RCD 037-2024 y la RCD 028-2026 (resuelta)
+- **Qué dice la norma.** La RCD 037-2024-SUNASS-CD se publicó en El Peruano el 05-07-2024 y entró en vigor el 06-07-2024 (art. 5).
+  - Reemplazó el art. 90: desde esa fecha la EP remite un **informe mensual dentro de 10 DH** contados desde el último día de cada mes y desde el término de la declaratoria (art. 90.3). El texto publicado dice «diez hábiles».
+  - La RCD 028-2026 mantuvo ese plazo y agregó el peligro inminente. El límite a «costos excedentes e inesperados» ya venía de la RCD 037-2024.
+  - El mismo art. 90 fija plazos de la Sunass: 30 DH para evaluar el impacto (90.4), 10 DH para la información complementaria, con suspensión (90.5), y 5 DH para notificar el informe (90.7). Quedan anotados; el motor no los usa porque la muestra no registra declaratorias.
+- **Cómo quedó en el motor.**
+  - PLZ-N-FONDO-EMERGENCIA-V2021 (7 DH desde el uso) está activa hasta el 05-07-2024. Como DS05 solo registra el mes del uso, el motor dice «no puedo calcular» para ese periodo.
+  - Nueva PLZ-N-FONDO-EMERGENCIA-V2024 (10 DH), del 06-07-2024 al 31-07-2026. Un uso de marzo de 2026 ya tiene fecha límite.
+
+### DRE-05 (parte resuelta) · Vigencia del art. 46 modificado
+- **Qué dice la norma.** La RCD 033-2022-SUNASS-CD se publicó en El Peruano el 16-05-2022 y rige desde el 17-05-2022 (art. 3). Su texto del art. 46.3 (60 DH) coincide con el del compendio, y agregó el art. 46.4 (120 DH con consulta pública).
+  - El texto original del RGT (separata de El Peruano del 27-07-2021) ya fijaba 60 DH en el art. 46.3, sin el párrafo 46.4.
+- **Cómo quedó en el motor.** Dos versiones de la regla: PLZ-N-RP-2-V2021 (hasta el 16-05-2022) y PLZ-N-RP-2-V2022 (desde el 17-05-2022). Para las 4 revisiones periódicas de la muestra que empezaron antes del 17-05-2022 el resultado no cambia (60 DH en ambas versiones); ahora la cita es el texto original.
 
 ### DRE-10 · Etapa de difusión: comentarios y audiencia (resuelta)
 - **Qué dice la norma.** RCD 124-2025-SUNASS-CD, que modifica el RGT:
@@ -343,15 +343,14 @@ Preguntas que respondieron las normas que el equipo descargó de gob.pe (`docs/n
 
 | Abreviatura | Documento | Cómo lo leímos |
 |---|---|---|
-| RGT | Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD (publicado el 27-07-2021; rige desde el día siguiente, art. 3) | Compendio oficial de Sunass, con modificatorias hasta la RCD 004-2023 |
+| RGT | Reglamento General de Tarifas, RCD 028-2021-SUNASS-CD (publicado el 27-07-2021; rige desde el día siguiente, art. 3) | Compendio oficial de Sunass, con modificatorias hasta la RCD 004-2023, y texto original (separata de El Peruano del 27-07-2021) |
+| RCD 033-2022 | Modifica, entre otros, los arts. 41 a 44 y 46 del RGT | `docs/normas/RESOLUCION Nº 033-2022-SUNASS-CD.pdf.pdf.pdf` (El Peruano, 16-05-2022) |
+| RCD 037-2024 | Modifica, entre otros, los arts. 19, 51 y 90 del RGT | `docs/normas/5730324-res-037-2024-sunass-cd.pdf` (El Peruano, 05-07-2024) |
 | RCD 124-2025 | Modifica, entre otros, los arts. 31, 32, 37 a 41, 43, 45, 47, 48, 49 y 82 del RGT | `docs/normas/RCD-124-2025-SUNASS-CD.pdf` (El Peruano, 26-10-2025) |
 | RCD 028-2026 | Modifica el art. 90 del RGT | `docs/normas/RCD-028-2026-SUNASS-CD_El-Peruano-2026-07-31.pdf` |
-| TUO 27444 | TUO de la Ley del Procedimiento Administrativo General, DS 004-2019-JUS | PDF oficial en el CDN de gob.pe (archivo 5320370) |
+| TUO 27444 | TUO de la Ley del Procedimiento Administrativo General, DS 006-2026-JUS (antes, DS 004-2019-JUS) | Copia de LP Derecho de la separata de El Peruano del 30-04-2026; el TUO anterior, en el CDN de gob.pe (archivo 5320370) |
 | RCD 108-2022 | Incorpora el numeral 6 del art. 94 | Nota de modificación del compendio del RGT |
 | Hitos, Léame, Supuestos | Hojas del diccionario de variables | Archivo `diccionario_variables.xlsx` |
 | Flujograma UFI, RP y CPI | Expediente General del Desafío 3, págs. 9, 10 y 11 | PDF del expediente |
 
-**Lo que no pudimos leer.**
-- **RCD 037-2024:** la versión intermedia del art. 90.
-- **RCD 033-2022 completa:** usamos la nota del compendio.
-- **TUO del DS 006-2026-JUS.**
+**Lo que no pudimos leer.** La RCD 108-2022 (DRE-14): la citamos por la nota de modificación del compendio.
