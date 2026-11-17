@@ -603,3 +603,14 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 /* Sin desborde horizontal en celular: las rejillas dejan encoger a sus hijos y las columnas de pasos se desplazan. */
 .rejilla-2 > *, .dos-col > *, .bandeja-grid > * { min-width: 0; }
 .columnas-paso { overflow-x: auto; }
+@media (max-width: 860px) {
+  .corte-controles { position: fixed; left: 16px; right: 16px; top: 120px; width: auto; }
+}
+/* Tablas que pasan a tarjetas en celular (panel de expedientes del tablero). */
+@media (max-width: 640px) {
+  .tabla-tarjetas thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .tabla-tarjetas, .tabla-tarjetas tbody, .tabla-tarjetas tr, .tabla-tarjetas td { display: block; width: 100%; }
+  .tabla-tarjetas tr { border: 1px solid var(--line); border-radius: var(--radio-s); padding: 8px 12px; margin: 0 0 10px; background: #fff; }
+  .tabla-tarjetas td { display: grid; grid-template-columns: 110px 1fr; gap: 8px; border: 0; padding: 3px 0; }
+  .tabla-tarjetas td::before { content: attr(data-label); font-size: .76rem; color: var(--mut); font-weight: 600; }
+}

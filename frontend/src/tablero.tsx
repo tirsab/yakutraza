@@ -201,19 +201,19 @@ export function TableroGerencial() {
                      titulo={`Expedientes ${filtros.estado ? `— ${t("estado_reloj", filtros.estado).toLowerCase()}` : "en trámite"}${cargando ? "" : ` (${d.expedientes.length})`}`}>
             {cargando ? <p className="cargando" role="status">Cargando los expedientes…</p> : (
             <div className="tabla-wrap">
-              <table>
+              <table className="tabla-tarjetas">
                 <thead><tr><th>Expediente</th><th>Estado</th><th>Plazo</th><th>Está en</th><th>EPS</th><th>Tipo</th><th>Especialista</th></tr></thead>
                 <tbody>
                   {d.expedientes.map((x) => (
                     <tr key={x.id_expediente}>
-                      <td><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link></td>
-                      <td><EstadoAlerta estado={x.estado} /></td>
-                      <td>{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
+                      <td data-label="Expediente"><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link></td>
+                      <td data-label="Estado"><EstadoAlerta estado={x.estado} /></td>
+                      <td data-label="Plazo">{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
                         x.alerta.dias_restantes < 0 ? `vencido hace ${-x.alerta.dias_restantes} DH` : `quedan ${x.alerta.dias_restantes} DH`}</> : "—"}</td>
-                      <td>{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<div className="detalle">{t("responsable", x.responsable_al_corte)}</div></> : "—"}</td>
-                      <td>{x.cod_eps}</td>
-                      <td>{t("tipo_procedimiento", x.tipo_procedimiento)}</td>
-                      <td>{x.especialista}</td>
+                      <td data-label="Está en">{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<div className="detalle">{t("responsable", x.responsable_al_corte)}</div></> : "—"}</td>
+                      <td data-label="EPS">{x.cod_eps}</td>
+                      <td data-label="Tipo">{t("tipo_procedimiento", x.tipo_procedimiento)}</td>
+                      <td data-label="Especialista">{x.especialista}</td>
                     </tr>
                   ))}
                 </tbody>
