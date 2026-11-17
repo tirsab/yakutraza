@@ -208,9 +208,9 @@ export function TableroGerencial() {
                     <tr key={x.id_expediente}>
                       <td data-label="Expediente"><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link></td>
                       <td data-label="Estado"><EstadoAlerta estado={x.estado} /></td>
-                      <td data-label="Plazo">{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
-                        x.alerta.dias_restantes < 0 ? `vencido hace ${-x.alerta.dias_restantes} DH` : `quedan ${x.alerta.dias_restantes} DH`}</> : "—"}</td>
-                      <td data-label="Está en">{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<div className="detalle">{t("responsable", x.responsable_al_corte)}</div></> : "—"}</td>
+                      <td data-label="Plazo"><span>{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
+                        x.alerta.dias_restantes < 0 ? `vencido hace ${-x.alerta.dias_restantes} DH` : `quedan ${x.alerta.dias_restantes} DH`}</> : "—"}</span></td>
+                      <td data-label="Está en"><span>{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<span className="detalle" style={{ display: "block" }}>{t("responsable", x.responsable_al_corte)}</span></> : "—"}</span></td>
                       <td data-label="EPS">{x.cod_eps}</td>
                       <td data-label="Tipo">{t("tipo_procedimiento", x.tipo_procedimiento)}</td>
                       <td data-label="Especialista">{x.especialista}</td>
