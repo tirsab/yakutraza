@@ -551,3 +551,33 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .reloj-estado { grid-column: 2; grid-row: 2; justify-self: end; }
   .reloj-fuente { grid-column: 1 / -1; }
 }
+
+/* ---------------------------------------------------- Revisión de UX: fecha de corte, filtros, panel y alertas */
+.corte-compacto { position: relative; }
+.corte-boton { display: inline-flex; align-items: center; gap: 8px; background: var(--info-bg); color: var(--n8); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 12px; font-size: .86rem; font-weight: 500; box-shadow: none; }
+.corte-boton:hover { transform: none; background: #d6e8f8; color: var(--n9); }
+.corte-controles { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radio-s); box-shadow: var(--sombra-alta); padding: 12px; display: grid; gap: 8px; width: min(340px, calc(100vw - 32px)); }
+.corte-pasos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.titulo-con-accion { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.titulo-con-accion h2 { margin-bottom: 4px; }
+.boton-filtros { display: inline-flex; align-items: center; gap: 6px; }
+.dialogo-lateral { place-items: stretch end; padding: 0; }
+.dialogo-lateral > div { max-width: min(760px, 100vw); height: 100%; border-radius: var(--radio) 0 0 var(--radio); overflow-y: auto;
+  padding: 18px 20px 28px; }
+.cerrar-panel { float: right; margin-left: 8px; }
+.cuellos-claros { margin: 6px 0 10px; padding-left: 20px; }
+.cuellos-claros li { margin: 4px 0; }
+.ver-analisis { margin: 6px 0; }
+.ver-analisis summary { cursor: pointer; font-weight: 600; color: var(--b7); }
+.alerta-dec { position: relative; }
+.alerta-dec:hover { background: var(--info-bg); }
+.enlace-tarjeta::after { content: ""; position: absolute; inset: 0; border-radius: 10px; }
+.enlace-tarjeta:focus-visible { outline: none; }
+.enlace-tarjeta:focus-visible::after { outline: 3px solid var(--b5); outline-offset: 2px; }
+.sobre-enlace { position: relative; z-index: 2; }
+@media (max-width: 860px) {
+  .dialogo-lateral > div { border-radius: 0; max-width: 100vw; }
+  .corte-controles { right: auto; left: 0; }
+}

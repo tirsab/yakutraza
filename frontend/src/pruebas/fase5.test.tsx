@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import App from "../App";
+import App, { FechaCompacta } from "../App";
 import { Bandeja } from "../bandeja";
 import { VistaCiudadana } from "../ciudadana";
 import { MiEps } from "../mieps";
@@ -181,7 +181,7 @@ describe("Barra DEMO y vistas por rol", () => {
     const trabajo = screen.getByRole("navigation", { name: "Trabajo" });
     expect(within(trabajo).queryByRole("link", { name: "Tablero de dirección" })).not.toBeInTheDocument();
     expect(within(trabajo).getByLabelText("1 urgentes")).toBeInTheDocument();
-    expect(screen.getByLabelText("Fecha de corte")).toHaveValue("2026-09-30");
+    expect(screen.getByRole("button", { name: /Corte: 30\/09\/2026/ })).toHaveAttribute("aria-expanded", "false");
     await userEvent.selectOptions(screen.getByLabelText("Ver como:"), "coordinacion_srt");
     expect(await screen.findByRole("heading", { level: 1, name: "Tablero gerencial de la DRE" })).toBeInTheDocument();
     expect(within(screen.getByRole("navigation", { name: "Trabajo" })).getByRole("link", { name: "Tablero de dirección" })).toBeInTheDocument();
@@ -329,7 +329,7 @@ function TableroConFecha() {
   const [corte, setCorte] = useState("2026-09-30");
   return (
     <ConSesion sesion={sesionPrueba("coordinacion_srt", { corte, setCorte })}>
-      <MemoryRouter><TableroGerencial /></MemoryRouter>
+      <MemoryRouter><FechaCompacta /><TableroGerencial /></MemoryRouter>
     </ConSesion>
   );
 }
@@ -339,24 +339,61 @@ describe("Tablero de dirección", () => {
     const f = vi.spyOn(globalThis, "fetch").mockImplementation((url) =>
       respuesta(String(url).includes("fecha_corte=2026-09-23") ? tablero("2026-09-23", 0) : tablero("2026-09-30", 1)));
     render(<TableroConFecha />);
-    const panel = await screen.findByRole("region", { name: "Fecha de corte" });
     await screen.findByRole("button", { name: /Vencido\s*1/ });
-    await userEvent.click(within(panel).getByRole("button", { name: "− 1 semana" }));
+    // Una sola fecha de corte, compacta: los controles aparecen al tocarla.
+    const corte = screen.getByRole("button", { name: /Corte: 30\/09\/2026/ });
+    expect(screen.queryByRole("button", { name: "− 1 semana" })).not.toBeInTheDocument();
+    await userEvent.click(corte);
+    expect(corte).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(screen.getByRole("button", { name: "− 1 semana" }));
     await waitFor(() => expect(f.mock.calls.some(([u]) => String(u).includes("fecha_corte=2026-09-23"))).toBe(true));
     expect(await screen.findByText("-1 desde la fecha anterior")).toBeInTheDocument();
-    expect(within(panel).getByText("23/09/2026")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Corte: 23\/09\/2026/ })).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("button", { name: "− 1 semana" })).not.toBeInTheDocument();
   });
 
   it("cinco indicadores: el primero destacado y el % que supera el plazo rotulado", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
     render(<TableroConFecha />);
     await screen.findByRole("button", { name: /Vencido\s*1/ });
-    const botones = within(screen.getByRole("region", { name: /Indicadores al/ })).getAllByRole("button");
+    const botones = within(screen.getByRole("region", { name: /Indicadores al/ })).getAllByRole("button")
+      .filter((b) => b.classList.contains("indicador"));
     expect(botones).toHaveLength(5);
     expect(botones[0]).toHaveClass("destacado");
     expect(botones[0]).toHaveTextContent("En trámite32 en plazo");
     expect(botones[4]).toHaveTextContent("18,5 %");
     expect(botones[4]).toHaveTextContent("muestra simulada");
+  });
+
+  it("filtros detrás de un botón y la tabla de expedientes en un panel lateral", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
+    render(<TableroConFecha />);
+    const vencidos = await screen.findByRole("button", { name: /Vencido\s*1/ });
+    expect(screen.queryByRole("form", { name: "Filtros del tablero" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const filtros = screen.getByRole("button", { name: /Filtros/ });
+    await userEvent.click(filtros);
+    expect(filtros).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("form", { name: "Filtros del tablero" })).toBeInTheDocument();
+    await userEvent.click(vencidos);
+    const panel = await screen.findByRole("dialog", { name: /Expedientes — vencido/ });
+    expect(within(panel).getByRole("link", { name: "CPI-2026-0004" })).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(vencidos).toHaveFocus();
+  });
+
+  it("cuellos de botella en lenguaje claro y montos abreviados", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
+    render(<TableroConFecha />);
+    const cuellos = await screen.findByRole("region", { name: "Cuellos de botella" });
+    const claro = within(cuellos).getByRole("list");
+    expect(claro.textContent).toMatch(/suele tardar/);
+    expect(claro.textContent).not.toMatch(/mediana|P90/i);
+    expect(within(cuellos).getByText("Ver análisis")).toBeInTheDocument();
+    const rpe = screen.getByRole("region", { name: "Ruta del dinero por EPS" });
+    expect(rpe).toHaveTextContent("S/ 120,0 mil de 970,0 mil · 12 %");
   });
 
   it("ruta por EPS, alertas que necesitan decisión, pasos y carga del equipo, sin códigos", async () => {

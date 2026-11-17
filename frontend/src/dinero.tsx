@@ -107,6 +107,19 @@ function numero(v: number, decimales: number): string {
 }
 export const entero = (v: number) => numero(v, 0);
 export const soles = (v: number | null | undefined) => (v == null ? "—" : `S/ ${numero(v, 2)}`);
+/** Monto abreviado: «S/ 110,3 M», «S/ 217,3 mil». El monto exacto va en el detalle o en la etiqueta accesible. */
+export function solesCorto(v: number | null | undefined): string {
+  if (v == null) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e6) return `S/ ${numero(v / 1e6, 1)} M`;
+  if (a >= 1e3) return `S/ ${numero(v / 1e3, 1)} mil`;
+  return soles(v);
+}
+/** «S/ 110,3 M de 135,6 M · 81 %». */
+export function deTotal(parte: number, total: number): string {
+  const pc = total > 0 ? ` · ${Math.round((parte / total) * 100)} %` : "";
+  return `${solesCorto(parte)} de ${solesCorto(total).replace(/^S\/ /, "")}${pc}`;
+}
 const uno = (v: number) => numero(v, 1).replace(/,0$/, "");
 export const pct = (v: number | null | undefined) => (v == null ? "—" : `${uno(v)} %`);
 

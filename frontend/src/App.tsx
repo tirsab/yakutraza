@@ -67,15 +67,44 @@ function BarraDemo() {
 }
 
 // ---------------------------------------------------------------- vista Sunass
-function FechaCompacta() {
+const DIA = 86400000;
+const aMs = (s: string) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+const aIso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+
+/** Una sola fecha de corte, compacta. Al tocarla se abren los controles (fecha, ± semana, ± día, volver). */
+export function FechaCompacta() {
   const { corte, setCorte, config } = useSesion();
+  const [abierta, setAbierta] = useState(false);
+  const caja = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!abierta) return;
+    const fuera = (e: MouseEvent) => { if (caja.current && !caja.current.contains(e.target as Node)) setAbierta(false); };
+    document.addEventListener("mousedown", fuera);
+    return () => document.removeEventListener("mousedown", fuera);
+  }, [abierta]);
+  const mover = (dias: number) =>
+    setCorte(aIso(Math.min(aMs(config.corte_max), Math.max(aMs(config.corte_min), aMs(corte) + dias * DIA))));
   return (
-    <div className="corte-compacto">
-      <label htmlFor="corte-compacto"><strong>Fecha de corte</strong></label>
-      <input id="corte-compacto" type="date" value={corte} min={config.corte_min} max={config.corte_max}
-             onChange={(e) => { if (e.target.value >= config.corte_min && e.target.value <= config.corte_max) setCorte(e.target.value); }} />
-      {corte !== config.fecha_corte_muestra && (
-        <button type="button" className="secundario" onClick={() => setCorte(config.fecha_corte_muestra)}>Volver al {fecha(config.fecha_corte_muestra)}</button>
+    <div className="corte-compacto" ref={caja} onKeyDown={(e) => { if (e.key === "Escape") setAbierta(false); }}>
+      <button type="button" className="corte-boton" aria-expanded={abierta} aria-controls="corte-controles" onClick={() => setAbierta(!abierta)}>
+        <Icono nombre="calendario" /> Corte: <strong>{fecha(corte)}</strong>
+        {corte !== config.fecha_corte_muestra && <span className="pildora pil-warn">fecha anterior</span>}
+      </button>
+      {abierta && (
+        <div className="corte-controles" id="corte-controles" role="group" aria-label="Cambiar la fecha de corte">
+          <label htmlFor="corte-compacto">Fecha</label>
+          <input id="corte-compacto" type="date" value={corte} min={config.corte_min} max={config.corte_max}
+                 onChange={(e) => { if (e.target.value >= config.corte_min && e.target.value <= config.corte_max) setCorte(e.target.value); }} />
+          <div className="corte-pasos">
+            <button type="button" className="secundario" onClick={() => mover(-7)}>− 1 semana</button>
+            <button type="button" className="secundario" onClick={() => mover(-1)}>− 1 día</button>
+            <button type="button" className="secundario" onClick={() => mover(1)}>+ 1 día</button>
+            <button type="button" className="secundario" onClick={() => mover(7)}>+ 1 semana</button>
+          </div>
+          <button type="button" onClick={() => setCorte(config.fecha_corte_muestra)} disabled={corte === config.fecha_corte_muestra}>
+            Volver a la fecha de la muestra ({fecha(config.fecha_corte_muestra)})</button>
+          <p className="meta">Lo posterior a la fecha elegida aún no se conoce. La muestra llega al {fecha(config.corte_max)}.</p>
+        </div>
       )}
     </div>
   );

@@ -146,7 +146,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 // ---------------------------------------------------------------- diálogo
-export function Dialogo({ titulo, children, onCerrar }: { titulo: string; children: ReactNode; onCerrar: () => void }) {
+export function Dialogo({ titulo, children, onCerrar, lateral }: { titulo: string; children: ReactNode; onCerrar: () => void; lateral?: boolean }) {
   const id = useId();
   const caja = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -155,8 +155,10 @@ export function Dialogo({ titulo, children, onCerrar }: { titulo: string; childr
     return () => previo?.focus?.();
   }, []);
   return (
-    <div className="dialogo" onKeyDown={(e) => { if (e.key === "Escape") onCerrar(); }}>
+    <div className={`dialogo${lateral ? " dialogo-lateral" : ""}`} onKeyDown={(e) => { if (e.key === "Escape") onCerrar(); }}
+         onMouseDown={(e) => { if (lateral && e.target === e.currentTarget) onCerrar(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby={id} ref={caja}>
+        {lateral && <button type="button" className="cerrar-panel secundario" onClick={onCerrar}>Cerrar<span className="oculto"> el panel</span></button>}
         <h2 id={id} style={{ marginTop: 0 }}>{titulo}</h2>
         {children}
       </div>
