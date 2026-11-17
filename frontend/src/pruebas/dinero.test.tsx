@@ -81,7 +81,13 @@ describe("Tablero de la ruta del dinero", () => {
     api();
     render(<MemoryRouter><TableroRutaDelDinero /></MemoryRouter>);
     const tabla = await screen.findByRole("table", { name: "Totales por fondo o reserva" });
-    expect(within(tabla).getByRole("columnheader", { name: /Uso por emergencia \(art\. 90\)/ })).toBeInTheDocument();
+    // Cuatro columnas de montos; el resto (art. 89, art. 90, depósitos y saldo) en el detalle de cada fila.
+    expect(within(tabla).getAllByRole("columnheader").map((c) => c.textContent?.replace(/Público|Reservado/g, "").trim()))
+      .toEqual(["Fondo o reserva", "Solicitado", "Autorizado", "Usado", "Verificado", "Detalle"]);
+    const detalle = within(tabla).getAllByRole("button", { name: /^Detalle de/ })[0];
+    await userEvent.click(detalle);
+    expect(detalle).toHaveAttribute("aria-expanded", "true");
+    expect(within(tabla).getByText(/Uso por emergencia \(art\. 90\)/)).toBeInTheDocument();
     expect(within(tabla).getAllByText(/Pendiente/).length).toBeGreaterThan(0);
     expect(within(tabla).getByText("◷ Pendiente (1)")).toBeInTheDocument();
     // Clic hacia el expediente desde el fondo.

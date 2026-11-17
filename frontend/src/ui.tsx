@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { humanizar, t } from "./etiquetas";
+import { Icono } from "./iconos";
 
 // ---------------------------------------------------------------- movimiento
 /** true si la persona pidió reducir el movimiento (prefers-reduced-motion). */
@@ -54,8 +55,8 @@ const NORMAS: { patron: RegExp; enlace?: string; nombre: string }[] = [
 ];
 
 /** Chip con la fuente de un dato. Al abrirlo muestra el texto completo y, si es una norma, el enlace oficial. */
-export function ChipFuente({ texto, etiqueta, detalle, enlace }: {
-  texto: string | null | undefined; etiqueta?: string; detalle?: ReactNode; enlace?: string;
+export function ChipFuente({ texto, etiqueta, detalle, enlace, soloIcono }: {
+  texto: string | null | undefined; etiqueta?: string; detalle?: ReactNode; enlace?: string; soloIcono?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const id = useId();
@@ -73,9 +74,9 @@ export function ChipFuente({ texto, etiqueta, detalle, enlace }: {
   const corto = etiqueta ?? (legible.length > 34 ? `${legible.slice(0, 32)}…` : legible);
   return (
     <span className="chip-envoltura" ref={caja} onKeyDown={(e) => { if (e.key === "Escape") setAbierto(false); }}>
-      <button type="button" className="chip-fuente" aria-expanded={abierto} aria-controls={id}
-              aria-label={`Fuente: ${legible}`} onClick={() => setAbierto(!abierto)}>
-        <span aria-hidden="true">§</span> {corto}
+      <button type="button" className={soloIcono ? "chip-icono" : "chip-fuente"} aria-expanded={abierto} aria-controls={id}
+              aria-label={`Fuente: ${legible}`} title={soloIcono ? "Ver la fuente" : undefined} onClick={() => setAbierto(!abierto)}>
+        {soloIcono ? <Icono nombre="info" tam={18} /> : <><span aria-hidden="true">§</span> {corto}</>}
       </button>
       {abierto && (
         <span className="chip-pop" id={id} role="note">

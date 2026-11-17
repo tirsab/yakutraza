@@ -1,7 +1,8 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { pedir } from "./api";
 import { Rotulo } from "./componentes";
+import { ChipFuente } from "./ui";
 import { humanizar, t } from "./etiquetas";
 
 // ------------------------------------------------------------------ tipos
@@ -155,8 +156,8 @@ export function Escalera({ pasos, fondos, titulo }: { pasos: Peldano[]; fondos?:
           {p.monto != null && <> · {soles(p.monto)}</>}
           {p.fondo && <> · <span className="fondo">desde: {textoFondo(p.fondo, fondos)}</span></>}
           {p.area && <> · verifica: {p.area}</>}
+          {p.fuente && p.fuente !== "—" && <>{" "}<ChipFuente texto={p.fuente} soloIcono /></>}
           {p.detalle && <div className="detalle">{humanizar(p.detalle)}</div>}
-          {p.fuente && p.fuente !== "—" && <div className="meta">Fuente: {humanizar(p.fuente)}</div>}
         </li>
       ))}
     </ol>
@@ -192,6 +193,78 @@ function Barra({ programado, ejecutado }: { programado: number; ejecutado: numbe
       <rect x="0" y="2" width={`${anchoP}%`} height="14" fill="none" stroke="var(--yt-navy-900)" strokeWidth="1.5" />
       <rect x="0" y="5" width={`${anchoE}%`} height="8" fill={`url(#${patron})`} />
     </svg>
+  );
+}
+
+// ------------------------------------------------------------- totales por fondo
+/** Monto abreviado con el exacto para lectores de pantalla y como tooltip. */
+function Monto({ v }: { v: number | null | undefined }) {
+  if (v == null) return <>—</>;
+  return <span title={soles(v)}><span aria-hidden="true">{solesCorto(v)}</span><span className="oculto">{soles(v)}</span></span>;
+}
+
+function TablaFondos({ filas, v }: { filas: FilaFondo[]; v: Mapa }) {
+  const [abierta, setAbierta] = useState<string | null>(null);
+  const usado = (f: FilaFondo) => [f.uso_ordinario, f.uso_excepcional_art_89, f.uso_emergencia_art_90]
+    .reduce<number | null>((s, x) => (x == null ? s : (s ?? 0) + x), null);
+  return (
+    <div className="tabla-wrap">
+      <table aria-label="Totales por fondo o reserva" className="tabla-fondos">
+        <thead>
+          <tr>
+            <th>Fondo o reserva</th>
+            <th>Solicitado</th>
+            <th>Autorizado <Visible nivel={v.uso_excepcional_autorizado} /></th>
+            <th>Usado</th>
+            <th>Verificado</th>
+            <th><span className="oculto">Detalle</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => {
+            const id = `fondo-det-${f.fondo}`;
+            const ver = abierta === f.fondo;
+            return (
+              <Fragment key={f.fondo}>
+                <tr className={f.fondo === "total" ? "fila-total" : ""}>
+                  <th scope="row">
+                    {f.nombre}
+                    {f.expedientes && f.expedientes.length > 0 && (
+                      <div className="detalle">
+                        {f.expedientes.map((x) => <Link key={x} to={`/expedientes/${x}`} style={{ marginRight: 6 }}>{x}</Link>)}
+                      </div>
+                    )}
+                  </th>
+                  <td><Monto v={f.solicitado} /></td>
+                  <td><Monto v={f.autorizado} /></td>
+                  <td><Monto v={usado(f)} /></td>
+                  <td>{f.verificado != null ? <Monto v={f.verificado} />
+                    : f.verificaciones_pendientes ? `◷ Pendiente (${f.verificaciones_pendientes})` : "— sin usos"}</td>
+                  <td><button type="button" className="enlace-boton" aria-expanded={ver} aria-controls={id}
+                              onClick={() => setAbierta(ver ? null : f.fondo)}>{ver ? "Ocultar" : "Detalle"}<span className="oculto"> de {f.nombre}</span></button></td>
+                </tr>
+                {ver && (
+                  <tr id={id} className="fila-detalle">
+                    <td colSpan={6}>
+                      <dl className="detalle-fondo">
+                        <div><dt>Solicitado</dt><dd>{soles(f.solicitado)}</dd></div>
+                        <div><dt>Autorizado</dt><dd>{soles(f.autorizado)}</dd></div>
+                        <div><dt>Usado ordinario <Visible nivel={v.uso_ordinario} /></dt><dd>{soles(f.uso_ordinario)}</dd></div>
+                        <div><dt>Uso excepcional (art. 89)</dt><dd>{soles(f.uso_excepcional_art_89)}</dd></div>
+                        <div><dt>Uso por emergencia (art. 90) <Visible nivel={v.uso_emergencia_art_90} /></dt><dd>{soles(f.uso_emergencia_art_90)}</dd></div>
+                        <div><dt>Depósito programado</dt><dd>{soles(f.deposito_programado)}</dd></div>
+                        <div><dt>Depósito efectuado <Visible nivel={v.deposito_efectuado} /></dt><dd>{soles(f.deposito_efectuado)}</dd></div>
+                        <div><dt>Saldo final <Visible nivel={v.saldo_final} /></dt><dd>{f.saldo_final == null ? "—" : `${soles(f.saldo_final)}${f.saldo_al ? ` (${f.saldo_al})` : ""}`}</dd></div>
+                      </dl>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -256,48 +329,7 @@ export function TableroRutaDelDinero() {
       </form>
 
       <h2>Totales por fondo o reserva</h2>
-      <div className="tabla-wrap">
-        <table aria-label="Totales por fondo o reserva">
-          <thead>
-            <tr>
-              <th>Fondo o reserva</th>
-              <th>Solicitado</th>
-              <th>Autorizado <Visible nivel={v.uso_excepcional_autorizado} /></th>
-              <th>Usado ordinario <Visible nivel={v.uso_ordinario} /></th>
-              <th>Uso excepcional (art. 89)</th>
-              <th>Uso por emergencia (art. 90) <Visible nivel={v.uso_emergencia_art_90} /></th>
-              <th>Verificado</th>
-              <th>Depósito programado</th>
-              <th>Depósito efectuado <Visible nivel={v.deposito_efectuado} /></th>
-              <th>Saldo final <Visible nivel={v.saldo_final} /></th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...res.filas, res.total].map((f) => (
-              <tr key={f.fondo} className={f.fondo === "total" ? "fila-total" : ""}>
-                <th scope="row">
-                  {f.nombre}
-                  {f.expedientes && f.expedientes.length > 0 && (
-                    <div className="detalle">
-                      {f.expedientes.map((id) => <Link key={id} to={`/expedientes/${id}`} style={{ marginRight: 6 }}>{id}</Link>)}
-                    </div>
-                  )}
-                </th>
-                <td>{soles(f.solicitado)}</td>
-                <td>{soles(f.autorizado)}</td>
-                <td>{soles(f.uso_ordinario)}</td>
-                <td>{soles(f.uso_excepcional_art_89)}</td>
-                <td>{soles(f.uso_emergencia_art_90)}</td>
-                <td>{f.verificado != null ? soles(f.verificado)
-                  : f.verificaciones_pendientes ? `◷ Pendiente (${f.verificaciones_pendientes})` : "— sin usos que verificar"}</td>
-                <td>{soles(f.deposito_programado)}</td>
-                <td>{soles(f.deposito_efectuado)}</td>
-                <td>{f.saldo_final == null ? "—" : `${soles(f.saldo_final)}${f.saldo_al ? ` (${f.saldo_al})` : ""}`}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TablaFondos filas={[...res.filas, res.total]} v={v} />
       <ul className="sub">{res.notas.map((n) => <li key={n}>{n}</li>)}</ul>
       <p className="meta">Fuente: {humanizar(res.fuente)}</p>
 
