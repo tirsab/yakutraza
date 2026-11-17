@@ -288,11 +288,12 @@ export function TableroRutaDelDinero() {
       <ul className="sub">{res.notas.map((n) => <li key={n}>{n}</li>)}</ul>
       <p className="meta">Fuente: {humanizar(res.fuente)}</p>
 
-      <h2>Usos por emergencia (art. 90, RCD 028-2026)</h2>
+      <h2>Usos por emergencia (art. 90, RCD 037-2024 y RCD 028-2026)</h2>
       {res.usos_emergencia.length === 0 ? (
         <p>
           La muestra no tiene usos por emergencia. La herramienta ya los contempla: un uso excepcional sin expediente se
-          muestra como «uso que requiere informe mensual en 10 DH», no como error.
+          muestra como «uso que requiere informe a la Sunass», no como error. Desde el 06-07-2024 el informe es mensual,
+          dentro de 10 DH del cierre de cada mes.
         </p>
       ) : (
         res.usos_emergencia.map((u) => (
