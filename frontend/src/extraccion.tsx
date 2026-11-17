@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { pedir } from "./api";
 import { t } from "./etiquetas";
+import { Icono } from "./iconos";
 import { ChipFuente, Pildora } from "./ui";
 
 // Fase 6: leer un documento real con IA. Todo lo que devuelve es una PROPUESTA con su cita y su página;
@@ -8,7 +9,7 @@ import { ChipFuente, Pildora } from "./ui";
 
 interface Estado { proveedor: string; modelo: string | null; disponible: boolean; detalle: string; parte_privada: boolean;
   lista_privada: boolean }
-interface DocAlias { alias: string; id_expediente: string; huella: string; procesado: boolean }
+interface DocAlias { alias: string; id_expediente: string; huella: string; procesado: boolean; publicado?: boolean }
 interface Campo { valor: string; cita: string; pagina: number }
 interface Resultado {
   alias: string; proveedor: string; modelo: string; segundos: number;
@@ -74,26 +75,31 @@ export function LeerConIA({ idExpediente, hitos, usuarioId, onConfirmado, onErro
 
   if (!estado || docs.length === 0) return null;
   return (
-    <section className="ia-item" aria-labelledby="leer-ia">
-      <h4 id="leer-ia">Leer un documento con IA</h4>
+    <section className="tarjeta ia-tarjeta leer-ia" aria-labelledby="leer-ia">
+      <h3 id="leer-ia" className="con-icono"><Icono nombre="documento" /> Leer un documento con IA</h3>
+      <p className="detalle">La IA propone cada dato con su cita y su página; nada entra al expediente hasta que una persona lo confirme.</p>
       {!estado.disponible && <p className="aviso">{estado.detalle}</p>}
-      <div className="filtros-linea" style={{ margin: "6px 0" }}>
+      <div className="filtros-linea leer-ia-controles">
         <label>Documento del caso
           <select value={alias} onChange={(e) => { setAlias(e.target.value); setR(null); }}>
-            {docs.map((d) => <option key={d.alias} value={d.alias}>{d.alias}{d.procesado ? " · leído" : ""}</option>)}
+            {docs.map((d) => {
+              // La API de Anthropic solo recibe documentos publicados; los demás se leen con el modelo local.
+              const bloqueado = estado.proveedor === "anthropic" && !d.publicado;
+              return <option key={d.alias} value={d.alias} disabled={bloqueado}>{d.alias}{d.procesado ? " · leído" : ""}{bloqueado ? " · solo con el modelo local" : ""}</option>;
+            })}
           </select>
         </label>
         <button type="button" onClick={leer} disabled={!estado.disponible || leyendo || !alias}>{leyendo ? "Leyendo…" : "Leer con IA"}</button>
       </div>
       {leyendo && <p className="detalle" role="status">Leyendo con {estado.proveedor === "ollama" ? `el modelo local (${estado.modelo}): puede tardar 1 a 2 minutos` : estado.modelo}. Se anonimiza antes de enviar.</p>}
-      <p className="meta">Los documentos se identifican por alias: sus nombres de archivo no se muestran. {estado.lista_privada ? "" : "Falta la lista privada de nombres a ocultar (ver README)."}</p>
+      <p className="meta">Los documentos se identifican por alias; sus nombres de archivo no se muestran.{estado.lista_privada ? "" : " Falta la lista privada de nombres a ocultar (ver README)."}</p>
       {r && (
         <div role="status" aria-live="polite">
           <p><Pildora tono="vio" icono="IA">Propuesto por IA</Pildora> <span className="detalle">{r.proveedor} · {r.modelo} · {r.segundos} s</span></p>
           {(["numero_documento", "fecha", "remitente"] as const).map((k) => (
             <div key={k} className="ia-campo">
               <label className="campo">{NOMBRES[k]}<input value={valores[k] ?? ""} onChange={(e) => setValores({ ...valores, [k]: e.target.value })} /></label>
-              {r.campos[k] ? <><blockquote className="cita-bloque">«{r.campos[k]!.cita}»</blockquote><ChipFuente texto={`${r.alias}, pág. ${r.campos[k]!.pagina}`} /></>
+              {r.campos[k] ? <blockquote className="cita-bloque">«{r.campos[k]!.cita}» <ChipFuente texto={`${r.alias}, pág. ${r.campos[k]!.pagina}`} soloIcono /></blockquote>
                 : <p className="meta">Vacío: el modelo no dio una cita válida.</p>}
             </div>
           ))}
@@ -104,7 +110,7 @@ export function LeerConIA({ idExpediente, hitos, usuarioId, onConfirmado, onErro
                 <option value="">Sin plazo</option><option value="otorgado">Otorgado</option><option value="prorroga">Prórroga</option><option value="solicitado">Solicitado</option>
               </select>
             </label>
-            {r.campos.plazo ? <><blockquote className="cita-bloque">«{r.campos.plazo.cita}»</blockquote><ChipFuente texto={`${r.alias}, pág. ${r.campos.plazo.pagina}`} /></>
+            {r.campos.plazo ? <blockquote className="cita-bloque">«{r.campos.plazo.cita}» <ChipFuente texto={`${r.alias}, pág. ${r.campos.plazo.pagina}`} soloIcono /></blockquote>
               : <p className="meta">Vacío: el modelo no dio una cita válida.</p>}
           </div>
           {r.campos.requerimientos.length > 0 && (

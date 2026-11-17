@@ -61,7 +61,7 @@ def archivos_versionados(raiz: Path = RAIZ_REPO) -> list[Path]:
 
 
 # Documentos publicados oficialmente (su texto puede citarse en los archivos públicos del repositorio).
-PUBLICADOS = (re.compile(r"(?i)^RCD 032-2026"),)
+PUBLICADOS = sv.PUBLICADOS
 
 
 def _normas() -> list[Path]:

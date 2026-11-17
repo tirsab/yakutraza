@@ -615,3 +615,8 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .tabla-tarjetas td::before { content: attr(data-label); font-size: .76rem; color: var(--mut); font-weight: 600; }
 }
 .ia-campo { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
+
+/* ---------------------------------------------------- Fase 6: leer un documento con IA */
+.con-icono { display: flex; align-items: center; gap: 8px; margin-top: 0; }
+.leer-ia-controles { margin: 6px 0; align-items: end; }
+.leer-ia .ia-campo .cita-bloque { display: flex; gap: 6px; align-items: flex-start; justify-content: space-between; }

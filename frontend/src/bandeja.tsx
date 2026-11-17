@@ -338,20 +338,27 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
       onError((e as Error).message);
     }
   };
+  // Lectura asistida (Fase 6): solo en los casos reales y para quien puede confirmar.
+  const leer = puedeConfirmar && (f.expediente as Record<string, unknown>).naturaleza === "real" ? (
+    <LeerConIA idExpediente={f.expediente.id_expediente} hitos={f.linea_de_tiempo.map((h) => h.hito)} usuarioId={usuarioId}
+               onConfirmado={onCambio} onError={onError} />
+  ) : null;
   if (transcritos.length === 0) {
-    return <p className="tarjeta-linea"><Icono nombre="documento" /> IA: nada por confirmar en este expediente.</p>;
+    return (
+      <>
+        <p className="tarjeta-linea"><Icono nombre="documento" /> IA: nada por confirmar en este expediente.</p>
+        {leer}
+      </>
+    );
   }
   return (
+    <>
     <section className="tarjeta ia-tarjeta" aria-labelledby="ia-titulo">
       <div className="fila" style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
         <h3 id="ia-titulo" style={{ margin: 0 }}>La IA leyó el documento</h3>
-        {transcritos.length > 0 && <span className="pildora pil-vio">Por confirmar ({transcritos.length})</span>}
+        <span className="pildora pil-vio">Por confirmar ({transcritos.length})</span>
       </div>
-      {transcritos.length === 0 ? (
-        <p className="detalle">No hay transcripciones por confirmar en este expediente. La lectura asistida con IA está disponible
-          para los documentos de los casos reales.</p>
-      ) : (
-        <>
+      <>
           <p className="detalle">Transcrito con asistencia de IA. Nada cambia los plazos hasta que una persona lo confirme.</p>
           {transcritos.slice(0, 4).map((r) => (
             <div key={`${r.clase}${r.id}`} className="ia-item">
@@ -370,18 +377,15 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
             </div>
           ))}
           {transcritos.length > 4 && <p className="meta">Y {transcritos.length - 4} más en el expediente completo.</p>}
-        </>
-      )}
-      {puedeConfirmar && (f.expediente as Record<string, unknown>).naturaleza === "real" && (
-        <LeerConIA idExpediente={f.expediente.id_expediente} hitos={f.linea_de_tiempo.map((h) => h.hito)} usuarioId={usuarioId}
-                   onConfirmado={onCambio} onError={onError} />
-      )}
+      </>
       {corrigiendo && (
         <Correccion r={corrigiendo} usuarioId={usuarioId} onCerrar={() => setCorrigiendo(null)}
                     onListo={() => { setCorrigiendo(null); onCambio("Corrección registrada con su motivo. Falta confirmar."); }}
                     onError={onError} />
       )}
     </section>
+    {leer}
+    </>
   );
 }
 

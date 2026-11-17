@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -24,6 +25,9 @@ from app.extraccion.texto import leer_pdf, limpiar
 # Palabra de la carpeta → (prefijo del alias, expediente del caso real).
 CASOS = {"TACNA": ("TACNA", "REAL-TACNA-2026"), "EPSSMU": ("EPSSMU", "REAL-EPSSMU-2025")}
 NOMBRES_A_OCULTAR = "nombres_a_ocultar.txt"
+# Documentos publicados oficialmente (por nombre de archivo). Solo estos pueden ir a una API externa (Anthropic):
+# los oficios intermedios, aun anonimizados, se leen solo con el modelo local.
+PUBLICADOS = (re.compile(r"(?i)^RCD 032-2026"),)
 
 
 class ErrorPrivacidad(RuntimeError):
@@ -37,8 +41,13 @@ class DocReal:
     ruta: Path      # nunca sale de este módulo
     sha256: str
 
+    @property
+    def publicado(self) -> bool:
+        return any(p.search(self.ruta.name) for p in PUBLICADOS)
+
     def publico(self) -> dict[str, Any]:
-        return {"alias": self.alias, "id_expediente": self.id_expediente, "huella": self.sha256[:12]}
+        return {"alias": self.alias, "id_expediente": self.id_expediente, "huella": self.sha256[:12],
+                "publicado": self.publicado}
 
 
 def indice(s: Settings) -> list[DocReal]:
@@ -93,6 +102,9 @@ def extraer(s: Settings, alias: str, proveedor: Proveedor | None = None) -> dict
     if proveedor is None:
         raise ErrorProveedor("La extracción con IA está desactivada. Configure EXTRACCION_PROVEEDOR=ollama (modelo local) "
                              "o anthropic (solo texto anonimizado) en .env.")
+    if proveedor.nombre == "anthropic" and not d.publicado:
+        raise ErrorPrivacidad(f"{alias} no es un documento publicado: la API de Anthropic solo recibe textos públicos o "
+                              "sintéticos. Léalo con el modelo local (EXTRACCION_PROVEEDOR=ollama).")
     t = texto_anonimizado(s, d)
     if not t["procesable"]:
         raise ErrorProveedor(f"{alias} parece un escaneo sin texto: requiere OCR, que está fuera del alcance.")

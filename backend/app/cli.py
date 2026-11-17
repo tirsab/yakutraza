@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {k}: precisión {v['precision']}, exhaustividad {v['exhaustividad']} (vp {v['vp']}, fp {v['fp']}, fn {v['fn']})")
         t = r["total"]
         print(f"Total ({r['documentos']} documentos): precisión {t['precision']}, exhaustividad {t['exhaustividad']}. "
-              f"Detalle en {Path(s.data_dir) / 'evaluacion' / 'resultado.yaml'}.")
+              f"Detalle en {evaluacion.carpeta(s) / 'resultado.yaml'}.")
     elif a.tarea == "verificar-privacidad":
         from app.extraccion import privacidad
         hallazgos = privacidad.verificar(s)

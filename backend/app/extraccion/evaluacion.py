@@ -1,9 +1,9 @@
 """Evaluación independiente de la extracción contra anotaciones hechas A MANO por el equipo.
 
-- `plantilla`: escribe DATA_DIR/evaluacion/plantilla_anotaciones.yaml con los documentos digitales disponibles y los
+- `plantilla`: escribe DATA_DIR/extraccion/evaluacion/plantilla_anotaciones.yaml con los documentos digitales disponibles y los
   campos VACÍOS. El prototipo nunca llena los valores esperados.
-- `evaluar`: lee DATA_DIR/evaluacion/anotaciones.yaml (copia llenada por el equipo), corre la extracción y calcula
-  precisión y exhaustividad por campo. El resultado queda en DATA_DIR/evaluacion/ (no se versiona).
+- `evaluar`: lee DATA_DIR/extraccion/evaluacion/anotaciones.yaml (copia llenada por el equipo), corre la extracción y calcula
+  precisión y exhaustividad por campo. El resultado queda en la misma carpeta (no se versiona).
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Any, Callable
 
 import yaml
 
-from app.config import Settings
+from app.config import Settings, dir_extraccion
 from app.extraccion import servicio as sv
 from app.extraccion.anonimizar import plano
 from app.extraccion.extraer import leer_fecha
@@ -24,7 +24,7 @@ CAMPOS = ("numero_documento", "fecha", "remitente", "plazo_dias_habiles")
 INSTRUCCIONES = """\
 # Plantilla de anotación manual (Fase 6). La llena el EQUIPO, no el prototipo.
 #
-# 1. Copie este archivo como «anotaciones.yaml» en esta misma carpeta (DATA_DIR/evaluacion/, no se versiona).
+# 1. Copie este archivo como «anotaciones.yaml» en esta misma carpeta (DATA_DIR/extraccion/evaluacion/, no se versiona).
 # 2. Elija 5 documentos y borre los demás. Para cada uno, abra el PDF y anote lo que dice el documento:
 #    - valor: el dato (fecha en formato AAAA-MM-DD; plazo en días hábiles como número).
 #    - cita: el texto exacto del documento que lo respalda.
@@ -36,7 +36,8 @@ INSTRUCCIONES = """\
 
 
 def carpeta(s: Settings) -> Path:
-    return Path(s.data_dir) / "evaluacion"
+    """DATA_DIR/extraccion/evaluacion: dentro de data/ (no se versiona) y con escritura también en Docker."""
+    return dir_extraccion(s) / "evaluacion"
 
 
 def plantilla(s: Settings) -> Path:
