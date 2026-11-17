@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import App from "../App";
+import App, { FechaCompacta } from "../App";
 import { Bandeja } from "../bandeja";
 import { VistaCiudadana } from "../ciudadana";
 import { MiEps } from "../mieps";
@@ -181,12 +181,27 @@ describe("Barra DEMO y vistas por rol", () => {
     const trabajo = screen.getByRole("navigation", { name: "Trabajo" });
     expect(within(trabajo).queryByRole("link", { name: "Tablero de dirección" })).not.toBeInTheDocument();
     expect(within(trabajo).getByLabelText("1 urgentes")).toBeInTheDocument();
-    expect(screen.getByLabelText("Fecha de corte")).toHaveValue("2026-09-30");
+    expect(screen.getByRole("button", { name: /Corte: 30\/09\/2026/ })).toHaveAttribute("aria-expanded", "false");
     await userEvent.selectOptions(screen.getByLabelText("Ver como:"), "coordinacion_srt");
     expect(await screen.findByRole("heading", { level: 1, name: "Tablero gerencial de la DRE" })).toBeInTheDocument();
     expect(within(screen.getByRole("navigation", { name: "Trabajo" })).getByRole("link", { name: "Tablero de dirección" })).toBeInTheDocument();
     const pedido = f.mock.calls.find(([u]) => String(u).includes("/tablero"));
     expect((pedido?.[1]?.headers as Record<string, string>)["X-Usuario"]).toBe("coord-srt-01");
+  });
+
+  it("menú lateral plegable a íconos, con nombres accesibles", async () => {
+    apiDeApp();
+    window.localStorage.removeItem("yakutraza.menu_plegado");
+    render(<MemoryRouter initialEntries={["/bandeja"]}><App /></MemoryRouter>);
+    await screen.findByRole("heading", { level: 1, name: "Hola, Especialista SRT." });
+    const plegar = screen.getByRole("button", { name: "Plegar menú" });
+    expect(plegar).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(plegar);
+    expect(screen.getByRole("complementary", { name: "Menú de Sunass" })).toHaveClass("plegada");
+    expect(screen.getByRole("button", { name: "Desplegar menú" })).toHaveAttribute("aria-expanded", "false");
+    expect(within(screen.getByRole("navigation", { name: "Trabajo" })).getByRole("link", { name: /Mi bandeja/ })).toBeInTheDocument();
+    expect(window.localStorage.getItem("yakutraza.menu_plegado")).toBe("1");
+    window.localStorage.removeItem("yakutraza.menu_plegado");
   });
 
   it("al elegir EPS abre el portal EPS y la lista de empresas", async () => {
@@ -254,7 +269,7 @@ describe("Bandeja maestro-detalle", () => {
     apiBandeja();
     render(<ConSesion sesion={sesionPrueba()}><ToastProvider><MemoryRouter><Bandeja /></MemoryRouter></ToastProvider></ConSesion>);
     expect(await screen.findByRole("heading", { level: 1, name: "Hola, Especialista SRT." })).toBeInTheDocument();
-    expect(screen.getByText(/Hoy tienes/).closest("p")).toHaveTextContent("Hoy tienes 1 expediente que necesita tu atención");
+    expect(screen.getByText(/Hoy tienes/).closest("p")).toHaveTextContent("Hoy tienes 1 urgente de 2 expedientes");
     const lista = screen.getByRole("list", { name: "Expedientes ordenados por plazo restante" });
     const [primero, segundo] = within(lista).getAllByRole("button");
     expect(primero).toHaveAttribute("aria-current", "true");
@@ -264,7 +279,8 @@ describe("Bandeja maestro-detalle", () => {
     expect(prox).toHaveTextContent("Próxima acción · está en Gerencia General (GG)");
     expect(prox).toHaveTextContent("paso 6 de 7 (Consejo Directivo)");
     expect(prox).toHaveTextContent("¿Qué requiere acción? Plazo normativo: vencido hace 7 días hábiles (vence el 21/09/2026).");
-    expect(prox).toHaveTextContent("¿Qué falta? 3 evidencias");
+    expect(prox).toHaveTextContent("¿Qué falta? 3 hitos sin documento · Ver");
+    expect(screen.getByRole("heading", { level: 2, name: "Hacer seguimiento" })).toBeInTheDocument();
     expect(prox).toHaveTextContent("¿Por qué importa? Vencido hace 7 días hábiles");
     expect(prox).toHaveTextContent("S/ 159 441,32");
     expect(screen.getByRole("list", { name: "Paso 6 de 7: Consejo Directivo" })).toBeInTheDocument();
@@ -328,7 +344,7 @@ function TableroConFecha() {
   const [corte, setCorte] = useState("2026-09-30");
   return (
     <ConSesion sesion={sesionPrueba("coordinacion_srt", { corte, setCorte })}>
-      <MemoryRouter><TableroGerencial /></MemoryRouter>
+      <MemoryRouter><FechaCompacta /><TableroGerencial /></MemoryRouter>
     </ConSesion>
   );
 }
@@ -338,24 +354,61 @@ describe("Tablero de dirección", () => {
     const f = vi.spyOn(globalThis, "fetch").mockImplementation((url) =>
       respuesta(String(url).includes("fecha_corte=2026-09-23") ? tablero("2026-09-23", 0) : tablero("2026-09-30", 1)));
     render(<TableroConFecha />);
-    const panel = await screen.findByRole("region", { name: "Fecha de corte" });
     await screen.findByRole("button", { name: /Vencido\s*1/ });
-    await userEvent.click(within(panel).getByRole("button", { name: "− 1 semana" }));
+    // Una sola fecha de corte, compacta: los controles aparecen al tocarla.
+    const corte = screen.getByRole("button", { name: /Corte: 30\/09\/2026/ });
+    expect(screen.queryByRole("button", { name: "− 1 semana" })).not.toBeInTheDocument();
+    await userEvent.click(corte);
+    expect(corte).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(screen.getByRole("button", { name: "− 1 semana" }));
     await waitFor(() => expect(f.mock.calls.some(([u]) => String(u).includes("fecha_corte=2026-09-23"))).toBe(true));
     expect(await screen.findByText("-1 desde la fecha anterior")).toBeInTheDocument();
-    expect(within(panel).getByText("23/09/2026")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Corte: 23\/09\/2026/ })).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("button", { name: "− 1 semana" })).not.toBeInTheDocument();
   });
 
   it("cinco indicadores: el primero destacado y el % que supera el plazo rotulado", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
     render(<TableroConFecha />);
     await screen.findByRole("button", { name: /Vencido\s*1/ });
-    const botones = within(screen.getByRole("region", { name: /Indicadores al/ })).getAllByRole("button");
+    const botones = within(screen.getByRole("region", { name: /Indicadores al/ })).getAllByRole("button")
+      .filter((b) => b.classList.contains("indicador"));
     expect(botones).toHaveLength(5);
     expect(botones[0]).toHaveClass("destacado");
     expect(botones[0]).toHaveTextContent("En trámite32 en plazo");
     expect(botones[4]).toHaveTextContent("18,5 %");
     expect(botones[4]).toHaveTextContent("muestra simulada");
+  });
+
+  it("filtros detrás de un botón y la tabla de expedientes en un panel lateral", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
+    render(<TableroConFecha />);
+    const vencidos = await screen.findByRole("button", { name: /Vencido\s*1/ });
+    expect(screen.queryByRole("form", { name: "Filtros del tablero" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const filtros = screen.getByRole("button", { name: /Filtros/ });
+    await userEvent.click(filtros);
+    expect(filtros).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("form", { name: "Filtros del tablero" })).toBeInTheDocument();
+    await userEvent.click(vencidos);
+    const panel = await screen.findByRole("dialog", { name: /Expedientes — vencido/ });
+    expect(within(panel).getByRole("link", { name: "CPI-2026-0004" })).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(vencidos).toHaveFocus();
+  });
+
+  it("cuellos de botella en lenguaje claro y montos abreviados", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => respuesta(tablero("2026-09-30", 1)));
+    render(<TableroConFecha />);
+    const cuellos = await screen.findByRole("region", { name: "Cuellos de botella" });
+    const claro = within(cuellos).getByRole("list");
+    expect(claro.textContent).toMatch(/suele tardar/);
+    expect(claro.textContent).not.toMatch(/mediana|P90/i);
+    expect(within(cuellos).getByText("Ver análisis")).toBeInTheDocument();
+    const rpe = screen.getByRole("region", { name: "Ruta del dinero por EPS" });
+    expect(rpe).toHaveTextContent("S/ 120,0 mil de 970,0 mil · 12 %");
   });
 
   it("ruta por EPS, alertas que necesitan decisión, pasos y carga del equipo, sin códigos", async () => {
@@ -428,9 +481,9 @@ function apiEps() {
   });
 }
 
-function montarEps() {
+function montarEps(ruta = "/mi-eps") {
   return render(<ConSesion sesion={sesionPrueba("eps", { usuario: usuarioPrueba("eps", { permisos: ["registrar_documento", "prechequeo"] }) })}>
-    <ToastProvider><MemoryRouter><MiEps /></MemoryRouter></ToastProvider></ConSesion>);
+    <ToastProvider><MemoryRouter initialEntries={[ruta]}><MiEps /></MemoryRouter></ToastProvider></ConSesion>);
 }
 
 describe("Portal EPS", () => {
@@ -470,7 +523,12 @@ describe("Portal EPS", () => {
 
   it("«¿Qué vía te corresponde?» con preguntas Sí/No, regla aplicada y documentos de la norma", async () => {
     const f = apiEps();
-    montarEps();
+    // Ya no está en el inicio: se abre desde el menú («Revisar mi vía»).
+    const { unmount } = montarEps();
+    await screen.findByRole("region", { name: "Mis trámites" });
+    expect(screen.queryByRole("region", { name: "¿Qué vía te corresponde?" })).not.toBeInTheDocument();
+    unmount();
+    montarEps("/mi-eps#via");
     const viaSec = await screen.findByRole("region", { name: "¿Qué vía te corresponde?" });
     for (let i = 0; i < 5; i++) {
       const grupos = within(viaSec).getAllByRole("group");
@@ -493,9 +551,12 @@ describe("Portal EPS", () => {
     apiEps();
     montarEps();
     const tram = await screen.findByRole("region", { name: "Mis trámites" });
-    expect(tram).toHaveTextContent("Te toca a ti");
-    expect(tram).toHaveTextContent("Sunass evalúa");
-    expect(tram).toHaveTextContent("Aprobado");
+    // Tres grupos: «Te toca a ti», «Sunass evalúa» y un «Historial» plegado con los concluidos.
+    expect(within(tram).getByRole("heading", { name: /^Te toca a ti/ })).toBeInTheDocument();
+    expect(within(tram).getByRole("heading", { name: /^Sunass evalúa/ })).toBeInTheDocument();
+    const historial = within(tram).getByText(/^Historial: 1 trámite concluido/).closest("details")!;
+    expect(historial).not.toHaveAttribute("open");
+    expect(historial).toHaveTextContent("Aprobado");
     expect(within(tram).getByRole("list", { name: "Paso 3 de 7: Evaluación" })).toBeInTheDocument();
     const fondo = screen.getByRole("region", { name: "Mi fondo de inversiones" });
     for (const x of ["Programado", "Depositado", "Autorizado", "Usado"]) expect(fondo).toHaveTextContent(x);
@@ -598,8 +659,13 @@ describe("Vista ciudadana", () => {
       apiCiudadana();
       montarCiudadana();
       await screen.findByRole("list", { name: "Obras del distrito" });
+      // «Detener» solo aparece mientras suena el audio.
+      expect(screen.queryByRole("button", { name: "■ Detener" })).not.toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "▶ Escuchar resumen en español" }));
       expect(speak).toHaveBeenCalledTimes(1);
+      const detener = screen.getByRole("button", { name: "■ Detener" });
+      await userEvent.click(detener);
+      expect(screen.queryByRole("button", { name: "■ Detener" })).not.toBeInTheDocument();
       expect(speak.mock.calls[0][0].lang).toBe("es-PE");
       expect(speak.mock.calls[0][0].text).toContain("Belén");
     } finally {

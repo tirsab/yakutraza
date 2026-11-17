@@ -140,7 +140,7 @@ def localidad(engine: Engine, cat_vis: dict[str, Any], t: dict[str, Any], params
                    "La población beneficiaria es una estimación.",
                    "Lo marcado «por validar» depende de la confirmación de la DRE sobre qué es público (E-2)."],
         "naturaleza": "sintético",
-        "fuente": "DS01 localidades, DS02 y DS03 (sintéticos); campos públicos según rules/visibilidad.yaml",
+        "fuente": "DS01 localidades, DS02 y DS03 (sintéticos); solo campos marcados como públicos",
     }
 
 

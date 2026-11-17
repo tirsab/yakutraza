@@ -2,8 +2,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { pedir } from "./api";
 import { EstadoAlerta, fecha } from "./componentes";
-import { soles } from "./dinero";
-import { Avatar, ChipFuente, PildoraPlazo, irA } from "./ui";
+import { deTotal, soles } from "./dinero";
+import { Icono } from "./iconos";
+import { Avatar, ChipFuente, Dialogo, PildoraPlazo, irA } from "./ui";
 import { humanizar, t } from "./etiquetas";
 import { useSesion } from "./sesion";
 
@@ -51,9 +52,6 @@ const INDICADORES: { clave: string; titulo: string; estado?: string }[] = [
 ];
 
 // ------------------------------------------------------------- utilidades
-const DIA = 86400000;
-const aFecha = (s: string) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
-const aTexto = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const uno = (v: number | null | undefined) => (v == null ? "—" : v.toLocaleString("es-PE", { maximumFractionDigits: 1 }).replace(".", ","));
 
 function Barra({ valor, maximo, etiqueta }: { valor: number; maximo: number; etiqueta: string }) {
@@ -72,45 +70,6 @@ function Barra({ valor, maximo, etiqueta }: { valor: number; maximo: number; eti
   );
 }
 
-// ------------------------------------------------------ selector de fecha
-export function SelectorFecha() {
-  const { corte, setCorte, config } = useSesion();
-  const min = aFecha(config.corte_min);
-  const max = aFecha(config.corte_max);
-  const [texto, setTexto] = useState(corte);
-  useEffect(() => setTexto(corte), [corte]);
-  const mover = (dias: number) => setCorte(aTexto(Math.min(max, Math.max(min, aFecha(corte) + dias * DIA))));
-  const valido = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && aFecha(s) >= min && aFecha(s) <= max;
-  return (
-    <section className="panel-fecha" aria-labelledby="fecha-titulo">
-      <div className="panel-fecha-cabecera">
-        <h2 id="fecha-titulo">Fecha de corte</h2>
-        <p className="fecha-grande" aria-live="polite">{fecha(corte)}</p>
-      </div>
-      <p className="sub" id="fecha-ayuda">
-        Mueva la fecha para ver cómo cada expediente pasa de «en plazo» a «por vencer» y a «vencido». Los hechos
-        posteriores a la fecha elegida aún no se conocen. La muestra llega al {fecha(config.corte_max)}.
-      </p>
-      <div className="fecha-controles">
-        <label htmlFor="fecha-corte">Fecha</label>
-        <input id="fecha-corte" type="date" min={config.corte_min} max={config.corte_max} value={texto}
-               aria-describedby="fecha-ayuda"
-               onChange={(e) => { setTexto(e.target.value); if (valido(e.target.value)) setCorte(e.target.value); }} />
-        <button type="button" className="secundario" onClick={() => mover(-7)}>− 1 semana</button>
-        <button type="button" className="secundario" onClick={() => mover(-1)}>− 1 día</button>
-        <button type="button" className="secundario" onClick={() => mover(1)}>+ 1 día</button>
-        <button type="button" className="secundario" onClick={() => mover(7)}>+ 1 semana</button>
-        <button type="button" onClick={() => setCorte(config.fecha_corte_muestra)}
-                disabled={corte === config.fecha_corte_muestra}>Volver a la fecha de la muestra</button>
-      </div>
-      <label htmlFor="fecha-deslizador" className="oculto">Deslizar la fecha de corte</label>
-      <input id="fecha-deslizador" className="deslizador" type="range" min={0} max={Math.round((max - min) / DIA)}
-             value={Math.round((aFecha(corte) - min) / DIA)} aria-valuetext={fecha(corte)}
-             onChange={(e) => setCorte(aTexto(min + Number(e.target.value) * DIA))} />
-    </section>
-  );
-}
-
 // ------------------------------------------------------------- tablero
 export function TableroGerencial() {
   const { corte, usuario } = useSesion();
@@ -119,11 +78,14 @@ export function TableroGerencial() {
   const [error, setError] = useState<string | null>(null);
   const previo = useRef<Record<string, Ids> | null>(null);
   const [cambios, setCambios] = useState<Record<string, number>>({});
-  const lista = useRef<HTMLHeadingElement>(null);
+  const [panel, setPanel] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [verFiltros, setVerFiltros] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams({ fecha_corte: corte });
     Object.entries(filtros).forEach(([k, v]) => v && q.set(k, v));
+    setCargando(true);
     pedir<Tablero>(`/tablero?${q}`).then((r) => {
       if (previo.current) {
         const dif: Record<string, number> = {};
@@ -133,13 +95,18 @@ export function TableroGerencial() {
       previo.current = r.indicadores;
       setD(r);
       setError(null);
-    }).catch((e) => setError(e.message));
+    }).catch((e) => setError(e.message)).finally(() => setCargando(false));
   }, [corte, filtros]);
 
   const elegir = (estado: string) => {
-    setFiltros({ ...filtros, estado: filtros.estado === estado ? "" : estado });
-    setTimeout(() => lista.current?.focus(), 0);
+    setFiltros({ ...filtros, estado });
+    setPanel(true);
   };
+  const cerrarPanel = () => {
+    setPanel(false);
+    setFiltros({ ...filtros, estado: "" });
+  };
+  const activos = Object.entries(filtros).filter(([k, v]) => k !== "estado" && v).length;
   const cambiar = (k: keyof typeof filtros) => (e: React.ChangeEvent<HTMLSelectElement>) =>
     setFiltros({ ...filtros, [k]: e.target.value });
 
@@ -150,11 +117,20 @@ export function TableroGerencial() {
         Expedientes en trámite, plazos, cuellos de botella, carga del equipo y calidad de datos.{" "}
         <span className="rotulo rotulo-sintetico">Dato sintético</span>
       </p>
-      <SelectorFecha />
       {error && <p className="mensaje mensaje-error" role="alert">No se pudo cargar el tablero: {error}</p>}
       {!d ? <p className="cargando">Cargando el tablero…</p> : (
         <>
-          <form className="filtros-linea" aria-label="Filtros del tablero" onSubmit={(e) => e.preventDefault()}>
+
+          <section aria-labelledby="ind-titulo">
+            <div className="titulo-con-accion">
+              <h2 id="ind-titulo">¿Qué requiere acción? Indicadores al {fecha(d.fecha_corte)}</h2>
+              <button type="button" className="secundario boton-filtros" aria-expanded={verFiltros} aria-controls="filtros-tablero"
+                      onClick={() => setVerFiltros(!verFiltros)}>
+                <Icono nombre="filtro" /> Filtros{activos > 0 && <span className="contador-filtros"> ({activos}<span className="oculto"> activos</span>)</span>}
+              </button>
+            </div>
+            {verFiltros && (
+          <form className="filtros-linea" id="filtros-tablero" aria-label="Filtros del tablero" onSubmit={(e) => e.preventDefault()}>
             <label>Tipo de trámite
               <select value={filtros.tipo} onChange={cambiar("tipo")}>
                 <option value="">Todos</option>
@@ -173,36 +149,28 @@ export function TableroGerencial() {
                 {d.opciones.responsable.map((x) => <option key={x} value={x}>{t("responsable", x)}</option>)}
               </select>
             </label>
-            <label>Estado
-              <select value={filtros.estado} onChange={cambiar("estado")}>
-                <option value="">Todos</option>
-                {d.opciones.estado.map((x) => <option key={x} value={x}>{t("estado_reloj", x)}</option>)}
-              </select>
-            </label>
             <label>Especialista (ficticio)
               <select value={filtros.especialista} onChange={cambiar("especialista")}>
                 <option value="">Todos</option>
                 {d.opciones.especialista.map((x) => <option key={x}>{x}</option>)}
               </select>
             </label>
-            {Object.values(filtros).some(Boolean) && (
+            {activos > 0 && (
               <button type="button" className="secundario"
                       onClick={() => setFiltros({ tipo: "", cod_eps: "", responsable: "", especialista: "", estado: "" })}>
                 Quitar filtros
               </button>
             )}
           </form>
-
-          <section aria-labelledby="ind-titulo">
-            <h2 id="ind-titulo">¿Qué requiere acción? Indicadores al {fecha(d.fecha_corte)}</h2>
-            <p className="sub">Elija un indicador para ver sus expedientes y llegar hasta cada uno.</p>
+            )}
+            <p className="sub">Elija un indicador para ver sus expedientes en un panel.</p>
             <div className="indicadores">
               {INDICADORES.filter((i) => i.clave !== "en_plazo").map((i, n) => {
                 const delta = cambios[i.clave];
-                const activo = (i.estado ?? "") === filtros.estado;
+                const activo = panel && (i.estado ?? "") === filtros.estado;
                 return (
                   <button key={i.clave} type="button" className={`indicador ind-${i.clave}${n === 0 ? " destacado" : ""}${activo ? " activo" : ""}`}
-                          aria-pressed={activo} onClick={() => elegir(i.estado ?? "")}>
+                          aria-haspopup="dialog" onClick={() => elegir(i.estado ?? "")}>
                     <span className="ind-titulo">{i.estado ? <EstadoAlerta estado={i.estado} /> : i.titulo}</span>
                     <span className="ind-valor">{d.indicadores[i.clave].n}</span>
                     {n === 0 && <span className="detalle">{d.indicadores.en_plazo.n} en plazo</span>}
@@ -227,30 +195,33 @@ export function TableroGerencial() {
             <CargaEquipo c={d.carga} />
           </div>
 
-          <section aria-labelledby="lista-titulo">
-            <h2 id="lista-titulo" ref={lista} tabIndex={-1}>
-              Expedientes {filtros.estado ? `— ${t("estado_reloj", filtros.estado).toLowerCase()}` : "en trámite"} ({d.expedientes.length})
-            </h2>
+
+          {panel && (
+            <Dialogo lateral onCerrar={cerrarPanel}
+                     titulo={`Expedientes ${filtros.estado ? `— ${t("estado_reloj", filtros.estado).toLowerCase()}` : "en trámite"}${cargando ? "" : ` (${d.expedientes.length})`}`}>
+            {cargando ? <p className="cargando" role="status">Cargando los expedientes…</p> : (
             <div className="tabla-wrap">
-              <table>
+              <table className="tabla-tarjetas">
                 <thead><tr><th>Expediente</th><th>Estado</th><th>Plazo</th><th>Está en</th><th>EPS</th><th>Tipo</th><th>Especialista</th></tr></thead>
                 <tbody>
                   {d.expedientes.map((x) => (
                     <tr key={x.id_expediente}>
-                      <td><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link></td>
-                      <td><EstadoAlerta estado={x.estado} /></td>
-                      <td>{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
-                        x.alerta.dias_restantes < 0 ? `vencido hace ${-x.alerta.dias_restantes} DH` : `quedan ${x.alerta.dias_restantes} DH`}</> : "—"}</td>
-                      <td>{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<div className="detalle">{t("responsable", x.responsable_al_corte)}</div></> : "—"}</td>
-                      <td>{x.cod_eps}</td>
-                      <td>{t("tipo_procedimiento", x.tipo_procedimiento)}</td>
-                      <td>{x.especialista}</td>
+                      <td data-label="Expediente"><Link to={`/expedientes/${x.id_expediente}`}>{x.id_expediente}</Link></td>
+                      <td data-label="Estado"><EstadoAlerta estado={x.estado} /></td>
+                      <td data-label="Plazo"><span>{x.alerta ? <>{t("reloj", x.alerta.reloj)}: {x.alerta.dias_restantes == null ? "—" :
+                        x.alerta.dias_restantes < 0 ? `vencido hace ${-x.alerta.dias_restantes} DH` : `quedan ${x.alerta.dias_restantes} DH`}</> : "—"}</span></td>
+                      <td data-label="Está en"><span>{x.hito_al_corte ? <>{t("hito", x.hito_al_corte)}<span className="detalle" style={{ display: "block" }}>{t("responsable", x.responsable_al_corte)}</span></> : "—"}</span></td>
+                      <td data-label="EPS">{x.cod_eps}</td>
+                      <td data-label="Tipo">{t("tipo_procedimiento", x.tipo_procedimiento)}</td>
+                      <td data-label="Especialista">{x.especialista}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </section>
+            )}
+            </Dialogo>
+          )}
 
           <SuperaPlazo s={d.supera_plazo} />
           <Cuellos c={d.cuellos} />
@@ -304,6 +275,15 @@ function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
   );
 }
 
+/** «Elevación al Consejo: suele tardar 12 días hábiles; 1 de cada 10 casos pasa de 25. 3 en curso ahora.» */
+export function fraseCuello(nombre: string, x: Pick<Cuello, "mediana_dh" | "p90_dh" | "en_curso">): string {
+  const dh = (v: number) => `${uno(v)} ${v === 1 ? "día hábil" : "días hábiles"}`;
+  const tipico = x.mediana_dh == null ? "sin datos suficientes" : `suele tardar ${dh(x.mediana_dh)}`;
+  const lentos = x.p90_dh != null && x.mediana_dh != null && x.p90_dh > x.mediana_dh ? `; 1 de cada 10 casos pasa de ${uno(x.p90_dh)}` : "";
+  const ahora = x.en_curso ? ` ${x.en_curso} en curso ahora.` : "";
+  return `${nombre}: ${tipico}${lentos}.${ahora}`;
+}
+
 function Cuellos({ c }: { c: Tablero["cuellos"] }) {
   const tabla = (xs: Cuello[], cat: string, titulo: string) => {
     const max = Math.max(1, ...xs.map((x) => x.mediana_dh ?? 0));
@@ -311,13 +291,13 @@ function Cuellos({ c }: { c: Tablero["cuellos"] }) {
       <div className="tabla-wrap">
         <table>
           <caption>{titulo}</caption>
-          <thead><tr><th>{cat === "hito" ? "Hito" : "Responsable"}</th><th>Mediana (DH)</th><th>Demora</th><th>P90 (DH)</th><th>Casos</th><th>En curso ahora</th>{cat === "hito" && <th>Superan su plazo referencial</th>}</tr></thead>
+          <thead><tr><th>{cat === "hito" ? "Hito" : "Responsable"}</th><th>Tiempo típico (días hábiles)</th><th>Demora</th><th>Casos más lentos (1 de cada 10 pasa de…)</th><th>Casos</th><th>En curso ahora</th>{cat === "hito" && <th>Superan su plazo referencial</th>}</tr></thead>
           <tbody>
             {xs.slice(0, 10).map((x) => (
               <tr key={x.clave}>
                 <th scope="row">{t(cat, x.clave)}</th>
                 <td>{uno(x.mediana_dh)}</td>
-                <td><Barra valor={x.mediana_dh ?? 0} maximo={max} etiqueta={`Mediana ${uno(x.mediana_dh)} días hábiles`} /></td>
+                <td><Barra valor={x.mediana_dh ?? 0} maximo={max} etiqueta={`Suele tardar ${uno(x.mediana_dh)} días hábiles`} /></td>
                 <td>{x.p90_dh ?? "—"}</td>
                 <td>{x.n}</td>
                 <td>{x.en_curso === 0 ? "0" : (
@@ -334,9 +314,17 @@ function Cuellos({ c }: { c: Tablero["cuellos"] }) {
   return (
     <section aria-labelledby="cb-titulo">
       <h2 id="cb-titulo">Cuellos de botella</h2>
-      <p className="sub">{humanizar(c.nota)}</p>
-      {tabla(c.por_responsable, "responsable", "Demora por responsable")}
-      {tabla(c.por_hito, "hito", "Demora por hito (los 10 más lentos)")}
+      <p className="sub">Dónde se demoran más los expedientes, contando días hábiles desde que empieza cada paso.</p>
+      <ul className="cuellos-claros">
+        {c.por_responsable.slice(0, 3).map((x) => <li key={`r${x.clave}`}>{fraseCuello(t("responsable", x.clave), x)}</li>)}
+        {c.por_hito.slice(0, 3).map((x) => <li key={`h${x.clave}`}>{fraseCuello(t("hito", x.clave), x)}</li>)}
+      </ul>
+      <details className="ver-analisis">
+        <summary>Ver análisis</summary>
+        <p className="sub">{humanizar(c.nota)} «Tiempo típico» es la mediana; «casos más lentos», el percentil 90.</p>
+        {tabla(c.por_responsable, "responsable", "Demora por responsable")}
+        {tabla(c.por_hito, "hito", "Demora por hito (los 10 más lentos)")}
+      </details>
       <p className="meta">Fuente: {humanizar(c.fuente)}</p>
     </section>
   );
@@ -355,7 +343,7 @@ function Embudo({ e }: { e: Tablero["embudo"] }) {
               <strong>{x.nombre}</strong>
             </div>
             <p>
-              Llegaron {x.llegaron} · mediana {uno(x.mediana_dh)} DH · ahora en esta etapa: {x.en_curso}
+              Llegaron {x.llegaron} · suele tardar {uno(x.mediana_dh)} días hábiles · ahora en esta etapa: {x.en_curso}
               {x.ids_en_curso.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}
             </p>
           </li>
@@ -527,7 +515,7 @@ function RutaPorEps({ r }: { r: Tablero["ruta_por_eps"] }) {
             <div className="barrita b-clara"><span style={{ width: `${(x.programado_vigente / max) * 100}%` }} /></div>
             <div className="barrita"><span style={{ width: `${(x.ejecutado / max) * 100}%` }} /></div>
             {x.uso_autorizado > 0 && <div className="barrita b-oscura"><span style={{ width: `${Math.max(2, (x.uso_autorizado / max) * 100)}%` }} /></div>}
-            <span className="meta">{soles(x.ejecutado)} de {soles(x.programado_vigente)}{x.sin_dato_ejecucion ? ` · ${x.sin_dato_ejecucion} sin dato de ejecución` : ""}
+            <span className="meta">{deTotal(x.ejecutado, x.programado_vigente)}{x.sin_dato_ejecucion ? ` · ${x.sin_dato_ejecucion} sin dato de ejecución` : ""}
               {x.usos.length > 0 && <> · usos: {x.usos.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}</>}</span>
           </div>
           {x.estado ? <PildoraPlazo estado={x.estado} /> : <span className="pildora">Sin trámites en curso</span>}
@@ -548,7 +536,9 @@ function RutaPorEps({ r }: { r: Tablero["ruta_por_eps"] }) {
 
 // ------------------------------------------------------- alertas que necesitan decisión
 function AlertasDecision({ filas }: { filas: FilaExp[] }) {
-  const urgentes = filas.filter((f) => ["vencido", "por_vencer", "no_calculable"].includes(f.estado)).slice(0, 6);
+  const [todas, setTodas] = useState(false);
+  const todasUrg = filas.filter((f) => ["vencido", "por_vencer", "no_calculable"].includes(f.estado));
+  const urgentes = todas ? todasUrg : todasUrg.slice(0, 5);
   return (
     <section className="tarjeta" aria-labelledby="ad-titulo">
       <h2 id="ad-titulo">Alertas que necesitan decisión</h2>
@@ -559,11 +549,15 @@ function AlertasDecision({ filas }: { filas: FilaExp[] }) {
             <PildoraPlazo estado={f.estado} dias={f.alerta?.dias_restantes} /></div>
           <span className="detalle">{f.hito_al_corte ? `${t("hito", f.hito_al_corte)} · ${t("responsable", f.responsable_al_corte)}` : t("tipo_procedimiento", f.tipo_procedimiento)}</span>
           <div className="fila">
-            {f.alerta?.fuente ? <ChipFuente texto={f.alerta.fuente} /> : <span />}
-            <Link to={`/expedientes/${f.id_expediente}`}>Abrir <span aria-hidden="true">→</span></Link>
+            {f.alerta?.fuente ? <span className="sobre-enlace"><ChipFuente texto={f.alerta.fuente} /></span> : <span />}
+            <Link className="enlace-tarjeta" to={`/expedientes/${f.id_expediente}`}>Abrir<span className="oculto"> {f.id_expediente}</span> <span aria-hidden="true">→</span></Link>
           </div>
         </article>
       ))}
+      {todasUrg.length > 5 && (
+        <button type="button" className="enlace-boton" aria-expanded={todas} onClick={() => setTodas(!todas)}>
+          {todas ? "Ver menos" : `Ver todas (${todasUrg.length})`}</button>
+      )}
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { humanizar, t } from "./etiquetas";
+import { Icono } from "./iconos";
 
 // ---------------------------------------------------------------- movimiento
 /** true si la persona pidió reducir el movimiento (prefers-reduced-motion). */
@@ -54,8 +55,8 @@ const NORMAS: { patron: RegExp; enlace?: string; nombre: string }[] = [
 ];
 
 /** Chip con la fuente de un dato. Al abrirlo muestra el texto completo y, si es una norma, el enlace oficial. */
-export function ChipFuente({ texto, etiqueta, detalle, enlace }: {
-  texto: string | null | undefined; etiqueta?: string; detalle?: ReactNode; enlace?: string;
+export function ChipFuente({ texto, etiqueta, detalle, enlace, soloIcono }: {
+  texto: string | null | undefined; etiqueta?: string; detalle?: ReactNode; enlace?: string; soloIcono?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const id = useId();
@@ -73,9 +74,9 @@ export function ChipFuente({ texto, etiqueta, detalle, enlace }: {
   const corto = etiqueta ?? (legible.length > 34 ? `${legible.slice(0, 32)}…` : legible);
   return (
     <span className="chip-envoltura" ref={caja} onKeyDown={(e) => { if (e.key === "Escape") setAbierto(false); }}>
-      <button type="button" className="chip-fuente" aria-expanded={abierto} aria-controls={id}
-              aria-label={`Fuente: ${legible}`} onClick={() => setAbierto(!abierto)}>
-        <span aria-hidden="true">§</span> {corto}
+      <button type="button" className={soloIcono ? "chip-icono" : "chip-fuente"} aria-expanded={abierto} aria-controls={id}
+              aria-label={`Fuente: ${legible}`} title={soloIcono ? "Ver la fuente" : undefined} onClick={() => setAbierto(!abierto)}>
+        {soloIcono ? <Icono nombre="info" tam={18} /> : <><span aria-hidden="true">§</span> {corto}</>}
       </button>
       {abierto && (
         <span className="chip-pop" id={id} role="note">
@@ -146,7 +147,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 // ---------------------------------------------------------------- diálogo
-export function Dialogo({ titulo, children, onCerrar }: { titulo: string; children: ReactNode; onCerrar: () => void }) {
+export function Dialogo({ titulo, children, onCerrar, lateral }: { titulo: string; children: ReactNode; onCerrar: () => void; lateral?: boolean }) {
   const id = useId();
   const caja = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -155,8 +156,10 @@ export function Dialogo({ titulo, children, onCerrar }: { titulo: string; childr
     return () => previo?.focus?.();
   }, []);
   return (
-    <div className="dialogo" onKeyDown={(e) => { if (e.key === "Escape") onCerrar(); }}>
+    <div className={`dialogo${lateral ? " dialogo-lateral" : ""}`} onKeyDown={(e) => { if (e.key === "Escape") onCerrar(); }}
+         onMouseDown={(e) => { if (lateral && e.target === e.currentTarget) onCerrar(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby={id} ref={caja}>
+        {lateral && <button type="button" className="cerrar-panel secundario" onClick={onCerrar}>Cerrar<span className="oculto"> el panel</span></button>}
         <h2 id={id} style={{ marginTop: 0 }}>{titulo}</h2>
         {children}
       </div>

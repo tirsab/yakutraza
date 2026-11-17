@@ -56,7 +56,7 @@ def test_columnas_distintas_y_archivo_faltante(tmp_path):
     m = cargar_muestra(d)
     mensajes = [p.mensaje for p in m.problemas]
     assert any("columna_extra" in x and "variacion_mensual_pct" in x for x in mensajes)
-    assert sum("No se encontró" in x for x in mensajes) == len(DATASETS) - 1
+    assert sum("Falta el dataset" in x for x in mensajes) == len(DATASETS) - 1
 
 
 def test_especificacion_bien_formada():

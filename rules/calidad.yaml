@@ -494,11 +494,11 @@ reglas:
     titulo: fecha_limite de DS02 distinta a la recalculada
     descripcion: >-
       Recalcula fecha_limite = fecha_inicio + plazo_maximo_dh + días de
-      suspensión (en DH, desde el día hábil siguiente) con el calendario de
-      rules/feriados.yaml y la compara con DS02. Informa el conteo de
+      suspensión (en DH, desde el día hábil siguiente) con
+      el calendario de feriados nacionales y la compara con DS02. Informa el conteo de
       coincidencias y marca cada discrepancia o caso no calculable.
     severidad: media
-    fuente: "Diccionario, hoja Léame (Cómputo de plazos); rules/plazos.yaml (PLZ-COMPUTO)"
+    fuente: "Diccionario, hoja Léame (Cómputo de plazos); TUO de la Ley 27444, art. 133.1"
     estado_validacion: por validar
     activa: true
     parametros: {}
@@ -534,7 +534,7 @@ reglas:
       librería holidays. Cada diferencia se marca «validar con el calendario
       oficial»; si no hay diferencias, se informa.
     severidad: media
-    fuente: "Diccionario, hoja Supuestos (Feriados); rules/feriados.yaml"
+    fuente: "Diccionario, hoja Supuestos (Feriados)"
     estado_validacion: por validar
     activa: true
     parametros: {}

@@ -30,7 +30,7 @@ def _motor(ctx) -> MotorPlazos:
     return MotorPlazos(calendario_desde(r / "feriados.yaml"), catalogo_desde(r / "plazos.yaml"))
 
 
-DH = "calendario de rules/feriados.yaml, conteo desde el día hábil siguiente"
+DH = "calendario de feriados nacionales (hoja Supuestos del diccionario), conteo desde el día hábil siguiente"
 
 
 def _resumen(cfg, total, coinciden, que, filas_ok, metodo=DH):

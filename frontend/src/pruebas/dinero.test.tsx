@@ -81,7 +81,13 @@ describe("Tablero de la ruta del dinero", () => {
     api();
     render(<MemoryRouter><TableroRutaDelDinero /></MemoryRouter>);
     const tabla = await screen.findByRole("table", { name: "Totales por fondo o reserva" });
-    expect(within(tabla).getByRole("columnheader", { name: /Uso por emergencia \(art\. 90\)/ })).toBeInTheDocument();
+    // Cuatro columnas de montos; el resto (art. 89, art. 90, depósitos y saldo) en el detalle de cada fila.
+    expect(within(tabla).getAllByRole("columnheader").map((c) => c.textContent?.replace(/Público|Reservado/g, "").trim()))
+      .toEqual(["Fondo o reserva", "Solicitado", "Autorizado", "Usado", "Verificado", "Detalle"]);
+    const detalle = within(tabla).getAllByRole("button", { name: /^Detalle de/ })[0];
+    await userEvent.click(detalle);
+    expect(detalle).toHaveAttribute("aria-expanded", "true");
+    expect(within(tabla).getByText(/Uso por emergencia \(art\. 90\)/)).toBeInTheDocument();
     expect(within(tabla).getAllByText(/Pendiente/).length).toBeGreaterThan(0);
     expect(within(tabla).getByText("◷ Pendiente (1)")).toBeInTheDocument();
     // Clic hacia el expediente desde el fondo.
@@ -147,6 +153,6 @@ describe("Detalle de proyecto", () => {
     expect(avance).toHaveTextContent("50 % sobre programado vigente · 41,7 % sobre el original");
     expect(screen.getByText("Programado original").nextElementSibling).toHaveTextContent("S/ 1 200,00");
     expect(screen.getByRole("link", { name: "CPI-2025-0002" })).toHaveAttribute("href", "/expedientes/CPI-2025-0002");
-    expect(screen.getByText(/Fuente: DS03 filas/)).toBeInTheDocument();
+    expect(screen.getByText(/Fuente: DS03 · Programa de inversiones, filas/)).toBeInTheDocument();
   });
 });

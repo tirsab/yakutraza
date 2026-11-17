@@ -100,7 +100,7 @@ def cargar_muestra(data_dir: Path) -> Muestra:
         ruta = data_dir / spec.archivo
         if not ruta.exists():
             muestra.problemas.append(ProblemaFormato(
-                spec.nombre, None, None, None, f"No se encontró {spec.archivo} en DATA_DIR ({data_dir})."
+                spec.nombre, None, None, None, f"Falta el dataset {spec.codigo} · {spec.descripcion.split(' (')[0]} en los datos cargados."
             ))
             continue
         muestra.tablas[spec.nombre] = cargar_tabla(ruta, spec, muestra.problemas)

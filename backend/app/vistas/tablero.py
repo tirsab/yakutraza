@@ -299,7 +299,7 @@ def embudo(ctx: Contexto, *, tipo=None, cod_eps=None) -> dict[str, Any]:
                        "en_curso": len(set(en_curso)), "ids_en_curso": sorted(set(en_curso)),
                        "mediana_dh": _mediana(dias), "p90_dh": _p90(dias)})
     return {"etapas": etapas, "sustento": cfg["sustento"], "estado_validacion": "por validar",
-            "fuente": "DS02 ds02_hitos_procedimientos (sintético); agrupación en rules/tablero.yaml"}
+            "fuente": "DS02 ds02_hitos_procedimientos (sintético); agrupación por etapas (supuesto de presentación)"}
 
 
 # ------------------------------------------------------------------- carga
