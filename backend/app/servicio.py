@@ -9,6 +9,7 @@ from app.calidad.base import cargar_catalogo
 from app.calidad.motor import evaluar
 from app.calidad.reporte import construir_html, escribir_reporte
 from app.config import Settings, dir_privado
+from app.expediente.casos_reales import rastros_privados
 from app.expediente.casos_reales import cargar_casos, sincronizar
 from app.db import get_engine
 from app.ingesta.cargar import cargar_muestra
@@ -38,9 +39,17 @@ def _muestra_verificada(s: Settings):
 def seed(s: Settings) -> ResultadoSeed:
     if not Path(s.data_dir).exists():
         raise FileNotFoundError(f"DATA_DIR no existe: {s.data_dir}. Define DATA_DIR con la carpeta de los CSV.")
+    engine = get_engine(s.database_url)
+    if not s.casos_reales_privados:
+        rastros = rastros_privados(engine)
+        if any(rastros.values()):
+            raise RuntimeError(
+                "CASOS_REALES_PRIVADOS=false, pero la base ya tiene datos de la parte privada "
+                f"({rastros['documentos']} documentos, {rastros['eventos']} eventos y {rastros['bitacora']} entradas de "
+                "bitácora). La bitácora no se puede borrar: recree la base con `docker compose down -v` y vuelva a "
+                "ejecutar `seed`.")
     muestra = _muestra_verificada(s)
     hallazgos = evaluar(muestra, _ruta_catalogo(s), s.fecha_corte)
-    engine = get_engine(s.database_url)
     lote_id = guardar_carga(engine, muestra, hallazgos, s.fecha_corte)
     casos = cargar_casos(Path(s.casos_reales_dir), dir_privado(s))
     sync = sincronizar(engine, casos)

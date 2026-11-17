@@ -20,6 +20,7 @@ from app.dinero.datos import tablas
 from app.dinero.ruta import a_json
 from app.expediente import bitacora
 from app.expediente.usuarios import ErrorPermiso, Usuario, exigir, roles_desde, usuarios_desde
+from app.expediente.casos_reales import rastros_privados
 from app.persistencia import ultimo_lote
 from app.vistas import bandeja as bandeja_srv
 from app.vistas import ciudadana, eps, tablero
@@ -93,6 +94,8 @@ def config(s: Settings = Depends(get_settings)) -> dict[str, Any]:
                    "usuario": por_rol.get(k) if k not in ("eps", "ciudadania") else None}
                   for k, r in roles.items() if s.modo_demo or k == "ciudadania"],
         "eps": eps_lista if s.modo_demo else [],
+        "privacidad": {"casos_reales_privados": s.casos_reales_privados,
+                       "rastros_privados": rastros_privados(eng) if not s.casos_reales_privados else None},
     }
 
 
