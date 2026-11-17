@@ -42,10 +42,14 @@ export function PildoraPlazo({ estado, dias, enPausa }: { estado: string; dias?:
 }
 
 // ---------------------------------------------------------------- chip de fuente
-const NORMAS: { patron: RegExp; enlace: string; nombre: string }[] = [
+// Sin `enlace`: norma leída de la que no tenemos un enlace confirmado (el chip muestra el texto, sin enlace).
+const NORMAS: { patron: RegExp; enlace?: string; nombre: string }[] = [
   { patron: /028-2026/, enlace: "https://busquedas.elperuano.pe/dispositivo/NL/2538837-1", nombre: "RCD 028-2026-SUNASS-CD (El Peruano)" },
   { patron: /124-2025/, enlace: "https://www.gob.pe/institucion/sunass/normas-legales/7325221-124-2025-sunass-cd", nombre: "RCD 124-2025-SUNASS-CD" },
-  { patron: /\bTUO\b|27444/, enlace: "https://cdn.www.gob.pe/uploads/document/file/5320370/4770872-decreto-supremo-n-004-2019-jus.pdf", nombre: "TUO de la Ley 27444 (DS 004-2019-JUS)" },
+  { patron: /037-2024/, nombre: "RCD 037-2024-SUNASS-CD" },
+  { patron: /033-2022/, nombre: "RCD 033-2022-SUNASS-CD" },
+  { patron: /texto original/, enlace: "https://www.gob.pe/institucion/sunass/normas-legales/2040084-028-2021-cd", nombre: "RCD 028-2021-SUNASS-CD (texto original)" },
+  { patron: /\bTUO\b|27444/, enlace: "https://img.lpderecho.pe/wp-content/uploads/2026/04/DECRETO-SUPREMO-006-2026-JUS-LPDerecho.pdf", nombre: "TUO de la Ley 27444 (DS 006-2026-JUS, copia de LP Derecho)" },
   { patron: /\bRGT\b|028-2021/, enlace: "https://cdn.www.gob.pe/uploads/document/file/4388328/", nombre: "Compendio del RGT (RCD 028-2021-SUNASS-CD)" },
 ];
 

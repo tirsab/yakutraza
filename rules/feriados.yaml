@@ -26,7 +26,7 @@ feriados_con_vigencia:
 fuente_feriados_con_vigencia: "Diccionario de variables, hoja Supuestos (fila Feriados)"
 
 # La hoja Supuestos excluye los días no laborables decretados; el calendario
-# tampoco los incluye. El TUO de la Ley 27444 (art. 145.1) también excluye
+# tampoco los incluye. El TUO de la Ley 27444 (art. 134.1, antes 145.1) también excluye
 # «los feriados no laborables de orden nacional o regional» y los días no
 # laborables del servicio: los feriados regionales no están modelados
 # (ver docs/preguntas_para_la_DRE.md).

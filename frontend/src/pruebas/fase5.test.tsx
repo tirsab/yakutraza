@@ -650,6 +650,19 @@ describe("Componentes del sistema visual", () => {
     expect(screen.queryByRole("note")).not.toBeInTheDocument();
   });
 
+  it("chip de fuente: enlace del nuevo TUO y normas sin enlace confirmado", async () => {
+    const { unmount } = render(<ChipFuente texto="TUO Ley 27444 (DS 006-2026-JUS), art. 133.1 (antes art. 144.1)" />);
+    await userEvent.click(screen.getByRole("button", { name: /Fuente: TUO/ }));
+    expect(screen.getByRole("link", { name: /DS 006-2026-JUS, copia de LP Derecho/ }))
+      .toHaveAttribute("href", "https://img.lpderecho.pe/wp-content/uploads/2026/04/DECRETO-SUPREMO-006-2026-JUS-LPDerecho.pdf");
+    unmount();
+    // La RCD 037-2024 cita el art. 90 «del RGT», pero no debe enlazar al compendio (que no la incluye).
+    render(<ChipFuente texto="RCD 037-2024-SUNASS-CD, art. 1 (texto del art. 90.3 del RGT), pág. 32" />);
+    await userEvent.click(screen.getByRole("button", { name: /Fuente: RCD 037-2024/ }));
+    expect(screen.getByRole("note")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
   it("avatar con iniciales", () => {
     expect(iniciales("Especialista SRT 1 (ficticia)")).toBe("ES1");
     expect(iniciales("EPS Manantial S.A.")).toBe("EM");

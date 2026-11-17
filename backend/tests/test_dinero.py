@@ -65,7 +65,7 @@ def settings(tmp_path):
             _d5("EPS01", "2025-04", "fondo_inversiones", uso=200, exc=40000, id_exp="UFI-A", saldo=5000),
             _d5("EPS01", "2025-05", "fondo_inversiones", uso=100, saldo=5100),
             _d5("EPS01", "2025-05", "reserva_grd_acc", exc=6000, id_exp="UFI-D", saldo=800),
-            # Usos sin expediente: uso por emergencia (art. 90), antes y después del 01-08-2026.
+            # Usos sin expediente: uso por emergencia (art. 90), con la versión de 2024 y la de 2026.
             _d5("EPS02", "2026-03", "reserva_grd_acc", exc=700, saldo=300),
             _d5("EPS02", "2026-08", "reserva_grd_acc", exc=900, saldo=100),
         ],
@@ -159,12 +159,16 @@ def test_usos_por_emergencia_y_su_informe(t):
     usos = {u["anio_mes"]: u for u in ruta.usos_emergencia(t, cal, cat)}
     assert set(usos) == {"2026-03", "2026-08"}
     assert all(u["categoria"] == "uso_emergencia_art_90" and "No es un error" in u["texto"] for u in usos.values())
-    # Antes del 01-08-2026 no hay regla leída aplicable: no se inventa el plazo.
-    assert usos["2026-03"]["informe"]["estado"] == "no_calculable" and "DRE-22" in usos["2026-03"]["informe"]["mensaje"]
-    # Desde el 01-08-2026: 10 DH desde el último día del mes (RCD 028-2026).
+    # Del 06-07-2024 al 31-07-2026: 10 DH desde el último día del mes (RCD 037-2024).
+    inf = usos["2026-03"]["informe"]
+    assert inf["regla_id"] == "PLZ-N-FONDO-EMERGENCIA-V2024"
+    assert inf["fecha_limite"] == cal.sumar_dias_habiles(date(2026, 3, 31), 10)
+    assert "RCD 037-2024" in usos["2026-03"]["fuente"]
+    # Desde el 01-08-2026: el mismo plazo con la RCD 028-2026.
     inf = usos["2026-08"]["informe"]
+    assert inf["regla_id"] == "PLZ-N-FONDO-EMERGENCIA-V2026"
     assert inf["fecha_limite"] == cal.sumar_dias_habiles(date(2026, 8, 31), 10)
-    assert "10 DH" in inf["mensaje"]
+    assert "10 DH" in inf["mensaje"] and "RCD 028-2026" in usos["2026-08"]["fuente"]
     assert ruta.usos_emergencia(t, cal, cat, cod_eps="EPS01") == []
     assert [u["anio_mes"] for u in ruta.usos_emergencia(t, cal, cat, anio=2026)] == ["2026-03", "2026-08"]
 
@@ -347,3 +351,20 @@ def test_sin_carga_devuelve_404(tmp_path):
         assert TestClient(app, headers={"X-Usuario": "coord-srt-01"}).get("/ruta-dinero/resumen").status_code == 404
     finally:
         app.dependency_overrides.clear()
+
+
+def test_uso_por_emergencia_con_el_texto_original_del_art_90(t):
+    """Hasta el 05-07-2024 el plazo (7 DH) cuenta desde el día del uso, que DS05 no registra: no se inventa."""
+    cal = calendario_desde(RULES / "feriados.yaml")
+    cat = catalogo_desde(RULES / "plazos.yaml")
+    for mes, regla, calculable in (("2024-06", "PLZ-N-FONDO-EMERGENCIA-V2021", False),
+                                   ("2024-07", "PLZ-N-FONDO-EMERGENCIA-V2024", True)):
+        d5 = t["ds05_fondo_inversiones_reservas"].copy()
+        d5.loc[d5["anio_mes"] == "2026-03", "anio_mes"] = mes
+        u = next(x for x in ruta.usos_emergencia({**t, "ds05_fondo_inversiones_reservas": d5}, cal, cat)
+                 if x["anio_mes"] == mes)
+        assert u["informe"]["regla_id"] == regla
+        assert (u["informe"]["fecha_limite"] is not None) == calculable
+        if not calculable:
+            assert "7 DH desde el día del uso" in u["informe"]["mensaje"] and "solo registra el mes" in u["informe"]["mensaje"]
+            assert "texto original" in u["fuente"]

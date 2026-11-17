@@ -133,6 +133,11 @@ def ruta_caso_real(caso) -> dict[str, Any] | None:
             "con_detalle_privado": caso.con_detalle_privado}
 
 
+# Versión del art. 90 aplicada, para la fuente de cada uso (rules/plazos.yaml, familia PLZ-N-FONDO-EMERGENCIA).
+_VERSION_90 = {"PLZ-N-FONDO-EMERGENCIA-V2021": "texto original, RCD 028-2021",
+               "PLZ-N-FONDO-EMERGENCIA-V2024": "RCD 037-2024", "PLZ-N-FONDO-EMERGENCIA-V2026": "RCD 028-2026"}
+
+
 def usos_emergencia(t: dict[str, pd.DataFrame], cal: Calendario, cat: CatalogoPlazos,
                     cod_eps: str | None = None, anio: int | None = None) -> list[dict[str, Any]]:
     """Usos excepcionales sin expediente: uso por emergencia (art. 90). Requieren informe mensual, no son error."""
@@ -147,20 +152,26 @@ def usos_emergencia(t: dict[str, pd.DataFrame], cal: Calendario, cat: CatalogoPl
     for _, r in sel.iterrows():
         cierre = fin_mes(r["anio_mes"])
         regla = cat.normativa("uso_emergencia_fondo", cierre)
-        if regla is not None and regla.plazo_dh:
+        mensual = regla is not None and regla.plazo_dh and "mes calendario" in (regla.inicio_conteo or "")
+        if mensual:
             limite = cal.sumar_dias_habiles(cierre, regla.plazo_dh)
             informe = {"estado": "informe no registrado", "fecha_limite": limite, "regla_id": regla.id,
                        "mensaje": f"Requiere informe mensual en {regla.plazo_dh} DH desde el cierre del mes: vence el "
                                   f"{limite}. La muestra no registra informes."}
+        elif regla is not None:
+            # Texto original del art. 90 (hasta el 05-07-2024): se cuenta desde el día del uso, que DS05 no registra.
+            informe = {"estado": "no_calculable", "fecha_limite": None, "regla_id": regla.id,
+                       "mensaje": f"No puedo calcular el plazo del informe: hasta el 05-07-2024 se contaban "
+                                  f"{regla.plazo_dh} DH desde el día del uso, y DS05 solo registra el mes."}
         else:
             informe = {"estado": "no_calculable", "fecha_limite": None, "regla_id": None,
-                       "mensaje": "No puedo calcular el plazo del informe: el uso es anterior al 01-08-2026 y falta la "
-                                  "versión intermedia del art. 90 (RCD 037-2024, DRE-22)."}
+                       "mensaje": "No puedo calcular el plazo del informe: no hay una versión del art. 90 vigente en esa fecha."}
         res.append({"cod_eps": r["cod_eps"], "anio_mes": r["anio_mes"], "tipo_fondo": r["tipo_fondo"],
                     "monto": D(r["uso_excepcional"]), "categoria": "uso_emergencia_art_90",
-                    "texto": "Uso por emergencia (art. 90): requiere informe mensual en 10 DH. No es un error.",
+                    "texto": ("Uso por emergencia (art. 90): requiere informe mensual en 10 DH. No es un error." if mensual
+                              else "Uso por emergencia (art. 90): requiere informe a la Sunass. No es un error."),
                     "informe": informe, "fila": int(r["_fila"]),
-                    "fuente": f"DS05 ds05_fondo_inversiones_reservas, fila {r['_fila']}; RGT art. 90 (RCD 028-2026)"})
+                    "fuente": f"DS05 ds05_fondo_inversiones_reservas, fila {r['_fila']}; RGT art. 90 ({_VERSION_90.get(regla.id if regla else '', 'sin versión vigente')})"})
     return res
 
 
@@ -224,8 +235,8 @@ def resumen_fondos(t: dict[str, pd.DataFrame], cod_eps: str | None = None, anio:
                 "Autorizado: se asigna al fondo donde DS05 registra el uso (supuesto); si no hay uso registrado, "
                 "queda en «no indicado».",
                 "Verificado: la muestra no registra verificaciones posteriores; se muestra «pendiente», no cero.",
-                "Uso por emergencia (art. 90, RCD 028-2026): usos excepcionales sin expediente. Requieren informe "
-                "mensual en 10 DH; no son error. La muestra no tiene casos.",
+                "Uso por emergencia (art. 90): usos excepcionales sin expediente. Requieren informe mensual en 10 DH "
+                "desde el 06-07-2024 (RCD 037-2024, que mantiene la RCD 028-2026); no son error. La muestra no tiene casos.",
                 "Los casos reales (por ejemplo, EPSSMU) se muestran aparte y no se suman a estos totales de la muestra "
                 "sintética.",
             ],

@@ -2,7 +2,7 @@
 
 Convención de conteo (ver rules/plazos.yaml, regla PLZ-COMPUTO): un plazo de
 N días hábiles empieza a contarse el día hábil siguiente a la fecha de inicio
-(TUO de la Ley 27444, art. 144.1; RGT art. 45.1). Con esta convención se
+(TUO de la Ley 27444, art. 133.1, antes 144.1; RGT art. 45.1). Con esta convención se
 reproducen las 65 fechas límite de DS02 que tienen plazo máximo.
 """
 
@@ -85,7 +85,7 @@ class Calendario:
         return n
 
     def siguiente_habil(self, d: date) -> date:
-        """`d` si es hábil; si no, el primer día hábil siguiente (TUO Ley 27444, art. 145.2)."""
+        """`d` si es hábil; si no, el primer día hábil siguiente (TUO Ley 27444, art. 134.2, antes 145.2)."""
         while not self.es_habil(d):
             d += timedelta(days=1)
         return d
