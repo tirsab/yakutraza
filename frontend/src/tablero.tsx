@@ -79,11 +79,13 @@ export function TableroGerencial() {
   const previo = useRef<Record<string, Ids> | null>(null);
   const [cambios, setCambios] = useState<Record<string, number>>({});
   const [panel, setPanel] = useState(false);
+  const [cargando, setCargando] = useState(false);
   const [verFiltros, setVerFiltros] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams({ fecha_corte: corte });
     Object.entries(filtros).forEach(([k, v]) => v && q.set(k, v));
+    setCargando(true);
     pedir<Tablero>(`/tablero?${q}`).then((r) => {
       if (previo.current) {
         const dif: Record<string, number> = {};
@@ -93,7 +95,7 @@ export function TableroGerencial() {
       previo.current = r.indicadores;
       setD(r);
       setError(null);
-    }).catch((e) => setError(e.message));
+    }).catch((e) => setError(e.message)).finally(() => setCargando(false));
   }, [corte, filtros]);
 
   const elegir = (estado: string) => {
@@ -196,7 +198,8 @@ export function TableroGerencial() {
 
           {panel && (
             <Dialogo lateral onCerrar={cerrarPanel}
-                     titulo={`Expedientes ${filtros.estado ? `— ${t("estado_reloj", filtros.estado).toLowerCase()}` : "en trámite"} (${d.expedientes.length})`}>
+                     titulo={`Expedientes ${filtros.estado ? `— ${t("estado_reloj", filtros.estado).toLowerCase()}` : "en trámite"}${cargando ? "" : ` (${d.expedientes.length})`}`}>
+            {cargando ? <p className="cargando" role="status">Cargando los expedientes…</p> : (
             <div className="tabla-wrap">
               <table>
                 <thead><tr><th>Expediente</th><th>Estado</th><th>Plazo</th><th>Está en</th><th>EPS</th><th>Tipo</th><th>Especialista</th></tr></thead>
@@ -216,6 +219,7 @@ export function TableroGerencial() {
                 </tbody>
               </table>
             </div>
+            )}
             </Dialogo>
           )}
 

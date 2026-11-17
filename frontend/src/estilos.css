@@ -149,7 +149,7 @@ code { font-size: .88em; background: var(--neu-bg); padding: 0 4px; border-radiu
 .evidencia-registrado { color: var(--ok-tx); background: var(--ok-bg); border-color: var(--ok-bg); }
 
 /* Tablas y formularios */
-.tabla-wrap { overflow-x: auto; margin: 8px 0; }
+.tabla-wrap { overflow-x: auto; margin: 8px 0; position: relative; }
 table { border-collapse: collapse; width: 100%; font-size: .88rem; }
 caption { text-align: left; font-weight: 600; padding: 6px 0; font-family: var(--f-titulo); color: var(--n9); }
 th, td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
@@ -526,7 +526,8 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 
 .tres-relojes { display: block; padding: 4px 16px; }
 .tres-relojes ul { list-style: none; margin: 0; padding: 0; }
-.reloj-fila { display: grid; grid-template-columns: 190px 1fr auto auto; gap: 6px 14px; align-items: center; padding: 10px 0; }
+.reloj-fila { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 10px 0; }
+.reloj-fuente { grid-column: 2 / -1; }
 .reloj-fila + .reloj-fila { border-top: 1px solid var(--line); }
 .reloj-nombre { display: inline-flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 700; color: var(--n8);
   text-transform: uppercase; letter-spacing: .04em; }
@@ -599,3 +600,6 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .grupo-tramites h3 { font-size: .9rem; margin: 12px 0 4px; color: var(--n8); }
 .historial { margin-top: 12px; }
 .historial summary { cursor: pointer; font-weight: 600; color: var(--b7); }
+/* Sin desborde horizontal en celular: las rejillas dejan encoger a sus hijos y las columnas de pasos se desplazan. */
+.rejilla-2 > *, .dos-col > *, .bandeja-grid > * { min-width: 0; }
+.columnas-paso { overflow-x: auto; }
