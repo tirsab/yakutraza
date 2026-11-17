@@ -614,3 +614,4 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .tabla-tarjetas td { display: grid; grid-template-columns: 110px 1fr; gap: 8px; border: 0; padding: 3px 0; }
   .tabla-tarjetas td::before { content: attr(data-label); font-size: .76rem; color: var(--mut); font-weight: 600; }
 }
+.ia-campo { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }

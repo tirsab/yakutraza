@@ -18,6 +18,7 @@ from app import servicio
 from app.api_dinero import router as router_dinero
 from app.api_dinero import router_contexto
 from app.api_expediente import router as router_expediente
+from app.api_extraccion import router as router_extraccion
 from app.api_vistas import router as router_vistas
 from app.expediente.usuarios import Usuario
 from app.vistas.sesion import alcance_eps, exige_vista
@@ -278,3 +279,4 @@ app.include_router(router_expediente)
 app.include_router(router_dinero)
 app.include_router(router_contexto)
 app.include_router(router_vistas)
+app.include_router(router_extraccion)

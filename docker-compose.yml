@@ -34,6 +34,14 @@ services:
       MODO_DEMO: ${MODO_DEMO:-true}
       # Casos reales sin su parte privada (tomas públicas): CASOS_REALES_PRIVADOS=false y una base nueva.
       CASOS_REALES_PRIVADOS: ${CASOS_REALES_PRIVADOS:-true}
+      # Fase 6: extracción asistida. ninguno | ollama (modelo local en Windows) | anthropic (solo texto anonimizado).
+      EXTRACCION_PROVEEDOR: ${EXTRACCION_PROVEEDOR:-ninguno}
+      # En Docker siempre se usa host.docker.internal (OLLAMA_URL de .env es para correr sin Docker).
+      OLLAMA_URL: ${OLLAMA_URL_DOCKER:-http://host.docker.internal:11434}
+      OLLAMA_MODELO: ${OLLAMA_MODELO:-qwen3.5:4b}
+      ANTHROPIC_MODELO: ${ANTHROPIC_MODELO:-claude-opus-5-5}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      EXTRACCION_DIR: /extraccion
       TZ: America/Lima
     volumes:
       # Los datos se montan en solo lectura desde DATA_DIR (no están en el repositorio).
@@ -42,6 +50,11 @@ services:
       - ./casos_reales:/casos_reales:ro
       - ${CASOS_REALES_PRIVADOS_DIR:-${DATA_DIR}/casos_reales}:/casos_reales_privados:ro
       - ./reportes:/reportes
+      # Resultados de la extracción con IA (texto anonimizado y propuestas): dentro de DATA_DIR, no se versionan.
+      - ${DATA_DIR}/extraccion:/extraccion
+    # Para que el contenedor llegue a Ollama, que corre en Windows (también en Linux con Docker Engine).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
 

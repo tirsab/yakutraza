@@ -5,6 +5,7 @@ import { FormularioDocumento, Rotulo, fecha } from "./componentes";
 import { soles, type Peldano, type Proyecto, type RutaUso } from "./dinero";
 import { humanizar, t } from "./etiquetas";
 import { Icono } from "./iconos";
+import { LeerConIA } from "./extraccion";
 import { useSesion } from "./sesion";
 import { BarraPasos, ChipFuente, Dialogo, PildoraPlazo, irA, useToast, type Pasos } from "./ui";
 
@@ -323,7 +324,7 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
   const [corrigiendo, setCorrigiendo] = useState<Registro | null>(null);
   // Primero los plazos y prórrogas (son los que cambian los relojes), luego los documentos.
   const transcritos: Registro[] = [
-    ...f.eventos.filter((e) => ["transcrito_ia", "corregido"].includes((e as Evento & { origen?: string }).origen ?? "") && e.estado_registro === "propuesto")
+    ...f.eventos.filter((e) => ["transcrito_ia", "corregido", "extraido_ia"].includes((e as Evento & { origen?: string }).origen ?? "") && e.estado_registro === "propuesto")
       .map((e) => ({ ...e, clase: "evento" as const })),
     ...f.documentos.filter((d) => ["transcrito_ia", "corregido"].includes(d.origen) && d.estado_registro === "propuesto")
       .map((d) => ({ ...d, clase: "documento" as const })),
@@ -347,8 +348,8 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
         {transcritos.length > 0 && <span className="pildora pil-vio">Por confirmar ({transcritos.length})</span>}
       </div>
       {transcritos.length === 0 ? (
-        <p className="detalle">No hay transcripciones por confirmar en este expediente. La extracción asistida con IA llega en la Fase 6;
-          hoy solo se muestran los registros de los casos reales transcritos con asistencia de IA.</p>
+        <p className="detalle">No hay transcripciones por confirmar en este expediente. La lectura asistida con IA está disponible
+          para los documentos de los casos reales.</p>
       ) : (
         <>
           <p className="detalle">Transcrito con asistencia de IA. Nada cambia los plazos hasta que una persona lo confirme.</p>
@@ -370,6 +371,10 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
           ))}
           {transcritos.length > 4 && <p className="meta">Y {transcritos.length - 4} más en el expediente completo.</p>}
         </>
+      )}
+      {puedeConfirmar && (f.expediente as Record<string, unknown>).naturaleza === "real" && (
+        <LeerConIA idExpediente={f.expediente.id_expediente} hitos={f.linea_de_tiempo.map((h) => h.hito)} usuarioId={usuarioId}
+                   onConfirmado={onCambio} onError={onError} />
       )}
       {corrigiendo && (
         <Correccion r={corrigiendo} usuarioId={usuarioId} onCerrar={() => setCorrigiendo(null)}
