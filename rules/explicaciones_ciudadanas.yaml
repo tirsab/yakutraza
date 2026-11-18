@@ -1,0 +1,96 @@
+# Explicaciones en lenguaje simple para la vista ciudadana («¿Qué significa?»).
+#
+# Las lee la interfaz y también el audio. Describen SOLO lo que dicen los datos de la muestra y las normas
+# citadas; no prometen acciones de Sunass. Todas están «por validar» con la DRE (pregunta E-2: qué puede
+# mostrarse en la vista ciudadana y cómo decirlo).
+#
+# Para editar: cambie el texto entre comillas. No agregue datos que no estén en la muestra o en una norma.
+
+version: 1
+estado_validacion: por validar
+pregunta_dre: E-2
+
+explicaciones:
+  # ------------------------------------------------------------- las 6 etapas de una obra
+  etapa_programada:
+    termino: "Programada"
+    texto: "La obra está en el programa de inversiones del estudio tarifario de tu empresa de agua. Todavía no hay un reporte de que haya empezado."
+    fuente: "Programa de inversiones (DS03)"
+  etapa_aprobada:
+    termino: "Aprobada"
+    texto: "Sunass aprobó un cambio en el programa de inversiones que incluye esta obra. Todavía no hay un reporte de inicio."
+    fuente: "Decisiones de Sunass (DS02) y programa de inversiones (DS03)"
+  etapa_en_preparacion:
+    termino: "En preparación"
+    texto: "La empresa de agua reporta que la obra aún no empieza o que está preparando su expediente técnico."
+    fuente: "Reporte de la empresa (DS04)"
+  etapa_en_obra:
+    termino: "En obra"
+    texto: "La empresa de agua reporta que la obra se está construyendo."
+    fuente: "Reporte de la empresa (DS04)"
+  etapa_terminada:
+    termino: "Terminada"
+    texto: "La empresa de agua reporta que la obra está concluida. Que la empresa la dé por concluida no significa todavía que Sunass haya verificado su beneficio."
+    fuente: "Reporte de la empresa (DS04)"
+  etapa_beneficio_verificado:
+    termino: "Beneficio verificado"
+    texto: "Sunass verificó el beneficio de la obra. En esta muestra ninguna obra tiene esa verificación registrada."
+    fuente: "Muestra del hackathon"
+
+  # ------------------------------------------------------------- estados y datos de una obra
+  obra_detenida:
+    termino: "Obra detenida"
+    texto: "En su último reporte, la empresa de agua informó que la obra está paralizada. Detenida no significa cancelada."
+    fuente: "Reporte de la empresa (DS04)"
+  terminada_verificacion_pendiente:
+    termino: "Terminada, verificación pendiente"
+    texto: "La empresa de agua reporta la obra como concluida, pero la muestra no registra la verificación posterior de su beneficio."
+    fuente: "Reporte de la empresa (DS04)"
+  monto:
+    termino: "Monto"
+    texto: "Es el monto previsto para la obra en el plan de inversiones del estudio tarifario. No es lo que se gastó."
+    fuente: "Programa de inversiones (DS03)"
+  por_que_no_gasto:
+    termino: "¿Por qué no veo cuánto se gastó?"
+    texto: "El gasto y el avance los reporta la empresa de agua a Sunass. Esos datos no se muestran aquí porque todavía no está definido cuáles son públicos y porque no están verificados."
+    fuente: "Reglas de visibilidad del prototipo (por validar, E-2)"
+  sin_obras:
+    termino: "Sin obras en la muestra"
+    texto: "La muestra no registra obras de agua y saneamiento para este distrito. La muestra es de ejemplo y no cubre todos los distritos, así que esto no dice si en la realidad hay obras o no."
+    fuente: "Muestra del hackathon"
+  colores_etapas:
+    termino: "Colores de la barra de etapas"
+    texto: "Azul: etapas cumplidas. Naranja: la etapa actual. Rojo: la obra está detenida. Gris: etapas que faltan."
+    fuente: "Vista ciudadana"
+
+  # ------------------------------------------------------------- Participa: cómo funciona
+  audiencia_que_es:
+    termino: "¿Qué es una audiencia pública?"
+    texto: "Es una reunión abierta en la que se presenta el proyecto de tarifas de tu empresa de agua durante su revisión. Debe celebrarse dentro de los 30 días hábiles desde que empieza la etapa de difusión."
+    fuente: "Reglamento General de Tarifas, art. 47.2 (RCD 124-2025-SUNASS-CD)"
+  audiencia_quien:
+    termino: "¿Quién puede opinar?"
+    texto: "Los interesados y la empresa de agua pueden formular comentarios."
+    fuente: "Reglamento General de Tarifas, art. 47.4 (RCD 124-2025-SUNASS-CD)"
+  audiencia_hasta_cuando:
+    termino: "¿Hasta cuándo?"
+    texto: "Hasta el decimoquinto día hábil siguiente a la audiencia pública."
+    fuente: "Reglamento General de Tarifas, art. 47.4 (RCD 124-2025-SUNASS-CD)"
+  audiencia_como:
+    termino: "¿Cómo?"
+    texto: "El aviso de la audiencia se publica al menos 10 días calendario antes. Revise ese aviso para conocer la fecha y el lugar."
+    fuente: "Reglamento General de Tarifas, art. 48.2 (RCD 124-2025-SUNASS-CD)"
+
+  # ------------------------------------------------------------- Más
+  que_es_sunass:
+    termino: "¿Qué es Sunass?"
+    texto: "La Superintendencia Nacional de Servicios de Saneamiento. Es el organismo que regula las tarifas de agua y saneamiento y supervisa a las empresas de agua."
+    fuente: "Sunass"
+  que_es_eps:
+    termino: "¿Qué es una EPS?"
+    texto: "Empresa prestadora de servicios de saneamiento: la empresa de agua que atiende tu localidad."
+    fuente: "Reglamento General de Tarifas"
+  dato_sintetico:
+    termino: "¿Qué significa «dato sintético»?"
+    texto: "Son datos de ejemplo creados para el Hackathon Sunass. No describen a tu localidad ni a tu empresa de agua real."
+    fuente: "Muestra del hackathon"
