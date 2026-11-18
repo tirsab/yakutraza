@@ -614,3 +614,14 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .tabla-tarjetas td { display: grid; grid-template-columns: 110px 1fr; gap: 8px; border: 0; padding: 3px 0; }
   .tabla-tarjetas td::before { content: attr(data-label); font-size: .76rem; color: var(--mut); font-weight: 600; }
 }
+
+/* ---------------------------------------------------- Ajustes finales: análisis plegable y carga */
+.analisis-detallado { margin-top: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--radio); padding: 4px 18px; }
+.analisis-detallado > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 0;
+  list-style: none; }
+.analisis-detallado > summary::-webkit-details-marker { display: none; }
+.analisis-detallado > summary::before { content: "▸"; color: var(--b7); font-weight: 700; }
+.analisis-detallado[open] > summary::before { content: "▾"; }
+.analisis-detallado > summary h2 { display: inline; margin: 0; }
+.analisis-detallado > summary .sub { margin: 0; }
+.fila-accion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }

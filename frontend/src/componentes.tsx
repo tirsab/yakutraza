@@ -17,6 +17,18 @@ export function Rotulo({ naturaleza }: { naturaleza: string }) {
   return <span className={`rotulo ${n.clase}`}>{n.texto}</span>;
 }
 
+/** «1 expediente», «3 expedientes». */
+export function plural(n: number, singular: string, plural_: string): string {
+  return `${n} ${Math.abs(n) === 1 ? singular : plural_}`;
+}
+
+/** «1 día hábil», «2 días hábiles», «1,5 días hábiles» (con coma decimal). */
+export function dh(n: number | null | undefined): string {
+  if (n == null) return "—";
+  const v = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".", ",").replace(/,0$/, "");
+  return `${v} ${Math.abs(n) === 1 ? "día hábil" : "días hábiles"}`;
+}
+
 export function fecha(f: string | null | undefined): string {
   if (!f) return "sin fecha";
   const [a, m, d] = f.slice(0, 10).split("-");

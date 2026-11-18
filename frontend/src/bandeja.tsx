@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, pedir, type Alerta, type Documento, type Evento, type Ficha, type Hito } from "./api";
-import { FormularioDocumento, Rotulo, fecha } from "./componentes";
+import { FormularioDocumento, Rotulo, fecha, plural } from "./componentes";
 import { soles, type Peldano, type Proyecto, type RutaUso } from "./dinero";
 import { humanizar, t } from "./etiquetas";
 import { Icono } from "./iconos";
@@ -118,7 +118,7 @@ export function Bandeja() {
       {r.items.length === 0 ? <p className="tarjeta">No tiene expedientes en trámite a esta fecha.</p> : (
         <div className="bandeja-grid">
           <section aria-labelledby="mi-bandeja">
-            <h2 id="mi-bandeja" className="lista-exp-titulo">Mi bandeja · {r.items.length} expedientes · por plazo restante</h2>
+            <h2 id="mi-bandeja" className="lista-exp-titulo">Mi bandeja · {plural(r.items.length, "expediente", "expedientes")} · por plazo restante</h2>
             <ol className="lista-exp" aria-label="Expedientes ordenados por plazo restante">
               {r.items.map((x) => (
                 <li key={x.id_expediente}>

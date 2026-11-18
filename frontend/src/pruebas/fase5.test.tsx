@@ -416,14 +416,14 @@ describe("Tablero de dirección", () => {
     render(<TableroConFecha />);
     const rpe = await screen.findByRole("region", { name: "Ruta del dinero por EPS" });
     expect(within(rpe).getByRole("img", { name: /EPS02: programado S\/ 970 000,00, ejecutado S\/ 120 000,00/ })).toBeInTheDocument();
-    expect(rpe).toHaveTextContent("Señal para revisión: 1 proyectos");
+    expect(rpe).toHaveTextContent("Señal para revisión: 1 proyecto con");
     expect(rpe).toHaveTextContent("no se suman como «solicitado»");
     const alertas = screen.getByRole("region", { name: "Alertas que necesitan decisión" });
     expect(within(alertas).getByRole("link", { name: /Abrir/ })).toHaveAttribute("href", "/expedientes/CPI-2026-0004");
     expect(within(alertas).getByRole("button", { name: /Fuente: RGT/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "¿En qué paso están los 2 expedientes?" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /Consejo Directivo: 2/ })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Carga del equipo" })).toHaveTextContent("esp-srt-01");
+    expect(screen.getByRole("region", { name: "Carga del equipo" })).toHaveTextContent("Especialista 1 (ficticio)");
     expect(document.body.textContent).not.toMatch(SIN_CODIGOS);
   });
 

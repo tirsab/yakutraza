@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { pedir } from "./api";
-import { EstadoAlerta, fecha } from "./componentes";
+import { EstadoAlerta, dh, fecha, plural } from "./componentes";
 import { deTotal, soles } from "./dinero";
 import { Icono } from "./iconos";
 import { Avatar, ChipFuente, Dialogo, PildoraPlazo, irA } from "./ui";
@@ -81,6 +81,7 @@ export function TableroGerencial() {
   const [panel, setPanel] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [verFiltros, setVerFiltros] = useState(false);
+  const [analisis, setAnalisis] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams({ fecha_corte: corte });
@@ -178,7 +179,8 @@ export function TableroGerencial() {
                   </button>
                 );
               })}
-              <button type="button" className="indicador" onClick={() => irA(document.getElementById("sp-titulo"))}>
+              <button type="button" className="indicador" aria-controls="analisis-detallado"
+                      onClick={() => { setAnalisis(true); setTimeout(() => irA(document.getElementById("sp-titulo")), 0); }}>
                 <span className="ind-titulo">Superan el plazo máximo</span>
                 <span className="ind-valor">{d.supera_plazo.total.porcentaje == null ? "—" : `${uno(d.supera_plazo.total.porcentaje)} %`}</span>
                 <span className="detalle">{d.supera_plazo.total.superan} de {d.supera_plazo.total.calculables} · {d.supera_plazo.rotulo}</span>
@@ -223,9 +225,13 @@ export function TableroGerencial() {
             </Dialogo>
           )}
 
-          <SuperaPlazo s={d.supera_plazo} />
-          <Cuellos c={d.cuellos} />
-          <Embudo e={d.embudo} />
+          <details className="analisis-detallado" id="analisis-detallado" open={analisis}
+                   onToggle={(e) => setAnalisis((e.currentTarget as HTMLDetailsElement).open)}>
+            <summary><h2>Análisis detallado</h2><span className="sub">Plazos superados, cuellos de botella y embudo de firmas</span></summary>
+            <SuperaPlazo s={d.supera_plazo} />
+            <Cuellos c={d.cuellos} />
+            <Embudo e={d.embudo} />
+          </details>
           <Carga c={d.carga} />
           <Calidad q={d.calidad} />
           {usuario.vistas?.includes("simulador") && <Simulador filtros={filtros} />}
@@ -250,9 +256,12 @@ function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
       <h2 id="sp-titulo">Expedientes que superan el plazo máximo <span className="rotulo rotulo-supuesto">{s.rotulo}</span></h2>
       <p className="cifra-grande">
         {s.total.porcentaje == null ? "No calculable" : `${uno(s.total.porcentaje)} %`}
-        <span className="sub"> ({s.total.superan} de {s.total.calculables} con datos; {s.total.en_tramite_superan} siguen en trámite)</span>
       </p>
-      <p className="sub">{humanizar(s.formula)}. {humanizar(s.nota)}</p>
+      <p>{fraseSupera(s.total, s.rotulo)}</p>
+      <details className="ver-analisis">
+        <summary>Cómo se calcula</summary>
+        <p className="sub">{humanizar(s.formula)}. {humanizar(s.nota)}</p>
+      </details>
       <div className="tabla-wrap">
         <table>
           <caption>Por tipo de trámite</caption>
@@ -275,9 +284,16 @@ function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
   );
 }
 
+/** «12 de los 65 expedientes con datos tardaron más que su plazo máximo (muestra simulada).» */
+export function fraseSupera(g: Pick<Grupo, "superan" | "calculables" | "en_tramite_superan">, rotulo: string): string {
+  const base = g.calculables === 1 ? "el expediente con datos" : `los ${g.calculables} expedientes con datos`;
+  const verbo = g.superan === 1 ? "tardó" : "tardaron";
+  const tramite = g.en_tramite_superan ? ` ${plural(g.en_tramite_superan, "sigue", "siguen")} en trámite.` : "";
+  return `${g.superan} de ${base} ${verbo} más que su plazo máximo (${rotulo}).${tramite}`;
+}
+
 /** «Elevación al Consejo: suele tardar 12 días hábiles; 1 de cada 10 casos pasa de 25. 3 en curso ahora.» */
 export function fraseCuello(nombre: string, x: Pick<Cuello, "mediana_dh" | "p90_dh" | "en_curso">): string {
-  const dh = (v: number) => `${uno(v)} ${v === 1 ? "día hábil" : "días hábiles"}`;
   const tipico = x.mediana_dh == null ? "sin datos suficientes" : `suele tardar ${dh(x.mediana_dh)}`;
   const lentos = x.p90_dh != null && x.mediana_dh != null && x.p90_dh > x.mediana_dh ? `; 1 de cada 10 casos pasa de ${uno(x.p90_dh)}` : "";
   const ahora = x.en_curso ? ` ${x.en_curso} en curso ahora.` : "";
@@ -297,7 +313,7 @@ function Cuellos({ c }: { c: Tablero["cuellos"] }) {
               <tr key={x.clave}>
                 <th scope="row">{t(cat, x.clave)}</th>
                 <td>{uno(x.mediana_dh)}</td>
-                <td><Barra valor={x.mediana_dh ?? 0} maximo={max} etiqueta={`Suele tardar ${uno(x.mediana_dh)} días hábiles`} /></td>
+                <td><Barra valor={x.mediana_dh ?? 0} maximo={max} etiqueta={`Suele tardar ${dh(x.mediana_dh)}`} /></td>
                 <td>{x.p90_dh ?? "—"}</td>
                 <td>{x.n}</td>
                 <td>{x.en_curso === 0 ? "0" : (
@@ -343,8 +359,10 @@ function Embudo({ e }: { e: Tablero["embudo"] }) {
               <strong>{x.nombre}</strong>
             </div>
             <p>
-              Llegaron {x.llegaron} · suele tardar {uno(x.mediana_dh)} días hábiles · ahora en esta etapa: {x.en_curso}
-              {x.ids_en_curso.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}
+              Llegaron {x.llegaron} · suele tardar {dh(x.mediana_dh)} · ahora en esta etapa: {x.en_curso}
+              {x.ids_en_curso.length > 0 && <>{": "}{x.ids_en_curso.map((id, i) => (
+                <span key={id}>{i > 0 && ", "}<Link to={`/expedientes/${id}`}>{id}</Link></span>
+              ))}</>}
             </p>
           </li>
         ))}
@@ -368,7 +386,7 @@ function Carga({ c }: { c: Tablero["carga"] }) {
           <tbody>
             {c.actual.map((a) => (
               <tr key={a.especialista}>
-                <th scope="row">{a.especialista}</th>
+                <th scope="row">{especialista(a.especialista)}</th>
                 <td>{a.n}</td>
                 <td>{a.carga}</td>
                 <td><Barra valor={a.carga} maximo={max} etiqueta={`Carga ${a.carga}`} /></td>
@@ -387,7 +405,7 @@ function Carga({ c }: { c: Tablero["carga"] }) {
           <ul>
             {c.movimientos.map((m) => (
               <li key={m.id_expediente}>
-                <Link to={`/expedientes/${m.id_expediente}`}>{m.id_expediente}</Link> ({t("tipo_procedimiento", m.tipo_procedimiento)}, peso {m.peso}): de {m.de} a {m.a}
+                <Link to={`/expedientes/${m.id_expediente}`}>{m.id_expediente}</Link> ({t("tipo_procedimiento", m.tipo_procedimiento)}, peso {m.peso}): de {especialista(m.de)} a {especialista(m.a)}
               </li>
             ))}
           </ul>
@@ -524,7 +542,7 @@ function RutaPorEps({ r }: { r: Tablero["ruta_por_eps"] }) {
       {r.eps.length > 6 && <button type="button" className="enlace-boton" onClick={() => setTodas(!todas)}>{todas ? "Ver menos" : `Ver las ${r.eps.length} EPS`}</button>}
       {conSenal.length > 0 && (
         <div className="senal">
-          <strong>Señal para revisión:</strong> {conSenal.reduce((n, x) => n + x.senales.length, 0)} proyectos con más de {r.umbral_senal_pp} puntos
+          <strong>Señal para revisión:</strong> {plural(conSenal.reduce((n, x) => n + x.senales.length, 0), "proyecto", "proyectos")} con más de {r.umbral_senal_pp} puntos
           entre avance financiero y físico ({conSenal.map((x) => `${x.cod_eps}: ${x.senales.map((s) => s.cod_proyecto).join(", ")}`).join(" · ")}).{" "}
           <ChipFuente texto="DS03 programa de inversiones y DS04 ejecución" etiqueta="DS03 · DS04" />
         </div>
@@ -571,7 +589,7 @@ function PorPaso({ pp }: { pp: Tablero["por_paso"] }) {
   const max = Math.max(1, ...g.pasos.map((x) => x.n));
   return (
     <section className="tarjeta" aria-labelledby="pp-titulo">
-      <h2 id="pp-titulo">¿En qué paso están los {g.total} expedientes?</h2>
+      <h2 id="pp-titulo">{g.total === 1 ? "¿En qué paso está el expediente?" : `¿En qué paso están los ${g.total} expedientes?`}</h2>
       <div className="pestanas-tipo" role="group" aria-label="Tipo de trámite">
         {tipos.map((x) => (
           <button key={x} type="button" aria-pressed={x === tipo} onClick={() => setTipo(x)}>{t("tipo_procedimiento", x)} ({pp[x].total})</button>
@@ -591,8 +609,22 @@ function PorPaso({ pp }: { pp: Tablero["por_paso"] }) {
 }
 
 // ------------------------------------------------------- carga del equipo
+/** «esp-srt-01» → «Especialista 1 (ficticio)». */
+export function especialista(id: string): string {
+  const m = /^esp-srt-0*(\d+)$/.exec(id);
+  return m ? `Especialista ${m[1]} (ficticio)` : id;
+}
+
+/** Frase sobre cuánto empareja la carga la asignación propuesta. */
+export function fraseCarga(actual: number, propuesto: number): string {
+  if (propuesto >= actual) return "La asignación propuesta no cambia el reparto de la carga.";
+  if (propuesto <= 1) return "Con la asignación propuesta, la carga queda casi pareja.";
+  return `Con la asignación propuesta, la carga queda más pareja (diferencia de ${propuesto} en vez de ${actual}).`;
+}
+
 function CargaEquipo({ c }: { c: Tablero["carga"] }) {
   const max = Math.max(1, ...c.actual.map((a) => a.carga));
+  const [verPropuesta, setVerPropuesta] = useState(false);
   return (
     <section className="tarjeta" aria-labelledby="ce-titulo">
       <h2 id="ce-titulo">Carga del equipo</h2>
@@ -601,13 +633,30 @@ function CargaEquipo({ c }: { c: Tablero["carga"] }) {
         {c.actual.map((a) => (
           <li key={a.especialista}>
             <Avatar nombre={a.especialista.replace("esp-srt-", "Especialista ")} />
-            <span>{a.especialista}</span>
+            <span>{especialista(a.especialista)}</span>
             <div className="barrita"><span style={{ width: `${(a.carga / max) * 100}%` }} /></div>
             <strong>{a.n}</strong>
           </li>
         ))}
       </ul>
-      <p className="meta">Diferencia entre la mayor y la menor carga: {c.desbalance_actual}; con la propuesta de asignación: {c.desbalance_propuesto}.</p>
+      <p className="fila-accion">
+        <span>{fraseCarga(c.desbalance_actual, c.desbalance_propuesto)}</span>
+        {c.movimientos.length > 0 && <button type="button" className="secundario" aria-haspopup="dialog" onClick={() => setVerPropuesta(true)}>Ver propuesta</button>}
+      </p>
+      {verPropuesta && (
+        <Dialogo lateral titulo={`Propuesta de asignación: ${plural(c.movimientos.length, "cambio", "cambios")}`} onCerrar={() => setVerPropuesta(false)}>
+          <p className="sub">Es una propuesta para emparejar la carga ponderada (supuesto, {c.pregunta_dre}); la asignación la decide la coordinación.</p>
+          <ul>
+            {c.movimientos.map((m) => (
+              <li key={m.id_expediente}>
+                <Link to={`/expedientes/${m.id_expediente}`}>{m.id_expediente}</Link> ({t("tipo_procedimiento", m.tipo_procedimiento)}):
+                de {especialista(m.de)} a {especialista(m.a)}
+              </li>
+            ))}
+          </ul>
+          <p className="meta">Diferencia entre la mayor y la menor carga: hoy {c.desbalance_actual}; con la propuesta, {c.desbalance_propuesto}.</p>
+        </Dialogo>
+      )}
     </section>
   );
 }

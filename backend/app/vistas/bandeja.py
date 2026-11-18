@@ -21,6 +21,7 @@ from app.calidad.reglas._util import soles
 from app.db import TABLAS_DATASETS, documentos, eventos_plazo
 from app.expediente.casos_reales import pendientes
 from app.expediente.documentos import listar
+from app.plazos.motor import _texto_dh
 from app.expediente.vivo import DECLARADO, casos, pasaporte
 from app.vistas.etiquetas import etiqueta
 from app.vistas.pasos import catalogo as cat_pasos, pasos_de
@@ -92,9 +93,9 @@ def por_que_importa(f: Fila, p: dict[str, Any] | None, proyecto: dict[str, Any] 
     a = f.alerta
     if a is not None and a.dias_restantes is not None:
         if a.dias_restantes < 0:
-            razones.append(f"Vencido hace {-a.dias_restantes} días hábiles ({a.titulo.lower()}).")
+            razones.append(f"Vencido hace {_texto_dh(-a.dias_restantes)} ({a.titulo.lower()}).")
         else:
-            razones.append(f"Quedan {a.dias_restantes} días hábiles ({a.titulo.lower()}).")
+            razones.append(f"{'Queda' if a.dias_restantes == 1 else 'Quedan'} {_texto_dh(a.dias_restantes)} ({a.titulo.lower()}).")
     if a is not None and a.reloj == "normativo" and a.estado == "vencido":
         razones.append("Superó el plazo máximo del procedimiento: el RGT lo sujeta a silencio administrativo "
                        "positivo (cómo informarlo está por validar, DRE-15).")
