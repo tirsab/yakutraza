@@ -52,6 +52,10 @@ const INDICADORES: { clave: string; titulo: string; estado?: string }[] = [
 ];
 
 // ------------------------------------------------------------- utilidades
+/** Lista de expedientes enlazados, separados por comas («RP-2025-0001, RP-2026-0002»). */
+function Enlaces({ ids }: { ids: string[] }) {
+  return <>{ids.map((id, i) => <span key={id}>{i > 0 && ", "}<Link to={`/expedientes/${id}`}>{id}</Link></span>)}</>;
+}
 const uno = (v: number | null | undefined) => (v == null ? "—" : v.toLocaleString("es-PE", { maximumFractionDigits: 1 }).replace(".", ","));
 
 function Barra({ valor, maximo, etiqueta }: { valor: number; maximo: number; etiqueta: string }) {
@@ -248,7 +252,7 @@ function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
       <td>{v.porcentaje == null ? "No calculable" : `${uno(v.porcentaje)} %`}</td>
       <td>{v.superan} de {v.calculables}</td>
       <td>{v.no_calculables}</td>
-      <td>{v.ids_superan.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}</td>
+      <td><Enlaces ids={v.ids_superan} /></td>
     </tr>
   ));
   return (
@@ -317,7 +321,7 @@ function Cuellos({ c }: { c: Tablero["cuellos"] }) {
                 <td>{x.p90_dh ?? "—"}</td>
                 <td>{x.n}</td>
                 <td>{x.en_curso === 0 ? "0" : (
-                  <details><summary>{x.en_curso}</summary>{x.ids_en_curso.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}</details>
+                  <details><summary>{x.en_curso}</summary><Enlaces ids={x.ids_en_curso} /></details>
                 )}</td>
                 {cat === "hito" && <td>{x.con_referencial ? `${x.supera_referencial} de ${x.con_referencial}` : "sin plazo referencial"}</td>}
               </tr>
@@ -360,9 +364,7 @@ function Embudo({ e }: { e: Tablero["embudo"] }) {
             </div>
             <p>
               Llegaron {x.llegaron} · suele tardar {dh(x.mediana_dh)} · ahora en esta etapa: {x.en_curso}
-              {x.ids_en_curso.length > 0 && <>{": "}{x.ids_en_curso.map((id, i) => (
-                <span key={id}>{i > 0 && ", "}<Link to={`/expedientes/${id}`}>{id}</Link></span>
-              ))}</>}
+              {x.ids_en_curso.length > 0 && <>{": "}<Enlaces ids={x.ids_en_curso} /></>}
             </p>
           </li>
         ))}
@@ -534,7 +536,7 @@ function RutaPorEps({ r }: { r: Tablero["ruta_por_eps"] }) {
             <div className="barrita"><span style={{ width: `${(x.ejecutado / max) * 100}%` }} /></div>
             {x.uso_autorizado > 0 && <div className="barrita b-oscura"><span style={{ width: `${Math.max(2, (x.uso_autorizado / max) * 100)}%` }} /></div>}
             <span className="meta">{deTotal(x.ejecutado, x.programado_vigente)}{x.sin_dato_ejecucion ? ` · ${x.sin_dato_ejecucion} sin dato de ejecución` : ""}
-              {x.usos.length > 0 && <> · usos: {x.usos.map((id) => <Link key={id} to={`/expedientes/${id}`} className="enlace-lista">{id}</Link>)}</>}</span>
+              {x.usos.length > 0 && <> · usos: <Enlaces ids={x.usos} /></>}</span>
           </div>
           {x.estado ? <PildoraPlazo estado={x.estado} /> : <span className="pildora">Sin trámites en curso</span>}
         </div>
