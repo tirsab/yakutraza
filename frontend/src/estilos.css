@@ -682,3 +682,5 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .ciu-lateral { position: sticky; top: 16px; }
   .mapa-mini .mapa-esq { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); max-height: 320px; overflow-y: auto; }
 }
+.qs-pop.qs-der { left: auto; right: 0; transform: none; }
+.qs-pop.qs-izq { left: 0; transform: none; }

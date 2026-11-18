@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { pedir } from "./api";
 import { dh, fecha, plural } from "./componentes";
@@ -101,6 +101,15 @@ function QueSignifica({ clave }: { clave: string }) {
   const [abierto, setAbierto] = useState(false);
   const id = useId();
   const caja = useRef<HTMLSpanElement>(null);
+  const pop = useRef<HTMLSpanElement>(null);
+  const [lado, setLado] = useState<"" | "izq" | "der">("");
+  // El recuadro se alinea para no salirse de la pantalla (ni del panel lateral).
+  useLayoutEffect(() => {
+    if (!abierto || !pop.current) return;
+    const r = pop.current.getBoundingClientRect();
+    const limite = (caja.current?.closest("[role='dialog']") as HTMLElement | null)?.getBoundingClientRect().right ?? window.innerWidth;
+    setLado(r.right > limite - 8 ? "der" : r.left < 8 ? "izq" : "");
+  }, [abierto]);
   useEffect(() => {
     if (!abierto) return;
     const fuera = (e: MouseEvent) => { if (caja.current && !caja.current.contains(e.target as Node)) setAbierto(false); };
@@ -112,11 +121,11 @@ function QueSignifica({ clave }: { clave: string }) {
   return (
     <span className="que-significa" ref={caja} onKeyDown={(e) => { if (e.key === "Escape") setAbierto(false); }}>
       <button type="button" className="qs-boton" aria-expanded={abierto} aria-controls={id} title="¿Qué significa?"
-              aria-label={`¿Qué significa «${x.termino}»?`} onClick={() => setAbierto(!abierto)}>
+              aria-label={`¿Qué significa «${x.termino}»?`} onClick={() => { setLado(""); setAbierto(!abierto); }}>
         <Icono nombre="info" tam={16} />
       </button>
       {abierto && (
-        <span className="qs-pop" id={id} role="note">
+        <span className={`qs-pop${lado ? ` qs-${lado}` : ""}`} id={id} role="note" ref={pop}>
           <strong>{x.termino}</strong>
           <span>{x.texto}</span>
           <span className="meta">Fuente: {x.fuente} · por validar</span>
