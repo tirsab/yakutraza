@@ -5,6 +5,7 @@ import { FormularioDocumento, Rotulo, fecha } from "./componentes";
 import { soles, type Peldano, type Proyecto, type RutaUso } from "./dinero";
 import { humanizar, t } from "./etiquetas";
 import { Icono } from "./iconos";
+import { LeerConIA } from "./extraccion";
 import { useSesion } from "./sesion";
 import { BarraPasos, ChipFuente, Dialogo, PildoraPlazo, irA, useToast, type Pasos } from "./ui";
 
@@ -323,7 +324,7 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
   const [corrigiendo, setCorrigiendo] = useState<Registro | null>(null);
   // Primero los plazos y prórrogas (son los que cambian los relojes), luego los documentos.
   const transcritos: Registro[] = [
-    ...f.eventos.filter((e) => ["transcrito_ia", "corregido"].includes((e as Evento & { origen?: string }).origen ?? "") && e.estado_registro === "propuesto")
+    ...f.eventos.filter((e) => ["transcrito_ia", "corregido", "extraido_ia"].includes((e as Evento & { origen?: string }).origen ?? "") && e.estado_registro === "propuesto")
       .map((e) => ({ ...e, clase: "evento" as const })),
     ...f.documentos.filter((d) => ["transcrito_ia", "corregido"].includes(d.origen) && d.estado_registro === "propuesto")
       .map((d) => ({ ...d, clase: "documento" as const })),
@@ -337,20 +338,27 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
       onError((e as Error).message);
     }
   };
+  // Lectura asistida (Fase 6): solo en los casos reales y para quien puede confirmar.
+  const leer = puedeConfirmar && (f.expediente as Record<string, unknown>).naturaleza === "real" ? (
+    <LeerConIA idExpediente={f.expediente.id_expediente} hitos={f.linea_de_tiempo.map((h) => h.hito)} usuarioId={usuarioId}
+               onConfirmado={onCambio} onError={onError} />
+  ) : null;
   if (transcritos.length === 0) {
-    return <p className="tarjeta-linea"><Icono nombre="documento" /> IA: nada por confirmar en este expediente.</p>;
+    return (
+      <>
+        <p className="tarjeta-linea"><Icono nombre="documento" /> IA: nada por confirmar en este expediente.</p>
+        {leer}
+      </>
+    );
   }
   return (
+    <>
     <section className="tarjeta ia-tarjeta" aria-labelledby="ia-titulo">
       <div className="fila" style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
         <h3 id="ia-titulo" style={{ margin: 0 }}>La IA leyó el documento</h3>
-        {transcritos.length > 0 && <span className="pildora pil-vio">Por confirmar ({transcritos.length})</span>}
+        <span className="pildora pil-vio">Por confirmar ({transcritos.length})</span>
       </div>
-      {transcritos.length === 0 ? (
-        <p className="detalle">No hay transcripciones por confirmar en este expediente. La extracción asistida con IA llega en la Fase 6;
-          hoy solo se muestran los registros de los casos reales transcritos con asistencia de IA.</p>
-      ) : (
-        <>
+      <>
           <p className="detalle">Transcrito con asistencia de IA. Nada cambia los plazos hasta que una persona lo confirme.</p>
           {transcritos.slice(0, 4).map((r) => (
             <div key={`${r.clase}${r.id}`} className="ia-item">
@@ -369,14 +377,15 @@ export function TarjetaIA({ f, puedeConfirmar, usuarioId, onCambio, onError }: {
             </div>
           ))}
           {transcritos.length > 4 && <p className="meta">Y {transcritos.length - 4} más en el expediente completo.</p>}
-        </>
-      )}
+      </>
       {corrigiendo && (
         <Correccion r={corrigiendo} usuarioId={usuarioId} onCerrar={() => setCorrigiendo(null)}
                     onListo={() => { setCorrigiendo(null); onCambio("Corrección registrada con su motivo. Falta confirmar."); }}
                     onError={onError} />
       )}
     </section>
+    {leer}
+    </>
   );
 }
 
