@@ -83,7 +83,9 @@ def truncar(exp: Expediente, corte: date) -> Expediente:
 
 
 def principal(alertas: list[Alerta]) -> Alerta | None:
-    abiertas = [a for a in alertas if a.estado in EN_CURSO or a.estado == "no_calculable"]
+    """Alerta que resume el expediente. Los bloques marcados «solo en el detalle» (Anexo D) no compiten."""
+    abiertas = [a for a in alertas if (a.estado in EN_CURSO or a.estado == "no_calculable")
+                and not a.detalle.get("solo_detalle")]
     if not abiertas:
         return None
     return min(abiertas, key=lambda a: (ORDEN[a.estado], a.dias_restantes if a.dias_restantes is not None else 10**6,

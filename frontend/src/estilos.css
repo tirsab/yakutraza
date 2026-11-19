@@ -682,3 +682,8 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .con-icono { display: flex; align-items: center; gap: 8px; margin-top: 0; }
 .leer-ia-controles { margin: 6px 0; align-items: end; }
 .leer-ia .ia-campo .cita-bloque { display: flex; gap: 6px; align-items: flex-start; justify-content: space-between; }
+
+/* ---------------------------------------------------- Flujogramas: aviso junto a un hito */
+.aviso-flujo { margin: 4px 0 0; padding: 4px 8px; border-left: 3px solid var(--vio); background: var(--vio-bg); border-radius: 6px;
+  font-size: .82rem; color: var(--vio-tx); }
+.aviso-flujo .meta { color: var(--vio-tx); }

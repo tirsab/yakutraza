@@ -1,31 +1,50 @@
 # Pasos de cada procedimiento (Fase 5b): agrupa los hitos de DS02 en pocos pasos para la barra de
 # pasos de la bandeja, del portal EPS y del tablero («¿En qué paso están los expedientes?»).
 #
-# SUPUESTO DE PRESENTACIÓN: la agrupación no cambia ningún plazo ni regla; solo resume la hoja
-# «Hitos» del diccionario. La revisión periódica usa sus cuatro etapas oficiales (columna Etapa).
+# SUPUESTO DE PRESENTACIÓN: la agrupación no cambia ningún plazo ni regla; resume la hoja «Hitos» del
+# diccionario siguiendo los flujogramas del expediente (docs/Flujos_Anexos_Expediente.md). La revisión periódica
+# usa sus cuatro etapas oficiales (columna Etapa).
+#
+# `nombre` va sin siglas; `ayuda` (tooltip) dice quién lo hace, con la sigla.
 
 version: 1
 estado_validacion: por validar
-fuente: "diccionario_variables.xlsx, hoja Hitos (agrupación propia, supuesto de presentación)"
+fuente: "diccionario_variables.xlsx, hoja Hitos; Flujograma, Anexo E, pág. 11; Flujograma, Anexo 2, pág. 9; Flujograma, Anexo D, pág. 10 (agrupación propia, supuesto de presentación)"
 
 procedimientos:
+  # Flujograma, Anexo E, pág. 11 (sin carril de la OAJ; la SRT firma el informe).
   cambio_programa_inversiones:
-    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion]}
-    - {clave: tupa, nombre: "Requisitos TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep]}
-    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep]}
-    - {clave: informe, nombre: "Informe", hitos: [informe, firma_informe]}
-    - {clave: memo_gg, nombre: "Memorándum a la GG", hitos: [memo_gg]}
-    - {clave: consejo, nombre: "Consejo Directivo", hitos: [elevacion_cd]}
-    - {clave: resolucion, nombre: "Resolución", hitos: [resolucion_cd, cierre]}
+    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion],
+       ayuda: "La empresa prestadora (EP) presenta; la Dirección de Regulación Económica (DRE) deriva; la Subdirección de Regulación Tarifaria (SRT) asigna al equipo"}
+    - {clave: tupa, nombre: "Requisitos del TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep],
+       ayuda: "El equipo de la SRT verifica los requisitos del TUPA; si faltan, la EP subsana"}
+    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep],
+       ayuda: "El equipo de la SRT evalúa; puede pedir información adicional a la EP"}
+    - {clave: informe, nombre: "Informe firmado por la Subdirección", hitos: [informe, firma_informe],
+       ayuda: "Subdirección de Regulación Tarifaria (SRT)"}
+    - {clave: memo_gg, nombre: "Memorándum a la Gerencia General", hitos: [memo_gg],
+       ayuda: "Lo firma la Dirección de Regulación Económica (DRE) según el flujograma; la hoja Hitos lo asigna a la SRT (DRE-11)"}
+    - {clave: consejo, nombre: "Envío al Consejo Directivo", hitos: [elevacion_cd],
+       ayuda: "Gerencia General (GG)"}
+    - {clave: resolucion, nombre: "Aprobación del Consejo Directivo", hitos: [resolucion_cd, cierre],
+       ayuda: "Consejo Directivo (CD)"}
 
+  # Flujograma, Anexo 2, pág. 9 (informe único: la SRT visa, la OAJ firma y la DRE firma).
   uso_excepcional_fondo:
-    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion]}
-    - {clave: tupa, nombre: "Requisitos TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep]}
-    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep]}
-    - {clave: informe, nombre: "Informe y firmas", hitos: [informe, visado_informe, firma_informe_dre, firma_informe_oaj]}
-    - {clave: memo_gg, nombre: "Memorándum a la GG", hitos: [memo_gg]}
-    - {clave: consejo, nombre: "Consejo Directivo", hitos: [elevacion_cd]}
-    - {clave: resolucion, nombre: "Resolución", hitos: [resolucion_cd]}
+    - {clave: recepcion, nombre: "Recepción", hitos: [solicitud, derivacion, asignacion],
+       ayuda: "La empresa prestadora (EP) presenta; la Dirección de Regulación Económica (DRE) deriva; la Subdirección de Regulación Tarifaria (SRT) asigna al equipo"}
+    - {clave: tupa, nombre: "Requisitos del TUPA", hitos: [verificacion_tupa, oficio_subsanacion, subsanacion_ep],
+       ayuda: "El equipo de la SRT verifica los requisitos del TUPA; si faltan, la EP subsana"}
+    - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep],
+       ayuda: "El equipo de la SRT evalúa; puede pedir información adicional a la EP"}
+    - {clave: informe, nombre: "Informe firmado por Asesoría Jurídica", hitos: [informe, visado_informe, firma_informe_oaj],
+       ayuda: "La Subdirección de Regulación Tarifaria (SRT) visa y la Oficina de Asesoría Jurídica (OAJ) firma"}
+    - {clave: firmas_dre, nombre: "Firmas de la Dirección: memo e informe", hitos: [firma_informe_dre, memo_gg],
+       ayuda: "Dirección de Regulación Económica (DRE)"}
+    - {clave: consejo, nombre: "Envío al Consejo Directivo", hitos: [elevacion_cd],
+       ayuda: "Gerencia General (GG)"}
+    - {clave: resolucion, nombre: "Aprobación del Consejo Directivo", hitos: [resolucion_cd],
+       ayuda: "Consejo Directivo (CD)"}
 
   revision_periodica:
     - {clave: inicio, nombre: "1. Inicio", hitos: [solicitud, derivacion, asignacion, evaluacion_requisitos, oficio_subsanacion,
@@ -54,3 +73,15 @@ procedimientos:
     - {clave: sustento, nombre: "Sustento de la EP", hitos: [sustento_ep]}
     - {clave: evaluacion, nombre: "Evaluación e informe", hitos: [evaluacion, informe]}
     - {clave: pronunciamiento, nombre: "Pronunciamiento", hitos: [pronunciamiento]}
+
+# Avisos del flujograma junto a un hito de la línea de tiempo: lo que el diagrama dice y la muestra no registra o
+# registra distinto. Los datos no se cambian; el aviso solo lo hace visible (por validar con la DRE).
+avisos_flujograma:
+  cambio_programa_inversiones:
+    subsanacion_ep: {texto: "Según el flujograma, lo subsanado reingresa por Mesa de Partes y se vuelve a verificar los requisitos del TUPA; los datos de la muestra no registran ese paso.", pregunta_dre: DRE-28, fuente: "Flujograma, Anexo E, pág. 11"}
+    cierre: {texto: "El flujograma asigna el cierre a la DRE.", pregunta_dre: DRE-29, fuente: "Flujograma, Anexo E, pág. 11"}
+  uso_excepcional_fondo:
+    subsanacion_ep: {texto: "Según el flujograma, lo subsanado reingresa por Mesa de Partes y se vuelve a verificar los requisitos del TUPA; los datos de la muestra no registran ese paso.", pregunta_dre: DRE-28, fuente: "Flujograma, Anexo 2, pág. 9"}
+  revision_periodica:
+    oficio_subsanacion: {texto: "El flujograma indica que firma la DRE.", pregunta_dre: DRE-30, fuente: "Flujograma, Anexo D, pág. 10"}
+    oficio_informacion: {texto: "El flujograma indica que firma la DRE.", pregunta_dre: DRE-30, fuente: "Flujograma, Anexo D, pág. 10"}

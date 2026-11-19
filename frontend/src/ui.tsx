@@ -118,7 +118,7 @@ export function Avatar({ nombre, claro }: { nombre: string; claro?: boolean }) {
 }
 
 // ---------------------------------------------------------------- barra de pasos
-export interface Pasos { pasos: { clave: string; nombre: string }[]; actual: number; n: number; terminado: boolean }
+export interface Pasos { pasos: { clave: string; nombre: string; ayuda?: string | null }[]; actual: number; n: number; terminado: boolean }
 
 export function BarraPasos({ p, detenido, compacto, titulo }: { p: Pasos | null | undefined; detenido?: boolean; compacto?: boolean; titulo?: string }) {
   if (!p) return null;
@@ -127,8 +127,8 @@ export function BarraPasos({ p, detenido, compacto, titulo }: { p: Pasos | null 
     <ol className={clases} aria-label={titulo ?? `Paso ${p.actual + 1} de ${p.n}: ${p.pasos[p.actual]?.nombre}`}>
       {p.pasos.map((x, i) => (
         <li key={x.clave} className={p.terminado || i < p.actual ? "hecho" : i === p.actual ? "actual" : ""}
-            aria-current={!p.terminado && i === p.actual ? "step" : undefined}>
-          {x.nombre}
+            aria-current={!p.terminado && i === p.actual ? "step" : undefined} title={x.ayuda ?? undefined}>
+          {x.nombre}{x.ayuda && <span className="oculto"> ({x.ayuda})</span>}
         </li>
       ))}
     </ol>

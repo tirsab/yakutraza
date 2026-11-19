@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, pedir, type Alerta, type Documento, type Evento, type Ficha, type Hito } from "./api";
-import { FormularioDocumento, Rotulo, fecha, plural } from "./componentes";
+import { AvisoFlujograma, FormularioDocumento, Rotulo, fecha, plural } from "./componentes";
 import { soles, type Peldano, type Proyecto, type RutaUso } from "./dinero";
 import { humanizar, t } from "./etiquetas";
 import { Icono } from "./iconos";
@@ -230,10 +230,11 @@ const RELOJES = [
 ];
 
 function elegir(relojes: Alerta[], reloj: string): Alerta | undefined {
-  const abiertos = relojes.filter((r) => r.reloj === reloj && ["vencido", "por_vencer", "en_plazo", "no_calculable"].includes(r.estado));
+  // Los bloques del flujograma marcados «solo en el detalle» (Anexo D) no se muestran en la vista principal.
+  const principales = relojes.filter((r) => r.reloj === reloj && !r.detalle?.solo_detalle);
+  const abiertos = principales.filter((r) => ["vencido", "por_vencer", "en_plazo", "no_calculable"].includes(r.estado));
   const orden = ["vencido", "no_calculable", "por_vencer", "en_plazo"];
-  return abiertos.sort((a, b) => orden.indexOf(a.estado) - orden.indexOf(b.estado))[0]
-    ?? [...relojes].reverse().find((r) => r.reloj === reloj);
+  return abiertos.sort((a, b) => orden.indexOf(a.estado) - orden.indexOf(b.estado))[0] ?? [...principales].reverse()[0];
 }
 
 export function TresRelojes({ relojes }: { relojes: Alerta[] }) {
@@ -296,6 +297,7 @@ export function LineaCompacta({ hitos, docs }: { hitos: Hito[]; docs: Documento[
                         detalle={doc?.fuente ? humanizar(doc.fuente) : h.fila_ds02 != null ? `DS02 fila ${h.fila_ds02} (sintético)` : undefined} />
           )}
         </div>
+        <AvisoFlujograma a={h.aviso_flujograma} />
       </li>
     );
   };

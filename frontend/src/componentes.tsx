@@ -105,6 +105,16 @@ export function Evidencia({ h }: { h: Hito }) {
   );
 }
 
+/** Aviso del flujograma junto a un hito («El flujograma asigna el cierre a la DRE»). */
+export function AvisoFlujograma({ a }: { a: Hito["aviso_flujograma"] }) {
+  if (!a) return null;
+  return (
+    <p className="aviso-flujo" role="note">
+      <strong>Flujograma:</strong> {a.texto} <span className="meta">({a.fuente} · por validar, {a.pregunta_dre})</span>
+    </p>
+  );
+}
+
 export function LineaDeTiempo({ hitos }: { hitos: Hito[] }) {
   return (
     <ol className="linea" aria-label="Línea de tiempo del expediente">
@@ -121,6 +131,7 @@ export function LineaDeTiempo({ hitos }: { hitos: Hito[] }) {
             {h.fila_ds02 != null && ` · DS02 fila ${h.fila_ds02}`}
           </div>
           {h.descripcion && <div className="detalle">{humanizar(h.descripcion)}</div>}
+          <AvisoFlujograma a={h.aviso_flujograma} />
         </li>
       ))}
     </ol>
