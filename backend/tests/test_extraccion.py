@@ -18,7 +18,7 @@ from app import servicio
 from app.config import Settings, get_settings
 from app.extraccion import evaluacion, privacidad
 from app.extraccion import servicio as sv
-from app.extraccion.anonimizar import Anonimizador, lista_privada
+from app.extraccion.anonimizar import Anonimizador, lista_privada, restos_de_firma
 from app.extraccion.extraer import ESQUEMA, SISTEMA, leer_fecha, mensaje_usuario, validar
 from app.extraccion.proveedores import Anthropic, ErrorProveedor, Ollama, crear
 from app.extraccion.texto import leer_pdf, limpiar
@@ -102,6 +102,92 @@ def test_anonimizar_sin_tildes_ni_mayusculas():
 def test_tratamiento_con_cargo_no_es_persona():
     r = Anonimizador().anonimizar(["El Sr. GERENTE GENERAL de la EPS."])
     assert "GERENTE GENERAL" in r.paginas[0]
+
+
+# Nombres visiblemente inventados (ninguno es de una persona real).
+MEMO_FICTICIO = """MEMORANDO N.° 999-2099-PRUEBA
+PARA : FICTICIO PRUEBAUNO INVENTADO
+Gerente General
+DE : Ficticia Pruebados Inventada
+Directora de Regulación Tarifaria
+A : Dirección de Regulación Tarifaria
+Señora:
+FICTICIA PRUEBASEIS INVENTADA
+Lima, 28 de agosto de 2099"""
+
+
+def test_anonimizar_cabeceras_para_de_y_senora():
+    r = Anonimizador().anonimizar([MEMO_FICTICIO])
+    t = r.paginas[0]
+    assert "PRUEBAUNO" not in t and "Pruebados" not in t and "PRUEBASEIS" not in t
+    assert "PARA : [PERSONA_1]" in t and "DE : [PERSONA_2]" in t
+    # Los cargos, las oficinas y la fecha no se tocan.
+    assert "Gerente General" in t and "Directora de Regulación Tarifaria" in t
+    assert "A : Dirección de Regulación Tarifaria" in t and "Lima, 28 de agosto de 2099" in t
+    assert r.reemplazos["cabecera"] == 3 and r.seguro
+
+
+def test_anonimizar_cabecera_con_nombre_en_la_linea_siguiente():
+    r = Anonimizador().anonimizar(["PARA :\nFICTICIO PRUEBASIETE INVENTADO\nJefe de la Oficina"])
+    assert "PRUEBASIETE" not in r.paginas[0] and "[PERSONA_1]" in r.paginas[0]
+
+
+def test_anonimizar_sellos_de_firma_con_fecha_y_hora():
+    sello = "FICTICIO PRUEBATRES INVENTADO23/09/2099 17:09:03 "
+    r = Anonimizador().anonimizar([sello * 3 + "\nFicticia Pruebaocho\n01/09/2099 16:11:54"])
+    t = r.paginas[0]
+    assert "PRUEBATRES" not in t and "Pruebaocho" not in t
+    assert t.count("[PERSONA_1]") == 3 and "23/09/2099 17:09:03" in t
+    assert r.restos == 0 and r.seguro
+
+
+def test_anonimizar_firmado_digitalmente_y_bloque_de_firma():
+    r = Anonimizador().anonimizar(["Firmado digitalmente por: FICTICIO PRUEBACINCO INVENTADO\n"
+                                   "<Firmado digitalmente>\nFicticia Pruebanueve Inventada\n\n"
+                                   "FICTICIO PRUEBADIEZ INVENTADO\nGerente General"])
+    t = r.paginas[0]
+    assert "PRUEBACINCO" not in t and "Pruebanueve" not in t and "PRUEBADIEZ" not in t
+    assert "Gerente General" in t
+
+
+def test_anonimizar_firmantes_despues_de_registrese():
+    texto = ("Regístrese y comuníquese.\n\n\nFicticio PRUEBACUATRO INVENTADO\nPresidente Ejecutivo\n"
+             "EXPOSICIÓN DE MOTIVOS\nEMAPA PASCO S.A.\nANEXO N° 1\nFicticio Despuesdelanexo Inventado")
+    r = Anonimizador().anonimizar([texto])
+    t = r.paginas[0]
+    assert "PRUEBACUATRO" not in t and "[PERSONA_1]" in t
+    # Cargos, títulos y empresas se conservan; después del anexo ya no se buscan firmantes.
+    assert "Presidente Ejecutivo" in t and "EXPOSICIÓN DE MOTIVOS" in t and "EMAPA PASCO S.A." in t
+    assert "Despuesdelanexo" in t
+    assert r.reemplazos["firmante"] == 1
+
+
+def test_sello_que_queda_hace_inseguro_el_documento():
+    assert restos_de_firma("FICTICIO PRUEBAONCE INVENTADO23/09/2099 17:09:03") == 1
+    assert restos_de_firma("[PERSONA_1] 23/09/2099 17:09:03") == 0
+    assert restos_de_firma("CUADRO N° 1: TOTAL 12 527 medidores") == 0
+    from app.extraccion.anonimizar import Resultado
+    assert not Resultado(paginas=[], restos=1).seguro
+
+
+def test_rastros_por_patron_en_textos_del_repositorio(tmp_path):
+    limpio = tmp_path / "limpio.md"
+    limpio.write_text("# Caso real\nRCD 032-2026, pág. 4: 19 935 medidores. PARA : [PERSONA_1]\n"
+                      "Pruebas: FICTICIO PRUEBATRES INVENTADO23/09/2099 17:09:03\n", encoding="utf-8")
+    sucio = tmp_path / "sucio.yaml"
+    # Se arma por partes para que este archivo de pruebas no tenga, él mismo, los patrones que busca.
+    sucio.write_text("PA" + "RA : Zeta Omega Lambda\n" + "ZETA OMEGA LAMBDA" + "23/09/2099 17:09:03\n"
+                     "contacto: alguien" + "@empresa.pe\nhttps://drive." + "google.com/drive/folders/abc\n",
+                     encoding="utf-8")
+    h = privacidad.rastros_en_repo([limpio, sucio])
+    assert {x.tipo for x in h if x.archivo.endswith("sucio.yaml")} == {
+        "sello_de_firma", "cabecera_con_nombre", "correo", "enlace_privado"}
+    assert not [x for x in h if x.archivo.endswith("limpio.md")]
+
+
+def test_repositorio_sin_rastros_de_oficios():
+    """Ningún archivo versionado tiene sellos de firma, cabeceras con nombre, correos ni enlaces privados."""
+    assert privacidad.rastros_en_repo() == []
 
 
 def test_lista_privada(tmp_path):
