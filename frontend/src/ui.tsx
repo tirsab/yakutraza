@@ -54,6 +54,20 @@ const NORMAS: { patron: RegExp; enlace?: string; nombre: string }[] = [
   { patron: /\bRGT\b|028-2021/, enlace: "https://cdn.www.gob.pe/uploads/document/file/4388328/", nombre: "Compendio del RGT (RCD 028-2021-SUNASS-CD)" },
 ];
 
+/** Etiqueta corta de una fuente: «RCD 033-2022-SUNASS-CD, art. 1 (texto del art. 46.3 del RGT), pág. 17» → «RCD 033-2022, art. 46.3».
+ * El texto completo queda en el tooltip y al abrir el chip. */
+export function etiquetaCorta(texto: string): string {
+  let t = texto.split(";")[0].trim();
+  t = t.replace(/N\.?\s?°\s?/g, "").replace(/-SUNASS-CD/g, "")
+    .replace(/^RGT \(RCD 028-2021\)/, "RGT").replace(/^TUO Ley 27444 \(DS [\d-]+-JUS\)/, "TUO 27444")
+    .replace(/art\. [\d.]+ \(texto (?:original|del (art\. [\d.]+)[^)]*)\)/, (m, art) => art ?? m.replace(/ \(texto original\)/, ""))
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/^(DS0\d) · [^,]+,/, "$1,");
+  if (/\bart\./.test(t)) t = t.replace(/,\s*pág\. \d+.*$/, "");
+  t = t.replace(/\s+/g, " ").trim();
+  return t.length > 34 ? `${t.slice(0, 32).trim()}…` : t;
+}
+
 /** Chip con la fuente de un dato. Al abrirlo muestra el texto completo y, si es una norma, el enlace oficial. */
 export function ChipFuente({ texto, etiqueta, detalle, enlace, soloIcono }: {
   texto: string | null | undefined; etiqueta?: string; detalle?: ReactNode; enlace?: string; soloIcono?: boolean;
@@ -71,11 +85,11 @@ export function ChipFuente({ texto, etiqueta, detalle, enlace, soloIcono }: {
   const legible = humanizar(texto);
   const norma = NORMAS.find((n) => n.patron.test(texto));
   const destino = enlace ?? norma?.enlace;
-  const corto = etiqueta ?? (legible.length > 34 ? `${legible.slice(0, 32)}…` : legible);
+  const corto = etiqueta ?? etiquetaCorta(legible);
   return (
     <span className="chip-envoltura" ref={caja} onKeyDown={(e) => { if (e.key === "Escape") setAbierto(false); }}>
       <button type="button" className={soloIcono ? "chip-icono" : "chip-fuente"} aria-expanded={abierto} aria-controls={id}
-              aria-label={`Fuente: ${legible}`} title={soloIcono ? "Ver la fuente" : undefined} onClick={() => setAbierto(!abierto)}>
+              aria-label={`Fuente: ${legible}`} title={soloIcono ? `Fuente: ${legible}` : legible} onClick={() => setAbierto(!abierto)}>
         {soloIcono ? <Icono nombre="info" tam={18} /> : <><span aria-hidden="true">§</span> {corto}</>}
       </button>
       {abierto && (

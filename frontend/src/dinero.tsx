@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { pedir } from "./api";
-import { Rotulo } from "./componentes";
+import { Rotulo, plural } from "./componentes";
 import { ChipFuente } from "./ui";
 import { humanizar, t } from "./etiquetas";
 
@@ -330,7 +330,10 @@ export function TableroRutaDelDinero() {
 
       <h2>Totales por fondo o reserva</h2>
       <TablaFondos filas={[...res.filas, res.total]} v={v} />
-      <ul className="sub">{res.notas.map((n) => <li key={n}>{n}</li>)}</ul>
+      <details className="ver-analisis">
+        <summary>Cómo se calcula</summary>
+        <ul className="sub">{res.notas.map((n) => <li key={n}>{n}</li>)}</ul>
+      </details>
       <p className="meta">Fuente: {humanizar(res.fuente)}</p>
 
       <h2>Usos por emergencia (art. 90, RCD 037-2024 y RCD 028-2026)</h2>
@@ -385,7 +388,7 @@ export function TableroRutaDelDinero() {
       </form>
       {proys && (
         <>
-          <p>{proys.proyectos.length} proyectos.</p>
+          <p>{plural(proys.proyectos.length, "proyecto", "proyectos")}.</p>
           <div className="tabla-wrap">
             <table aria-label="Programado frente a ejecutado por proyecto">
               <thead>

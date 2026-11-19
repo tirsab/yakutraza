@@ -559,3 +559,20 @@ def test_ninguna_fuente_visible_cita_archivos_internos(tmp_path):
         assert "RCD N.° 126-2025-SUNASS-CD" in epssmu
     finally:
         app.dependency_overrides.clear()
+
+
+def test_explicaciones_ciudadanas_editables_y_por_validar(cliente):
+    """Lenguaje simple, sin prometer acciones de Sunass; por validar con la DRE (E-2)."""
+    r = get(cliente, "/publico/explicaciones").json()
+    assert r["estado_validacion"] == "por validar" and r["pregunta_dre"] == "E-2"
+    e = r["explicaciones"]
+    claves = {"etapa_programada", "etapa_aprobada", "etapa_en_preparacion", "etapa_en_obra", "etapa_terminada",
+              "etapa_beneficio_verificado", "obra_detenida", "terminada_verificacion_pendiente", "monto",
+              "por_que_no_gasto", "sin_obras", "audiencia_que_es", "audiencia_quien", "audiencia_hasta_cuando",
+              "audiencia_como", "que_es_sunass", "que_es_eps", "dato_sintetico", "colores_etapas"}
+    assert claves <= set(e)
+    assert all(x["texto"] and x["termino"] and x["fuente"] for x in e.values())
+    assert "no significa cancelada" in e["obra_detenida"]["texto"].lower()
+    assert "no es lo que se gastó" in e["monto"]["texto"].lower()
+    promesas = ("sunass hará", "sunass va a", "garantiza", "se compromete", "sancionará")
+    assert not any(p in x["texto"].lower() for x in e.values() for p in promesas)

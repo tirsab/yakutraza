@@ -198,6 +198,15 @@ def buscar_localidades(q: str = Query(..., min_length=2), s: Settings = Depends(
     return a_json(ciudadana.buscar(get_engine(s.database_url), _vis(s), q))
 
 
+@router.get("/publico/explicaciones", tags=["vista ciudadana"])
+def ver_explicaciones(s: Settings = Depends(get_settings)) -> dict[str, Any]:
+    """Explicaciones en lenguaje simple («¿Qué significa?»), editables en rules/explicaciones_ciudadanas.yaml (por validar, E-2)."""
+    import yaml
+    datos = yaml.safe_load((Path(s.rules_dir) / "explicaciones_ciudadanas.yaml").read_text(encoding="utf-8")) or {}
+    return {"estado_validacion": datos.get("estado_validacion"), "pregunta_dre": datos.get("pregunta_dre"),
+            "explicaciones": datos.get("explicaciones", {})}
+
+
 @router.get("/publico/ubicaciones", tags=["vista ciudadana"])
 def ver_ubicaciones(s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
     """Departamento → provincia → distritos de la muestra (DS01), para los selectores."""
