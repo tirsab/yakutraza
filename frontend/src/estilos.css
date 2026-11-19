@@ -687,3 +687,8 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .aviso-flujo { margin: 4px 0 0; padding: 4px 8px; border-left: 3px solid var(--vio); background: var(--vio-bg); border-radius: 6px;
   font-size: .82rem; color: var(--vio-tx); }
 .aviso-flujo .meta { color: var(--vio-tx); }
+
+/* Modo MVP: interruptor en la barra y aviso de base pequeña */
+.demo-mvp { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.demo-mvp .btn-enlace { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+.aviso-base { border-left: 3px solid var(--warn); padding: 6px 10px; background: var(--warn-bg); color: var(--warn-tx); margin: 8px 0; }

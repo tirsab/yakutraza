@@ -188,6 +188,7 @@ export function TableroGerencial() {
                 <span className="ind-titulo">Superan el plazo máximo</span>
                 <span className="ind-valor">{d.supera_plazo.total.porcentaje == null ? "—" : `${uno(d.supera_plazo.total.porcentaje)} %`}</span>
                 <span className="detalle">{d.supera_plazo.total.superan} de {d.supera_plazo.total.calculables} · {d.supera_plazo.rotulo}</span>
+                <MvpDetalle />
               </button>
             </div>
           </section>
@@ -245,6 +246,18 @@ export function TableroGerencial() {
   );
 }
 
+/** En modo MVP: las cifras son de tres EPS y cambian mucho con un solo expediente. */
+function MvpDetalle() {
+  const { config } = useSesion();
+  return config.mvp?.activo ? <span className="detalle">Base pequeña: 3 EPS del MVP</span> : null;
+}
+
+export function AvisoBasePequena() {
+  const { config } = useSesion();
+  if (!config.mvp?.activo) return null;
+  return <p className="aviso-base" role="note"><strong>Base pequeña.</strong> {config.mvp.aviso}</p>;
+}
+
 function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
   const filas = (g: Record<string, Grupo>, cat: string | null) => Object.entries(g).map(([k, v]) => (
     <tr key={k}>
@@ -262,6 +275,7 @@ function SuperaPlazo({ s }: { s: Tablero["supera_plazo"] }) {
         {s.total.porcentaje == null ? "No calculable" : `${uno(s.total.porcentaje)} %`}
       </p>
       <p>{fraseSupera(s.total, s.rotulo)}</p>
+      <AvisoBasePequena />
       <details className="ver-analisis">
         <summary>Cómo se calcula</summary>
         <p className="sub">{humanizar(s.formula)}. {humanizar(s.nota)}</p>

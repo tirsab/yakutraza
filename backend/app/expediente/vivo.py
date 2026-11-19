@@ -12,6 +12,7 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.config import Settings, dir_privado
 from app.db import TABLAS_DATASETS, documentos, eventos_plazo
 import yaml
@@ -214,7 +215,8 @@ def listado(engine: Engine, s: Settings, tipo: str | None = None, cod_eps: str |
     if estado:
         q = q.where(tp.c.estado == estado)
     with engine.connect() as cx:
-        res = [{**dict(r), "naturaleza": "sintético"} for r in cx.execute(q.order_by(tp.c.id_expediente)).mappings()]
+        res = [{**dict(r), "naturaleza": "sintético"} for r in cx.execute(q.order_by(tp.c.id_expediente)).mappings()
+               if alcance.visible(r["cod_eps"])]  # modo MVP (app/alcance.py)
     if not cod_eps:
         for c in casos(s).values():
             e = c.datos["expediente"]

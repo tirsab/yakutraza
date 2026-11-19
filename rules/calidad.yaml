@@ -141,7 +141,7 @@ reglas:
     parametros:
       formatos:
         naturaleza: diccionario
-        sustento: "Hoja Relaciones: EPS01 a EPS20, 6 dígitos, TIPO-AAAA-NNNN, EPSnn-Pnnn, 7 dígitos, MG01 a MG10."
+        sustento: "Hoja Relaciones: EPSnn (de 01 a 20), 6 dígitos, TIPO-AAAA-NNNN, EPSnn-Pnnn, 7 dígitos, MG01 a MG10."
         valor:
           cod_eps: '^EPS\d{2}$'
           ubigeo: '^\d{6}$'

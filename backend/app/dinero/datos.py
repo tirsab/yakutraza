@@ -8,6 +8,7 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.db import TABLAS_DATASETS, get_engine
 from app.persistencia import ultimo_lote
 
@@ -37,4 +38,4 @@ def tablas(url: str) -> dict[str, pd.DataFrame]:
     lote = ultimo_lote(get_engine(url))
     if lote is None:
         raise LookupError("Todavía no hay datos cargados. Ejecuta `seed`.")
-    return _cache(url, lote["id"])
+    return alcance.filtrar_tablas(_cache(url, lote["id"]))  # modo MVP: filtro central (app/alcance.py)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { pedir } from "./api";
+import { fijarAlcance, pedir } from "./api";
 import { Bandeja } from "./bandeja";
 import { PaginaBitacora } from "./bitacora";
 import { VistaCiudadana } from "./ciudadana";
@@ -48,6 +48,7 @@ function BarraDemo({ publica }: { publica?: boolean }) {
         <span className="demo-etq">{config.modo_demo ? "DEMO" : "PROTOTIPO"}</span>
         <span className="demo-largo">{config.rotulo} · Fecha de corte: {fecha(corte)} · Plazos en días hábiles (DH)</span>
         <span className="demo-corto">Datos sintéticos · Corte {fecha(corte)}</span>
+        <InterruptorMvp />
         {selector && (
           <div className="demo-sel" role="group" aria-label="Modo demo: ver como">
             <label htmlFor="ver-como">Ver como:</label>
@@ -67,6 +68,32 @@ function BarraDemo({ publica }: { publica?: boolean }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Modo MVP: qué EPS se ven y el interruptor para ver la muestra completa (no recarga los datos del servidor). */
+function InterruptorMvp() {
+  const { config } = useSesion();
+  const m = config.mvp;
+  if (!m?.configurado) return null;
+  const cambiar = (alcance: "muestra" | null) => {
+    fijarAlcance(alcance);
+    window.location.reload();
+  };
+  return (
+    <span className="demo-mvp" role="group" aria-label="Alcance de los datos">
+      {m.activo ? (
+        <>
+          <span className="pildora" title={m.aviso}>MVP · {m.eps.join(", ")}</span>
+          <button type="button" className="btn-enlace" onClick={() => cambiar("muestra")}>Ver la muestra completa</button>
+        </>
+      ) : (
+        <>
+          <span className="pildora pil-warn">Muestra completa · 20 EPS</span>
+          <button type="button" className="btn-enlace" onClick={() => cambiar(null)}>Volver al MVP</button>
+        </>
+      )}
+    </span>
   );
 }
 

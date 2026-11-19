@@ -145,6 +145,26 @@ export interface Config {
   roles: { rol: string; nombre: string; inicio: string; vistas: string[]; usuario: string | null }[];
   eps: { cod_eps: string; nombre_eps: string }[];
   privacidad?: { casos_reales_privados: boolean; rastros_privados: Record<string, number> | null };
+  // Modo MVP (MVP_EPS): solo esas EPS se ven, salvo con el interruptor «Ver la muestra completa».
+  mvp?: { configurado: boolean; activo: boolean; eps: string[]; aviso: string };
+}
+
+// Interruptor «Ver la muestra completa»: se recuerda en este navegador y se envía como X-Alcance: muestra.
+const CLAVE_ALCANCE = "yakutraza.alcance";
+export function alcanceGuardado(): string | null {
+  try {
+    return window.localStorage.getItem(CLAVE_ALCANCE);
+  } catch {
+    return null;
+  }
+}
+export function fijarAlcance(alcance: "muestra" | null) {
+  try {
+    if (alcance) window.localStorage.setItem(CLAVE_ALCANCE, alcance);
+    else window.localStorage.removeItem(CLAVE_ALCANCE);
+  } catch {
+    /* sin almacenamiento: el interruptor dura hasta recargar */
+  }
 }
 
 // Usuario de demostración activo (selector «Ver como»). Se envía en cada pedido.
@@ -157,6 +177,7 @@ export async function pedir<T>(ruta: string, init: RequestInit = {}, usuario?: s
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   const quien = usuario ?? usuarioActual;
   if (quien) headers["X-Usuario"] = quien;
+  if (alcanceGuardado() === "muestra") headers["X-Alcance"] = "muestra";
   const r = await fetch(`/api${ruta}`, { ...init, headers: { ...headers, ...(init.headers as object) } });
   if (!r.ok) {
     let detalle = `${r.status}`;

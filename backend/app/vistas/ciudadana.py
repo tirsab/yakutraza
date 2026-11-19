@@ -14,6 +14,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.db import TABLAS_DATASETS, resumenes_quechua
 from app.dinero import ruta
 from app.dinero import visibilidad as vis
@@ -60,7 +61,7 @@ def _filas(engine: Engine, nombre: str, *cond) -> list[dict[str, Any]]:
     for c in cond:
         q = q.where(c(t))
     with engine.connect() as cx:
-        return [dict(r) for r in cx.execute(q).mappings()]
+        return alcance.filtrar_filas([dict(r) for r in cx.execute(q).mappings()])  # modo MVP (app/alcance.py)
 
 
 def _nombres_eps(engine: Engine) -> dict[str, str]:

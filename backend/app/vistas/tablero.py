@@ -18,6 +18,7 @@ from typing import Any
 import yaml
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.config import Settings
 from app.dinero import ruta
 from app.dinero.datos import tablas
@@ -139,8 +140,13 @@ class Contexto:
         return list(self.cfg["asignacion"]["especialistas"])
 
 
-def contexto(engine: Engine, s: Settings, corte: date | None = None) -> Contexto:
-    return Contexto(s, engine, corte or s.fecha_corte, expedientes_desde_bd(engine), cfg_tablero(s))
+def contexto(engine: Engine, s: Settings, corte: date | None = None, solo_desafio: bool = True) -> Contexto:
+    """Expedientes de la muestra visibles. En modo MVP, con `solo_desafio` (bandeja, tablero, indicadores), solo los
+    tres procedimientos del desafío; la ficha de cada EPS pide también reportes, reajustes y verificaciones."""
+    exps = expedientes_desde_bd(engine)
+    if solo_desafio:
+        exps = {k: e for k, e in exps.items() if alcance.tipo_en_vistas(e.tipo)}
+    return Contexto(s, engine, corte or s.fecha_corte, exps, cfg_tablero(s))
 
 
 def evaluar(ctx: Contexto, *, motor: MotorPlazos | None = None, corte: date | None = None,
