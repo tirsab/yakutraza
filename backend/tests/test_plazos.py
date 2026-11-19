@@ -377,3 +377,49 @@ def test_citas_del_tuo_con_la_numeracion_del_ds_006_2026():
     ubicaciones = {f["ubicacion"].split(" (")[0] for f in citas}
     assert ubicaciones == {"art. 125.1", "art. 131.1", "art. 133.1", "art. 134.1", "art. 134.2", "art. 136.3"}
     assert "TUO Ley 27444 (DS 006-2026-JUS), art. 133.1" in cat.reglas["PLZ-COMPUTO"].fuente_texto(cat.documentos)
+
+
+# ===================================================== flujogramas verificados (docs/Flujos_Anexos_Expediente.md)
+def test_flujograma_anexo_2_firma_de_la_dre_en_el_bloque_de_5_y_asignacion_fuera():
+    cat = catalogo_desde(RULES / "plazos.yaml")
+    b24, b5 = cat.reglas["PLZ-I-UFI-BLOQUE-24"], cat.reglas["PLZ-I-UFI-BLOQUE-5"]
+    assert "firma_informe_dre" not in b24.hitos and "firma_informe_dre" in b5.hitos
+    assert b24.hitos[-1] == "firma_informe_oaj"                       # el bloque rojo cierra con la OAJ
+    assert "asignacion" not in b24.hitos and "asignacion" in cat.reglas["PLZ-I-CPI-BLOQUE-24"].hitos
+    assert b5.pregunta_dre == "DRE-12" and b5.estado_validacion == "por validar"
+    assert "Flujograma, Anexo 2, pág. 9" in b5.fuente_texto(cat.documentos)
+    assert "Flujograma, Anexo E, pág. 11" in cat.reglas["PLZ-I-CPI-BLOQUE-24"].fuente_texto(cat.documentos)
+
+
+def test_bloques_del_anexo_d_solo_en_el_detalle_del_reloj(motor):
+    from app.vistas.tablero import principal
+    cat = catalogo_desde(RULES / "plazos.yaml")
+    assert cat.reglas["PLZ-I-RP-BLOQUE-INICIO"].hitos == ("informe_inicio", "firma_informe_inicio", "resolucion_inicio")
+    assert {r: cat.reglas[r].plazo_dh for r in ("PLZ-I-RP-BLOQUE-INICIO", "PLZ-I-RP-BLOQUE-EVALUACION", "PLZ-I-RP-BLOQUE-APROBACION")} \
+        == {"PLZ-I-RP-BLOQUE-INICIO": 17, "PLZ-I-RP-BLOQUE-EVALUACION": 50, "PLZ-I-RP-BLOQUE-APROBACION": 50}
+    # Un informe de inicio que lleva 30 días: el bloque del flujograma (17) vence, pero no llega a la vista principal.
+    exp = Expediente(id="RP-T", cod_eps="EPS99", tipo="revision_periodica", fecha_inicio=date(2026, 7, 1),
+                     plazo_maximo_dh=195, estado="en_tramite", hitos=[
+                         Hito(1, "informe_inicio", "1_inicio", "Equipo SRT", date(2026, 8, 3), None, 40, 30, True, None)])
+    internas = motor.reloj_interno(exp, CORTE)
+    bloque = next(a for a in internas if a.regla_id == "PLZ-I-RP-BLOQUE-INICIO")
+    assert bloque.detalle["solo_detalle"] and bloque.estado == "vencido" and bloque.respaldo == "solo_flujograma"
+    p = principal(internas)
+    assert p is None or p.regla_id != "PLZ-I-RP-BLOQUE-INICIO"
+
+
+def test_pasos_sin_siglas_y_avisos_del_flujograma():
+    from app.vistas.pasos import aviso_flujograma, catalogo
+    cp = catalogo(RULES / "pasos_procedimiento.yaml")
+    ufi = [p["nombre"] for p in cp["procedimientos"]["uso_excepcional_fondo"]]
+    assert ufi[-4:] == ["Informe firmado por Asesoría Jurídica", "Firmas de la Dirección: memo e informe",
+                        "Envío al Consejo Directivo", "Aprobación del Consejo Directivo"]
+    paso_dre = next(p for p in cp["procedimientos"]["uso_excepcional_fondo"] if p["clave"] == "firmas_dre")
+    assert paso_dre["hitos"] == ["firma_informe_dre", "memo_gg"] and "(DRE)" in paso_dre["ayuda"]
+    for tipo in ("cambio_programa_inversiones", "uso_excepcional_fondo"):
+        a = aviso_flujograma(cp, tipo, "subsanacion_ep")
+        assert "se vuelve a verificar los requisitos del TUPA" in a["texto"] and a["pregunta_dre"] == "DRE-28"
+    assert aviso_flujograma(cp, "cambio_programa_inversiones", "cierre")["texto"] == "El flujograma asigna el cierre a la DRE."
+    for h in ("oficio_subsanacion", "oficio_informacion"):
+        assert aviso_flujograma(cp, "revision_periodica", h)["texto"] == "El flujograma indica que firma la DRE."
+    assert aviso_flujograma(cp, "revision_periodica", "informe_inicio") is None

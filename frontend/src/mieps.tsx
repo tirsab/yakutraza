@@ -103,7 +103,7 @@ function Pedido({ p, otros, onResponder, correo }: {
         ) : (
           <div className={`contador-dh${vencido ? " vencido" : ""}`}>
             <strong>{Math.abs(p.dias_restantes!)}</strong>
-            <span>{vencido ? "días hábiles de atraso" : "días hábiles"}</span>
+            <span>{Math.abs(p.dias_restantes!) === 1 ? (vencido ? "día hábil de atraso" : "día hábil") : (vencido ? "días hábiles de atraso" : "días hábiles")}</span>
           </div>
         )}
         <div>

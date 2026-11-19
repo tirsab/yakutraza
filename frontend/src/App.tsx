@@ -4,7 +4,7 @@ import { pedir } from "./api";
 import { Bandeja } from "./bandeja";
 import { PaginaBitacora } from "./bitacora";
 import { VistaCiudadana } from "./ciudadana";
-import { fecha } from "./componentes";
+import { fecha, plural } from "./componentes";
 import { DetalleProyecto, TableroRutaDelDinero } from "./dinero";
 import { t } from "./etiquetas";
 import { Icono } from "./iconos";
@@ -25,7 +25,7 @@ function AvisoPrivacidad() {
   return (
     <div className="mensaje mensaje-error" role="alert" style={{ margin: 0, borderRadius: 0 }}>
       <strong>No grabe todavía:</strong> se pidió cargar los casos reales sin su parte privada, pero la base aún tiene datos de los
-      oficios intermedios ({r.documentos} documentos, {r.eventos} eventos y {r.bitacora} entradas de bitácora). Recree la base con
+      oficios intermedios ({plural(r.documentos, "documento", "documentos")}, {plural(r.eventos, "evento", "eventos")} y {plural(r.bitacora, "entrada", "entradas")} de bitácora). Recree la base con
       <code> docker compose down -v </code> y vuelva a ejecutar <code>seed</code>.
     </div>
   );

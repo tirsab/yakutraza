@@ -334,7 +334,7 @@ class MotorPlazos:
                 dias_transcurridos=usados, dias_restantes=restantes,
                 mensaje=f"Referencia solo del flujograma (la hoja Hitos no le da plazo): {', '.join(regla.hitos)} "
                         f"llevan {_texto_dh(usados)} de {regla.plazo_dh}.",
-                detalle={"solo_flujograma": True}))
+                detalle={"solo_flujograma": True, "solo_detalle": bool(regla.extra.get("solo_detalle"))}))
         return res
 
     # ----------------------------------------------------------------- oficio

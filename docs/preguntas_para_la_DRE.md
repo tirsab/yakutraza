@@ -89,6 +89,27 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 
 ---
 
+### DRE-28 · Re-verificación de requisitos tras la subsanación (Anexos 2 y E)
+- **Pregunta.** Cuando la EP subsana las observaciones del TUPA, ¿el equipo SRT vuelve a verificar los requisitos antes de evaluar? ¿Cómo se registra ese paso?
+- **Fuentes.**
+  - Flujograma, Anexo 2, pág. 9, y Anexo E, pág. 11: lo subsanado reingresa por Mesa de Partes → DRE → SRT → Equipo SRT y vuelve a «Verifica requisitos del TUPA» (`docs/Flujos_Anexos_Expediente.md`).
+  - DS02: en los 4 expedientes con subsanación de la muestra (CPI-2025-0002, CPI-2026-0002, UFI-2024-0001, UFI-2025-0001), el hito siguiente es directamente la evaluación o el cierre; no hay una segunda verificación.
+- **Qué cambia en el motor.** Hoy la línea de tiempo muestra, junto a la subsanación, el aviso «Según el flujograma, lo subsanado reingresa por Mesa de Partes y se vuelve a verificar los requisitos del TUPA; los datos de la muestra no registran ese paso». Si la DRE confirma que se registra, habría que agregar ese hito al diccionario y una meta interna para la re-verificación, dentro del bloque de 24 dh.
+
+### DRE-29 · Quién cierra el procedimiento si la EP no subsana (Anexo E)
+- **Pregunta.** En un cambio al programa de inversiones, si la EP no subsana, ¿quién dispone el cierre: la DRE o la SRT?
+- **Fuentes.**
+  - Flujograma, Anexo E, pág. 11: «se cierra el procedimiento» en el carril de la DRE. En el Anexo 2, la DRE «dispone que se archive».
+  - DS02: el cierre de CPI-2026-0002 figura a cargo de la SRT.
+- **Qué cambia en el motor.** Hoy se muestra el cierre a cargo de la SRT, como en los datos, con el aviso «El flujograma asigna el cierre a la DRE». Si manda el flujograma, cambia el responsable del hito `cierre` y, con él, la bandeja de quién debe actuar.
+
+### DRE-30 · Quién firma los oficios de la revisión periódica (Anexo D)
+- **Pregunta.** En la revisión periódica, ¿el oficio de subsanación (etapa 1) y el de información (etapa 2) los firma la DRE o la SRT?
+- **Fuentes.**
+  - Flujograma, Anexo D, pág. 10: el equipo SRT elabora el proyecto, la SRT lo revisa y la **DRE firma** el oficio, en ambas etapas.
+  - DS02: `oficio_subsanacion` y `oficio_informacion` de las revisiones periódicas figuran a cargo de la SRT.
+- **Qué cambia en el motor.** Hoy se muestra a la SRT como responsable, como en los datos, con el aviso «El flujograma indica que firma la DRE». Si manda el flujograma, cambian el responsable de esos hitos, el embudo de firmas y la bandeja de quién debe actuar.
+
 ## C. Subplazos que no suman o cuyo cómputo no está claro
 
 ### DRE-02 · Suspensión o reinicio del plazo

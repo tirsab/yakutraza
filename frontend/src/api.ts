@@ -36,6 +36,8 @@ export interface Hito {
   estado: string;
   fila_ds02: number | null;
   evidencia: { estado: string; referencia: string | null; codigo_ds02: string | null; tipo: string | null; documentos: number[] };
+  /** Lo que el flujograma dice y la muestra no registra o registra distinto (por validar con la DRE). */
+  aviso_flujograma?: { texto: string; pregunta_dre: string; fuente: string } | null;
 }
 
 export interface Documento {

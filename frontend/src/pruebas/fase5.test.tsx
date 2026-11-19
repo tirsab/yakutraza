@@ -416,14 +416,14 @@ describe("Tablero de dirección", () => {
     render(<TableroConFecha />);
     const rpe = await screen.findByRole("region", { name: "Ruta del dinero por EPS" });
     expect(within(rpe).getByRole("img", { name: /EPS02: programado S\/ 970 000,00, ejecutado S\/ 120 000,00/ })).toBeInTheDocument();
-    expect(rpe).toHaveTextContent("Señal para revisión: 1 proyectos");
+    expect(rpe).toHaveTextContent("Señal para revisión: 1 proyecto con");
     expect(rpe).toHaveTextContent("no se suman como «solicitado»");
     const alertas = screen.getByRole("region", { name: "Alertas que necesitan decisión" });
     expect(within(alertas).getByRole("link", { name: /Abrir/ })).toHaveAttribute("href", "/expedientes/CPI-2026-0004");
     expect(within(alertas).getByRole("button", { name: /Fuente: RGT/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "¿En qué paso están los 2 expedientes?" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /Consejo Directivo: 2/ })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Carga del equipo" })).toHaveTextContent("esp-srt-01");
+    expect(screen.getByRole("region", { name: "Carga del equipo" })).toHaveTextContent("Especialista 1 (ficticio)");
     expect(document.body.textContent).not.toMatch(SIN_CODIGOS);
   });
 
@@ -582,10 +582,38 @@ const localidad = (quechua: { texto: string; estado: string } | null) => ({
   resumen_quechua: quechua, avisos: ["La población beneficiaria es una estimación."], fuente: "DS01",
 });
 
+const EXPLICACIONES = Object.fromEntries([
+  ["obra_detenida", "Obra detenida", "En su último reporte, la empresa de agua informó que la obra está paralizada. Detenida no significa cancelada."],
+  ["monto", "Monto", "Es el monto previsto para la obra en el plan de inversiones del estudio tarifario. No es lo que se gastó."],
+  ["por_que_no_gasto", "¿Por qué no veo cuánto se gastó?", "Esos datos no se muestran aquí."],
+  ["sin_obras", "Sin obras en la muestra", "La muestra no registra obras de agua y saneamiento para este distrito."],
+  ["colores_etapas", "Colores de la barra de etapas", "Azul: etapas cumplidas."],
+  ["terminada_verificacion_pendiente", "Terminada, verificación pendiente", "Reportada como concluida."],
+  ["audiencia_que_es", "¿Qué es una audiencia pública?", "Es una reunión abierta."],
+  ["audiencia_quien", "¿Quién puede opinar?", "Los interesados y la empresa de agua."],
+  ["audiencia_hasta_cuando", "¿Hasta cuándo?", "Hasta el decimoquinto día hábil siguiente a la audiencia pública."],
+  ["audiencia_como", "¿Cómo?", "Revise el aviso de la audiencia."],
+  ["que_es_sunass", "¿Qué es Sunass?", "La Superintendencia Nacional de Servicios de Saneamiento."],
+  ["que_es_eps", "¿Qué es una EPS?", "La empresa de agua que atiende tu localidad."],
+  ["dato_sintetico", "¿Qué significa «dato sintético»?", "Son datos de ejemplo."],
+  ...etapas.map((e) => [`etapa_${e.clave}`, e.nombre, `Explicación de ${e.nombre}.`]),
+].map(([k, termino, texto]) => [k, { termino, texto, fuente: "Prueba" }]));
+
+/** Simula una pantalla de computadora (desde 1 024 px). */
+function comoEscritorio() {
+  const w = window as unknown as { matchMedia?: unknown };
+  const antes = w.matchMedia;
+  w.matchMedia = (q: string) => ({ matches: q.includes("min-width: 1024px"), media: q, addEventListener: () => {}, removeEventListener: () => {} });
+  return () => { w.matchMedia = antes; };
+}
+
 function apiCiudadana(quechua: { texto: string; estado: string } | null = null) {
   return vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
     const u = String(url);
     if (u.includes("/publico/ubicaciones")) return respuesta(ubicaciones);
+    if (u.includes("/publico/explicaciones")) return respuesta({ estado_validacion: "por validar", pregunta_dre: "E-2", explicaciones: EXPLICACIONES });
+    if (u.includes("/publico/localidades/160101")) return respuesta({ ...localidad(null), proyectos: [], agregados: { proyectos: 0, por_etapa: {}, monto_programado_original: 0 },
+      localidad: { ...localidad(null).localidad, localidad: "Iquitos", ubigeo: "160101", distrito: "IQUITOS" } });
     if (u.includes("/publico/mapa")) return respuesta({ aviso: "Mapa esquemático: DS01 no trae coordenadas.", distritos: [
       { distrito: "BELEN", ubigeo: "160112", localidad: "Belén", obras: [{ cod_proyecto: "EPS06-P002", nombre_proyecto: "R", etapa_ciudadana: obra("x", "x", 4, true).etapa_ciudadana }] }] });
     return respuesta(localidad(quechua));
@@ -674,13 +702,70 @@ describe("Vista ciudadana", () => {
     }
   });
 
+  it("«¿Qué significa?» junto a los términos, leyenda de colores y montos previstos", async () => {
+    apiCiudadana();
+    montarCiudadana();
+    await screen.findByRole("list", { name: "Obras del distrito" });
+    expect(screen.getByRole("region", { name: /Colores de la barra de etapas/ })).toHaveTextContent("Etapa actual");
+    await userEvent.click(screen.getByRole("button", { name: "¿Qué significa «Monto»?" }));
+    expect(screen.getByRole("note")).toHaveTextContent("No es lo que se gastó.");
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(screen.getByRole("button", { name: /Rehabilitación de cámara de bombeo/ }));
+    await userEvent.click(screen.getByRole("button", { name: "¿Qué significa «Obra detenida»?" }));
+    expect(screen.getByRole("note")).toHaveTextContent("Detenida no significa cancelada.");
+    expect(screen.getAllByRole("button", { name: /¿Qué significa «(Programada|Aprobada|En preparación|En obra|Terminada|Beneficio verificado)»\?/ })).toHaveLength(6);
+    expect(screen.getByRole("button", { name: "¿Qué significa «¿Por qué no veo cuánto se gastó?»?" })).toBeInTheDocument();
+  });
+
+  it("mensaje claro para un distrito sin obras en la muestra", async () => {
+    apiCiudadana();
+    render(<ConSesion sesion={sesionPrueba("ciudadania")}><MemoryRouter initialEntries={["/ciudadania?ubigeo=160101"]}><VistaCiudadana /></MemoryRouter></ConSesion>);
+    const caja = await screen.findByRole("region", { name: "Sin obras en la muestra" });
+    expect(caja).toHaveTextContent("No hay obras de la muestra en Iquitos");
+    expect(caja).toHaveTextContent("La muestra no registra obras de agua y saneamiento para este distrito.");
+  });
+
+  it("Participa con «Cómo funciona» y Más con qué es Sunass, una EPS y un dato sintético", async () => {
+    apiCiudadana();
+    montarCiudadana();
+    await screen.findByRole("list", { name: "Obras del distrito" });
+    await userEvent.click(screen.getByRole("button", { name: /Participa/ }));
+    const como = screen.getByRole("region", { name: "Cómo funciona" });
+    for (const x of ["¿Qué es una audiencia pública?", "¿Quién puede opinar?", "¿Hasta cuándo?", "¿Cómo?"]) expect(como).toHaveTextContent(x);
+    expect(screen.getByText(/plazo de referencia: 30 días hábiles/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Más/ }));
+    const mas = screen.getByRole("region", { name: "Para entender estos datos" });
+    for (const x of ["¿Qué es Sunass?", "¿Qué es una EPS?", "¿Qué significa «dato sintético»?"]) expect(mas).toHaveTextContent(x);
+  });
+
+  it("en computadora: menú superior, mapa a la derecha y la ficha en un panel lateral", async () => {
+    const restaurar = comoEscritorio();
+    try {
+      apiCiudadana();
+      montarCiudadana();
+      await screen.findByRole("list", { name: "Obras del distrito" });
+      const nav = screen.getByRole("navigation", { name: "Secciones de la vista ciudadana" });
+      expect(nav).toHaveClass("pestanas-sup");
+      expect(within(screen.getByRole("banner")).getByRole("navigation")).toBe(nav);
+      expect(await screen.findByRole("heading", { name: "Mapa esquemático de la provincia" })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("button", { name: /Renovación de colectores/ }));
+      const panel = screen.getByRole("dialog", { name: "Renovación de colectores" });
+      expect(within(panel).getByRole("list").tagName).toBe("OL");
+      expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
+      await userEvent.keyboard("{Escape}");
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    } finally {
+      restaurar();
+    }
+  });
+
   it("mapa esquemático y pestaña Participa", async () => {
     apiCiudadana();
     montarCiudadana();
     await screen.findByRole("list", { name: "Obras del distrito" });
     await userEvent.click(screen.getByRole("button", { name: /Mapa/ }));
     expect(await screen.findByRole("heading", { name: "Mapa esquemático" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "BELEN: 1 obras" })).toHaveTextContent("4");
+    expect(screen.getByRole("button", { name: "BELEN: 1 obra" })).toHaveTextContent("4");
     await userEvent.click(screen.getByRole("button", { name: /Participa/ }));
     expect(screen.getByRole("heading", { name: "Audiencia pública" })).toBeInTheDocument();
   });

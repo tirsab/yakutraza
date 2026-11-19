@@ -58,3 +58,29 @@ describe("Íconos SVG", () => {
     expect(screen.getByRole("img", { name: "Ver la fuente" })).toBeInTheDocument();
   });
 });
+
+describe("Ajustes finales", () => {
+  it("chips de fuente con etiqueta corta", async () => {
+    const { etiquetaCorta } = await import("../ui");
+    expect(etiquetaCorta("RCD 033-2022-SUNASS-CD, art. 1 (texto del art. 46.3 del RGT), pág. 17")).toBe("RCD 033-2022, art. 46.3");
+    expect(etiquetaCorta("RGT (RCD 028-2021-SUNASS-CD), art. 93.8; Flujograma CPI (encabezado)")).toBe("RGT, art. 93.8");
+    expect(etiquetaCorta("TUO Ley 27444 (DS 006-2026-JUS), art. 133.1 (antes art. 144.1)")).toBe("TUO 27444, art. 133.1");
+    expect(etiquetaCorta("RCD 028-2021-SUNASS-CD, art. 46.3 (texto original), pág. 11 de la separata")).toBe("RCD 028-2021, art. 46.3");
+    expect(etiquetaCorta("DS02 · Procedimientos, fila 3 (sintético); relojes del motor de plazos")).toBe("DS02, fila 3");
+    expect(etiquetaCorta("RCD N.° 126-2025-SUNASS-CD (27-10-2025)")).toBe("RCD 126-2025");
+    expect(etiquetaCorta("OF-2026-0031, pág. 1")).toBe("OF-2026-0031, pág. 1");
+  });
+
+  it("plurales y frases del tablero", async () => {
+    const { dh, plural } = await import("../componentes");
+    const { especialista, fraseCarga, fraseSupera } = await import("../tablero");
+    expect(dh(1)).toBe("1 día hábil");
+    expect(dh(2)).toBe("2 días hábiles");
+    expect(dh(1.5)).toBe("1,5 días hábiles");
+    expect(plural(1, "proyecto", "proyectos")).toBe("1 proyecto");
+    expect(especialista("esp-srt-01")).toBe("Especialista 1 (ficticio)");
+    expect(fraseCarga(11, 1)).toBe("Con la asignación propuesta, la carga queda casi pareja.");
+    expect(fraseSupera({ superan: 12, calculables: 65, en_tramite_superan: 0 }, "muestra simulada"))
+      .toBe("12 de los 65 expedientes con datos tardaron más que su plazo máximo (muestra simulada).");
+  });
+});
