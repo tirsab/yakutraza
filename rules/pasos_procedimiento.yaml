@@ -20,7 +20,7 @@ procedimientos:
        ayuda: "El equipo de la SRT verifica los requisitos del TUPA; si faltan, la EP subsana"}
     - {clave: evaluacion, nombre: "Evaluación", hitos: [evaluacion, oficio_informacion, informacion_ep],
        ayuda: "El equipo de la SRT evalúa; puede pedir información adicional a la EP"}
-    - {clave: informe, nombre: "Informe firmado por la Subdirección", hitos: [informe, firma_informe],
+    - {clave: informe, nombre: "Informe con firma de la Subdirección", hitos: [informe, firma_informe],
        ayuda: "Subdirección de Regulación Tarifaria (SRT)"}
     - {clave: memo_gg, nombre: "Memorándum a la Gerencia General", hitos: [memo_gg],
        ayuda: "Lo firma la Dirección de Regulación Económica (DRE) según el flujograma; la hoja Hitos lo asigna a la SRT (DRE-11)"}
