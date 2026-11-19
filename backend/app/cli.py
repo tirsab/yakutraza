@@ -15,6 +15,8 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m app.cli", description="Tareas de YakuTraza")
     p.add_argument("tarea", choices=["seed", "calidad", "reporte", "verificar-diccionario", "indicadores",
                                       "plantilla-evaluacion", "evaluar-extraccion", "verificar-privacidad"])
+    p.add_argument("--historial", action="store_true",
+                   help="verificar-privacidad: revisa también todo el historial git (todas las ramas); nunca imprime nombres.")
     p.add_argument("--revisar", action="store_true",
                    help="verificar-privacidad: muestra en la consola el texto de cada coincidencia y su huella.")
     p.add_argument("--salida", default=str(RAIZ_REPO / "docs" / "indicadores.md"),
@@ -68,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
               f"Detalle en {evaluacion.carpeta(s) / 'resultado.yaml'}.")
     elif a.tarea == "verificar-privacidad":
         from app.extraccion import privacidad
-        hallazgos = privacidad.verificar(s)
+        hallazgos = privacidad.verificar(s) + privacidad.rastros_en_repo()
         for h in hallazgos:
             print(f"- {h.archivo}: {h.tipo}")
             if a.revisar:
@@ -76,7 +78,13 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"    «{x}» sha256={privacidad.huella(x)}")
         print("Ningún texto de los oficios ni nombre privado en los archivos versionados." if not hallazgos
               else f"{len(hallazgos)} coincidencias: revíselas antes de hacer commit.")
-        return 1 if hallazgos else 0
+        en_historial = privacidad.verificar_historial(s) if a.historial else []
+        for ruta, tipo, h in en_historial:
+            print(f"- historial: {ruta}: {tipo} (huella {h})")
+        if a.historial:
+            print("Historial git: ningún nombre ni rastro de los oficios." if not en_historial
+                  else f"Historial git: {len(en_historial)} coincidencias (avise antes de hacer nada).")
+        return 1 if hallazgos or en_historial else 0
     return 0
 
 
