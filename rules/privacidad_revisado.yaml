@@ -1,0 +1,23 @@
+# Fragmentos revisados por una persona en `python -m app.cli verificar-privacidad --revisar` (Fase 6).
+#
+# La verificación busca, en los archivos versionados, fragmentos de 8 palabras que solo aparecen en un
+# documento intermedio de los casos reales. Algunos son en realidad texto de una norma publicada o nombres
+# institucionales que también cita un oficio. Aquí se guarda SOLO la huella SHA-256 del fragmento (nunca el
+# texto) y el motivo por el que se aprobó. Cualquier otro fragmento sigue marcándose.
+
+version: 1
+fragmentos:
+  # RGT art. 93.2 (norma publicada), citado en rules/prechequeo_pi.yaml y también en el Informe 031-2026.
+  - {sha256: ff1463b9a15b83f9a981b522b06d21e3d586407bf7b831f618deec5fb6d61818, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: 1e7a6d21bd29b66e623e1244c2ebf6e5b5b438f888519d289bd9b0a342922286, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: 347897d24073d9466936fe6336fdb4a3e42d968eeabc1b259aac61517639cb0a, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: 3c3cfd09d8524b2c3fb5696aa31a767b162aea7bc00b9b244abd8d4f0ad4cbcc, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: e4d8ebc7f22fe337aedeea06775fe96b71427fecc25fe30205fb4b2acf1d0619, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: c1082e519426294e7e3b3af6cfd68975b319cb4b3d261970ac37b6274af4485c, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  - {sha256: 26081ac8600680d2169889e2c0fcefcfcdfe66046930ac759257ff373130a641, archivo: rules/prechequeo_pi.yaml, motivo: "Texto del RGT art. 93.2 (norma publicada)."}
+  # Nombres de unidades de Sunass (institucionales, no datos de un oficio).
+  - {sha256: d3b13a36e070f469e61b665cffd9033928986beb24e2277a0bd5b8566d831662, archivo: docs/Prompt_Claude_Code_YakuTraza.md, motivo: "Nombre de la Subdirección de Regulación Tarifaria y de la DRE."}
+  - {sha256: c6c7ede85fb01205d5159dedf1bbcbbce8d89b4b213f4440aae79245bf4bf47b, archivo: docs/Prompt_Claude_Code_YakuTraza.md, motivo: "Nombre de la Subdirección de Regulación Tarifaria y de la DRE."}
+  - {sha256: 902f660281d6cd2de313cd1dd13840ca326b9956421497bc542057684bb4d097, archivo: docs/Prompt_Claude_Code_YakuTraza.md, motivo: "Nombre de la Subdirección de Regulación Tarifaria y de la DRE."}
+  # Frase regulatoria común escrita por el equipo (vista ciudadana).
+  - {sha256: 4e35433d95f3826f4bdf4628c23e9fefbe48d54a6cb8bab3826e86f0596d3c80, archivo: backend/app/vistas/ciudadana.py, motivo: "Frase regulatoria común («programa de inversiones del estudio tarifario»)."}

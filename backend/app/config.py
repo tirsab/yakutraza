@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     # Modo demo: muestra el selector «Ver como» y acepta el encabezado X-Usuario de los usuarios
     # ficticios. En un enlace público se desactiva con MODO_DEMO=false: toda persona es ciudadanía.
     modo_demo: bool = True
+    # Fase 6: extracción asistida. Proveedor: ninguno (desactivada), ollama (local) o anthropic (API, solo
+    # texto anonimizado). Resultados y texto extraído: en EXTRACCION_DIR (por defecto DATA_DIR/extraccion).
+    extraccion_proveedor: str = "ninguno"
+    ollama_url: str = "http://localhost:11434"
+    ollama_modelo: str = "qwen3.5:4b"
+    anthropic_modelo: str = "claude-opus-5-5"
+    extraccion_dir: Path | None = None
     # PostgreSQL 16 en Docker; SQLite solo para desarrollo y pruebas sin Docker.
     database_url: str = f"sqlite:///{(RAIZ_REPO / 'yakutraza_local.db').as_posix()}"
 
@@ -39,6 +46,10 @@ def dir_privado(s: "Settings") -> Path | None:
     if not s.casos_reales_privados:
         return None
     return Path(s.casos_reales_privados_dir) if s.casos_reales_privados_dir else Path(s.data_dir) / "casos_reales"
+
+
+def dir_extraccion(s: "Settings") -> Path:
+    return Path(s.extraccion_dir) if s.extraccion_dir else Path(s.data_dir) / "extraccion"
 
 
 @lru_cache

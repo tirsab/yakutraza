@@ -13,7 +13,10 @@ from app.ingesta.diccionario import verificar_contra_diccionario
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m app.cli", description="Tareas de YakuTraza")
-    p.add_argument("tarea", choices=["seed", "calidad", "reporte", "verificar-diccionario", "indicadores"])
+    p.add_argument("tarea", choices=["seed", "calidad", "reporte", "verificar-diccionario", "indicadores",
+                                      "plantilla-evaluacion", "evaluar-extraccion", "verificar-privacidad"])
+    p.add_argument("--revisar", action="store_true",
+                   help="verificar-privacidad: muestra en la consola el texto de cada coincidencia y su huella.")
     p.add_argument("--salida", default=str(RAIZ_REPO / "docs" / "indicadores.md"),
                    help="Archivo de la línea base (solo para «indicadores»).")
     a = p.parse_args(argv)
@@ -52,6 +55,28 @@ def main(argv: list[str] | None = None) -> int:
         Path(a.salida).write_text(indicadores.markdown(ctx, catalogo(Path(s.rules_dir) / "etiquetas.yaml")),
                                   encoding="utf-8")
         print(f"Línea base escrita en {a.salida}.")
+    elif a.tarea == "plantilla-evaluacion":
+        from app.extraccion import evaluacion
+        print(f"Plantilla vacía escrita en {evaluacion.plantilla(s)}. Llénela a mano y guárdela como anotaciones.yaml.")
+    elif a.tarea == "evaluar-extraccion":
+        from app.extraccion import evaluacion
+        r = evaluacion.evaluar(s)
+        for k, v in r["por_campo"].items():
+            print(f"  {k}: precisión {v['precision']}, exhaustividad {v['exhaustividad']} (vp {v['vp']}, fp {v['fp']}, fn {v['fn']})")
+        t = r["total"]
+        print(f"Total ({r['documentos']} documentos): precisión {t['precision']}, exhaustividad {t['exhaustividad']}. "
+              f"Detalle en {evaluacion.carpeta(s) / 'resultado.yaml'}.")
+    elif a.tarea == "verificar-privacidad":
+        from app.extraccion import privacidad
+        hallazgos = privacidad.verificar(s)
+        for h in hallazgos:
+            print(f"- {h.archivo}: {h.tipo}")
+            if a.revisar:
+                for x in h.fragmentos:
+                    print(f"    «{x}» sha256={privacidad.huella(x)}")
+        print("Ningún texto de los oficios ni nombre privado en los archivos versionados." if not hallazgos
+              else f"{len(hallazgos)} coincidencias: revíselas antes de hacer commit.")
+        return 1 if hallazgos else 0
     return 0
 
 

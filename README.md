@@ -20,8 +20,8 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 | 3 | Expediente vivo (timeline, evidencia, bitácora, pre-chequeo art. 93/94) | Lista |
 | 4 | Ruta del dinero (tablero, escaleras, visibilidad) | Lista |
 | 5 | Vistas por rol, tablero gerencial, simulador y diseño visual | Lista |
-| 5b | Rediseño por rol (visibilidad y facilidad de uso) | Lista (por aprobar) |
-| 6 | Extracción asistida de documentos (IA con cita) | Pendiente |
+| 5b | Rediseño por rol (visibilidad y facilidad de uso) | Lista |
+| 6 | Extracción asistida de documentos (IA con cita) | Lista (por aprobar) |
 | 7 | Demo, pruebas de interfaz y entrega | Pendiente |
 
 ## Arquitectura
@@ -407,6 +407,95 @@ Endpoints nuevos:
 - `GET /publico/ubicaciones`, `GET /publico/mapa?departamento=&provincia=`
 - `rules/pasos_procedimiento.yaml`: pasos de cada procedimiento (supuesto de presentación).
 
+## Extracción con IA (Fase 6)
+
+La IA **propone** datos de un documento real; una persona los **confirma** o los **corrige** (con motivo) y recién
+entonces entran al expediente, con su bitácora. Nada cambia los plazos sin esa confirmación.
+
+**Qué extrae.** Número del documento, fecha, remitente (entidad u órgano, nunca una persona), plazo en días hábiles
+(otorgado, solicitado o prórroga) y requerimientos. Cada dato trae su **cita textual y su página**.
+
+**Cómo se valida.** Si la cita no aparece literalmente en esa página, o si el valor no aparece en la cita, el dato se
+descarta y se muestra el motivo. Un campo sin cita queda vacío: no se completa ni se supone.
+
+**Privacidad.**
+- Antes de cualquier procesamiento (también con el modelo local) se anonimizan los nombres de personas
+  (`[PERSONA_1]`…), los DNI, los correos y los teléfonos.
+- Si después de anonimizar queda un nombre de la lista privada, el documento **no se procesa**.
+- Los documentos se identifican por alias (`TACNA-02`); la interfaz y la API nunca muestran el nombre del archivo.
+- Las propuestas y el texto quedan en `DATA_DIR/extraccion/`, que no se versiona.
+- La API de Anthropic **solo** recibe documentos publicados (hoy, la RCD 032-2026), y anonimizados. Los oficios
+  intermedios se leen solo con el modelo local.
+- Con `CASOS_REALES_PRIVADOS=false` no hay documentos para leer.
+
+### 1. Instalar el modelo local (Ollama)
+
+1. Descargue e instale Ollama para Windows desde <https://ollama.com/download> (`OllamaSetup.exe`).
+2. En CMD, descargue el modelo (unos 3,4 GB):
+
+```bash
+ollama pull qwen3.5:4b
+```
+
+3. En `C:\yakutraza\.env`, active el proveedor:
+
+```bash
+EXTRACCION_PROVEEDOR=ollama
+```
+
+4. Reinicie la API:
+
+```bash
+docker compose up -d --build api
+```
+
+En la bandeja, al abrir un caso real como Coordinación SRT, aparece la tarjeta «Leer un documento con IA». El modelo
+local puede tardar 1 a 2 minutos por documento.
+
+**Alternativa: API de Anthropic** (solo documentos publicados). En `.env`: `EXTRACCION_PROVEEDOR=anthropic`,
+`ANTHROPIC_MODELO=claude-opus-5-5` (o `claude-haiku-5-5`, más económico) y `ANTHROPIC_API_KEY` con la clave del equipo.
+El prototipo no pide ni guarda la clave.
+
+### 2. Lista privada de nombres a ocultar
+
+Cree `C:\yakutraza\data\casos_reales\nombres_a_ocultar.txt` con un nombre por línea (`#` para comentarios). Esa
+carpeta no se versiona. La anonimización ya reconoce tratamientos («Ing.», «Abog.»…), firmas en mayúsculas después de
+«Atentamente», DNI, correos y teléfonos; la lista cubre los demás casos.
+
+### 3. Evaluación independiente (la anotación es del equipo)
+
+El prototipo genera una plantilla con los campos **vacíos**; el equipo anota a mano 5 documentos y el prototipo mide
+precisión y exhaustividad por campo.
+
+```bash
+docker compose run --rm api python -m app.cli plantilla-evaluacion
+```
+
+Copie `data\extraccion\evaluacion\plantilla_anotaciones.yaml` como `anotaciones.yaml` en la misma carpeta, deje 5
+documentos y llene a mano valor, cita y página. Luego:
+
+```bash
+docker compose run --rm api python -m app.cli evaluar-extraccion
+```
+
+El resultado queda en `data\extraccion\evaluacion\resultado.yaml` (no se versiona).
+
+### 4. Verificar que ningún texto de los oficios llegue al repositorio
+
+Sin Docker, desde `backend` (ver «Sin Docker»):
+
+```bash
+python -m app.cli verificar-privacidad
+```
+
+Revisa cada archivo versionado contra los nombres de la lista privada, contra fragmentos de 8 palabras propios de
+algún documento intermedio y contra los nombres de archivo de esos PDF. Informa archivo y tipo, nunca el texto. Los
+fragmentos que una persona revisó y aprobó (por ejemplo, texto de una norma publicada) se guardan solo como huella
+SHA-256 en `rules/privacidad_revisado.yaml`.
+
+**Límites.** Sin OCR: un PDF escaneado sin texto se informa como «requiere OCR». El tiempo y la calidad del modelo
+local se miden con la evaluación del punto 3.
+
 ## Supuestos
 
 Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
@@ -452,8 +541,8 @@ Todos están en [`rules/calidad.yaml`](rules/calidad.yaml), con su sustento:
 
 El código de este prototipo se escribió con asistencia de Claude (Anthropic) en Claude Code. El equipo
 revisa cada fase y valida los datos contra el diccionario y las normas citadas. En la Fase 6, la extracción
-de documentos usará por defecto un modelo abierto local; la API de Anthropic solo se usará, como opción,
-con textos públicos o sintéticos y después de anonimizar los nombres de personas.
+de documentos usa por defecto un modelo abierto local; la API de Anthropic solo se usa, como opción, con documentos
+publicados y después de anonimizar los nombres de personas. La IA propone; una persona confirma.
 
 ## Licencia
 
