@@ -493,6 +493,25 @@ algún documento intermedio y contra los nombres de archivo de esos PDF. Informa
 fragmentos que una persona revisó y aprobó (por ejemplo, texto de una norma publicada) se guardan solo como huella
 SHA-256 en `rules/privacidad_revisado.yaml`.
 
+También busca, sin necesitar la parte privada, rastros con forma de oficio: sellos de firma (nombre seguido de fecha y
+hora), cabeceras «PARA :» / «DE :» con un nombre, correos y enlaces privados (Drive, OneDrive, WeTransfer). La misma
+revisión corre como prueba (`test_repositorio_sin_rastros_de_oficios`).
+
+Para revisar además **todo el historial git** (todas las ramas y commits):
+
+```bash
+python -m app.cli verificar-privacidad --historial
+```
+
+Busca los nombres que el anonimizador reconoce en los PDF de los casos reales y los de la lista privada. Informa la
+ruta y una huella del nombre, nunca el nombre.
+
+**Qué oculta el anonimizador.** Nombres de la lista privada; nombres después de un tratamiento (Sr., Ing., Abog.…);
+nombres en las cabeceras «PARA :», «DE :», «A :» y «Señor(a):» (también en la línea siguiente); sellos de firma
+digital (nombre + fecha y hora, en la misma línea o en la anterior); «Firmado digitalmente por …»; líneas que son solo
+un nombre seguidas de un cargo o precedidas de «Firmado digitalmente», y firmantes después de «Regístrese…». Si
+después de anonimizar queda un sello de firma con nombre, el documento no se procesa.
+
 **Límites.** Sin OCR: un PDF escaneado sin texto se informa como «requiere OCR». El tiempo y la calidad del modelo
 local se miden con la evaluación del punto 3.
 

@@ -84,14 +84,14 @@ def proveedor_de(s: Settings) -> Proveedor | None:
 
 
 def texto_anonimizado(s: Settings, d: DocReal) -> dict[str, Any]:
-    """Texto limpio y anonimizado por página. Si queda un nombre de la lista privada, se detiene."""
+    """Texto limpio y anonimizado por página. Si queda un nombre de la lista privada o un sello de firma, se detiene."""
     doc = leer_pdf(d.ruta)
     paginas = limpiar(doc.paginas)
     an = Anonimizador(lista_privada(ruta_lista_privada(s)))
     r = an.anonimizar(paginas)
     if not r.seguro:
         raise ErrorPrivacidad(f"{d.alias}: después de anonimizar siguen apareciendo {len(r.pendientes)} nombres de la "
-                              "lista privada. El documento no se procesa.")
+                              f"lista privada y {r.restos} sellos de firma con nombre. El documento no se procesa.")
     return {"paginas": r.paginas, "requiere_ocr": doc.requiere_ocr, "procesable": doc.procesable,
             "reemplazos": r.reemplazos}
 
