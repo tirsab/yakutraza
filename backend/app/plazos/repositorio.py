@@ -6,6 +6,8 @@ import math
 from datetime import date
 
 import pandas as pd
+
+from app import alcance
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
@@ -78,11 +80,14 @@ def expedientes_desde_bd(engine: Engine, id_expediente: str | None = None,
     with engine.connect() as cx:
         procs = pd.DataFrame(cx.execute(qp).mappings().all())
         hitos = pd.DataFrame(cx.execute(qh).mappings().all())
+    eps = alcance.eps_visibles()
+    if eps is not None and not procs.empty:
+        procs = procs[procs["cod_eps"].isin(eps)]  # modo MVP: filtro central (app/alcance.py)
     if procs.empty:
         return {}
     if hitos.empty:
         hitos = pd.DataFrame(columns=[c.name for c in th.columns])
-    if cod_eps:
+    if cod_eps or eps is not None:
         hitos = hitos[hitos["id_expediente"].isin(set(procs["id_expediente"]))]
     procs = procs.astype(object).where(procs.notna(), None)
     hitos = hitos.astype(object).where(hitos.notna(), None)

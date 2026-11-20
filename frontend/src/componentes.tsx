@@ -17,6 +17,58 @@ export function Rotulo({ naturaleza }: { naturaleza: string }) {
   return <span className={`rotulo ${n.clase}`}>{n.texto}</span>;
 }
 
+// ---------------------------------------------------------------- cuadros de los casos reales
+export interface TablaDocumento {
+  clave: string;
+  titulo: string;
+  documento: string;
+  pagina: string;
+  publica: boolean;
+  estado: string; // verificado | por_verificar
+  columnas: string[];
+  filas: string[][];
+  notas: string[];
+}
+
+/** Un cuadro tal como viene en su documento (valores exactos), con documento, página y estado. «Dato real». */
+export function CuadroDocumento({ t: tabla }: { t: TablaDocumento }) {
+  return (
+    <figure className="cuadro-doc">
+      <figcaption>
+        <strong>{tabla.titulo}</strong> <Rotulo naturaleza="real" />{" "}
+        {tabla.estado === "por_verificar" && <span className="pildora pil-warn">Por verificar</span>}
+        {!tabla.publica && <span className="pildora">Parte privada</span>}
+        <div className="meta">Fuente: {tabla.documento}, pág. {tabla.pagina}</div>
+      </figcaption>
+      <div className="tabla-wrap">
+        <table>
+          <thead><tr>{tabla.columnas.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
+          <tbody>
+            {tabla.filas.map((f, i) => (
+              <tr key={i}>{f.map((c, j) => j === 0
+                ? <th key={j} scope="row">{c}</th>
+                : <td key={j} className={c === "no legible" ? "no-legible" : undefined}>{c}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {tabla.notas.length > 0 && <ul className="meta">{tabla.notas.map((n) => <li key={n}>{n}</li>)}</ul>}
+    </figure>
+  );
+}
+
+/** «1 expediente», «3 expedientes». */
+export function plural(n: number, singular: string, plural_: string): string {
+  return `${n} ${Math.abs(n) === 1 ? singular : plural_}`;
+}
+
+/** «1 día hábil», «2 días hábiles», «1,5 días hábiles» (con coma decimal). */
+export function dh(n: number | null | undefined): string {
+  if (n == null) return "—";
+  const v = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".", ",").replace(/,0$/, "");
+  return `${v} ${Math.abs(n) === 1 ? "día hábil" : "días hábiles"}`;
+}
+
 export function fecha(f: string | null | undefined): string {
   if (!f) return "sin fecha";
   const [a, m, d] = f.slice(0, 10).split("-");
@@ -93,6 +145,16 @@ export function Evidencia({ h }: { h: Hito }) {
   );
 }
 
+/** Aviso del flujograma junto a un hito («El flujograma asigna el cierre a la DRE»). */
+export function AvisoFlujograma({ a }: { a: Hito["aviso_flujograma"] }) {
+  if (!a) return null;
+  return (
+    <p className="aviso-flujo" role="note">
+      <strong>Flujograma:</strong> {a.texto} <span className="meta">({a.fuente} · por validar, {a.pregunta_dre})</span>
+    </p>
+  );
+}
+
 export function LineaDeTiempo({ hitos }: { hitos: Hito[] }) {
   return (
     <ol className="linea" aria-label="Línea de tiempo del expediente">
@@ -109,6 +171,7 @@ export function LineaDeTiempo({ hitos }: { hitos: Hito[] }) {
             {h.fila_ds02 != null && ` · DS02 fila ${h.fila_ds02}`}
           </div>
           {h.descripcion && <div className="detalle">{humanizar(h.descripcion)}</div>}
+          <AvisoFlujograma a={h.aviso_flujograma} />
         </li>
       ))}
     </ol>

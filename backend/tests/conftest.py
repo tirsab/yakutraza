@@ -7,6 +7,10 @@ from pathlib import Path
 
 import pytest
 
+# Las pruebas de la muestra completa corren sin modo MVP aunque el entorno (docker compose, .env) defina MVP_EPS;
+# las del modo MVP lo pasan explícitamente (tests/test_mvp.py).
+os.environ["MVP_EPS"] = ""  # también gana a un .env local con MVP_EPS
+
 from app.calidad.base import cargar_catalogo
 from app.calidad.motor import evaluar
 from app.calidad.reglas import REGISTRO, cargar_modulos

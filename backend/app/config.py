@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Modo demo: muestra el selector «Ver como» y acepta el encabezado X-Usuario de los usuarios
     # ficticios. En un enlace público se desactiva con MODO_DEMO=false: toda persona es ciudadanía.
     modo_demo: bool = True
+    # Modo MVP: EPS de la muestra que se ven (separadas por coma, p. ej. EPS02,EPS07,EPS09). Vacío = muestra completa.
+    # La base conserva las 20 EPS; el interruptor «Ver la muestra completa» (encabezado X-Alcance: muestra) las muestra.
+    # Si cambia, vuelva a ejecutar `seed` (los hallazgos del MVP se evalúan en la carga).
+    mvp_eps: str = ""
     # Fase 6: extracción asistida. Proveedor: ninguno (desactivada), ollama (local) o anthropic (API, solo
     # texto anonimizado). Resultados y texto extraído: en EXTRACCION_DIR (por defecto DATA_DIR/extraccion).
     extraccion_proveedor: str = "ninguno"

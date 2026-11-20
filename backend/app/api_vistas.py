@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import insert, select, update
 
+from app import alcance
 from app.config import Settings, get_settings
 from app.db import get_engine, resumenes_quechua
 from app.dinero import visibilidad as vis
@@ -53,9 +54,9 @@ def _carga(s: Settings) -> None:
         raise HTTPException(404, "Todavía no hay datos cargados. Ejecuta `seed`.")
 
 
-def _ctx(s: Settings, fecha_corte: date | None) -> tablero.Contexto:
+def _ctx(s: Settings, fecha_corte: date | None, solo_desafio: bool = True) -> tablero.Contexto:
     _carga(s)
-    ctx = tablero.contexto(get_engine(s.database_url), s, fecha_corte)
+    ctx = tablero.contexto(get_engine(s.database_url), s, fecha_corte, solo_desafio)
     minimo = _corte_min(ctx)
     if fecha_corte is not None and not (minimo <= fecha_corte <= s.fecha_corte):
         raise HTTPException(422, f"La fecha de corte debe estar entre el {minimo:%d-%m-%Y} y el "
@@ -94,6 +95,10 @@ def config(s: Settings = Depends(get_settings)) -> dict[str, Any]:
                    "usuario": por_rol.get(k) if k not in ("eps", "ciudadania") else None}
                   for k, r in roles.items() if s.modo_demo or k == "ciudadania"],
         "eps": eps_lista if s.modo_demo else [],
+        "mvp": {"configurado": bool(alcance.mvp_eps(s.mvp_eps)), "activo": alcance.modo_mvp(),
+                "eps": sorted(alcance.mvp_eps(s.mvp_eps)),
+                "aviso": "Base pequeña: tres EPS de la muestra. Las cifras cambian mucho con un solo expediente; "
+                         "la referencia es la muestra de 20 EPS (interruptor «Ver la muestra completa»)."},
         "privacidad": {"casos_reales_privados": s.casos_reales_privados,
                        "rastros_privados": rastros_privados(eng) if not s.casos_reales_privados else None},
     }
@@ -186,7 +191,9 @@ def simulador(e: EscenarioIn, u: Usuario = Depends(exige_vista("simulador")),
 def mi_eps(fecha_corte: date | None = None, u: Usuario = Depends(exige_vista("mi_eps")),
            s: Settings = Depends(get_settings)) -> dict[str, Any]:
     """Sus trámites, qué le falta y hasta cuándo, y su fondo. Sin documentos internos de Sunass."""
-    ctx = _ctx(s, fecha_corte)
+    if not alcance.visible(u.cod_eps):
+        raise HTTPException(404, f"{u.cod_eps} no forma parte del MVP. Active «Ver la muestra completa».")
+    ctx = _ctx(s, fecha_corte, solo_desafio=False)  # la ficha de la EPS también muestra reportes y reajustes
     return a_json(eps.resumen_eps(ctx, u.cod_eps, _etq(s), _cfg_dinero(s)["textos"]))
 
 
@@ -196,6 +203,24 @@ def buscar_localidades(q: str = Query(..., min_length=2), s: Settings = Depends(
     """Búsqueda por localidad, ubigeo, distrito, provincia o departamento. Solo campos públicos."""
     _carga(s)
     return a_json(ciudadana.buscar(get_engine(s.database_url), _vis(s), q))
+
+
+@router.get("/publico/casos-reales", tags=["vista ciudadana"])
+def casos_reales_publicados(s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
+    """Casos reales con resolución publicada, en lenguaje sencillo, con su fuente. Solo cuadros de resoluciones
+    publicadas; EPSSMU no aparece porque su resolución no dispone la publicación. «Dato real»."""
+    from app.dinero import ruta as ruta_dinero
+    from app.expediente import vivo
+    return a_json([x for x in (ruta_dinero.ciudadana_caso_real(c) for c in vivo.casos(s).values()) if x])
+
+
+@router.get("/publico/explicaciones", tags=["vista ciudadana"])
+def ver_explicaciones(s: Settings = Depends(get_settings)) -> dict[str, Any]:
+    """Explicaciones en lenguaje simple («¿Qué significa?»), editables en rules/explicaciones_ciudadanas.yaml (por validar, E-2)."""
+    import yaml
+    datos = yaml.safe_load((Path(s.rules_dir) / "explicaciones_ciudadanas.yaml").read_text(encoding="utf-8")) or {}
+    return {"estado_validacion": datos.get("estado_validacion"), "pregunta_dre": datos.get("pregunta_dre"),
+            "explicaciones": datos.get("explicaciones", {})}
 
 
 @router.get("/publico/ubicaciones", tags=["vista ciudadana"])

@@ -79,6 +79,8 @@ calidad_hallazgos = Table(
     Column("estado_validacion", String(20), nullable=False),
     Column("detalle", JSON),
     Column("creado", DateTime(timezone=True), server_default=func.now(), nullable=False),
+    # «muestra» (20 EPS) o «mvp» (solo las EPS de MVP_EPS): la calidad se evalúa con cada alcance (migración 0004).
+    Column("alcance", String(10), nullable=False, server_default="muestra", index=True),
 )
 
 

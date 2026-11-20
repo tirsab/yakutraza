@@ -21,3 +21,9 @@ fragmentos:
   - {sha256: 902f660281d6cd2de313cd1dd13840ca326b9956421497bc542057684bb4d097, archivo: docs/Prompt_Claude_Code_YakuTraza.md, motivo: "Nombre de la Subdirección de Regulación Tarifaria y de la DRE."}
   # Frase regulatoria común escrita por el equipo (vista ciudadana).
   - {sha256: 4e35433d95f3826f4bdf4628c23e9fefbe48d54a6cb8bab3826e86f0596d3c80, archivo: backend/app/vistas/ciudadana.py, motivo: "Frase regulatoria común («programa de inversiones del estudio tarifario»)."}
+
+# Documentos completos que una resolución publicada manda difundir: su texto puede citarse en los archivos públicos del
+# repositorio (verificar-privacidad no lo marca). NO los habilita para la API externa: eso sigue siendo solo para
+# resoluciones publicadas en El Peruano o por nombre (app/extraccion/servicio.py). Se identifican por la huella del PDF.
+documentos_difundidos:
+  - {sha256: 15425ca3dd5619f4df033366ca7116ce249a66e008b4af5f0e33b611d860cf4a, documento: "Estudio tarifario final de EMAPA PASCO S.A. 2025-2027", motivo: "RCD N.° 00076-2024-SUNASS-CD, art. 6 (pág. 2): «El estudio tarifario se difundirá en el portal institucional de la Sunass.»"}

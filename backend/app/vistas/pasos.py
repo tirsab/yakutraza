@@ -27,9 +27,14 @@ def pasos_de(exp: Expediente, cat: dict[str, Any], corte: date) -> dict[str, Any
                  if h.hito in indice and h.fecha_inicio is not None and h.fecha_inicio <= corte]
     terminado = exp.fecha_conclusion is not None and exp.fecha_conclusion <= corte
     actual = len(lista) - 1 if terminado else (max(iniciados) if iniciados else 0)
-    return {"pasos": [{"clave": p["clave"], "nombre": p["nombre"]} for p in lista], "actual": actual,
+    return {"pasos": [{"clave": p["clave"], "nombre": p["nombre"], "ayuda": p.get("ayuda")} for p in lista], "actual": actual,
             "n": len(lista), "terminado": terminado, "estado_validacion": cat.get("estado_validacion"),
             "fuente": cat.get("fuente")}
+
+
+def aviso_flujograma(cat: dict[str, Any], tipo: str, hito: str) -> dict[str, Any] | None:
+    """Aviso del flujograma para un hito (lo que el diagrama dice y la muestra no registra o registra distinto)."""
+    return (cat.get("avisos_flujograma") or {}).get(tipo, {}).get(hito)
 
 
 def por_paso(exps: list[Expediente], cat: dict[str, Any], corte: date) -> dict[str, Any]:

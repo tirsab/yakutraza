@@ -267,12 +267,6 @@ summary { cursor: pointer; font-weight: 600; color: var(--b7); padding: 4px 0; }
 .prox-accion h2 { color: #fff; margin: 6px 0 4px; font-size: 1.35rem; }
 .prox-accion p { color: #fff; margin: 4px 0 12px; }
 .prox-accion .acciones { display: flex; flex-wrap: wrap; gap: 8px; }
-.tres-relojes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 0; overflow: visible; }
-.reloj-col { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 4px; align-content: start; }
-.reloj-col:last-child { border-right: 0; }
-.reloj-col .tit { display: flex; justify-content: space-between; gap: 6px; align-items: center; font-size: .72rem; font-weight: 700;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--mut); flex-wrap: wrap; }
-.reloj-col .fecha-g { font-family: var(--f-titulo); font-size: 1.35rem; font-weight: 700; color: var(--n9); }
 .dos-col { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; align-items: start; }
 .dos-col > div { display: grid; gap: 16px; }
 .dos-col .tarjeta { margin: 0; }
@@ -464,8 +458,6 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
   .hero-cuerpo { grid-template-columns: 1fr; padding-bottom: 80px; }
   .hero h1 { font-size: 2rem; }
   .accesos, .principios { grid-template-columns: 1fr; }
-  .tres-relojes { grid-template-columns: 1fr; }
-  .reloj-col { border-right: 0; border-bottom: 1px solid var(--line); }
   .indicadores { grid-template-columns: repeat(2, 1fr); }
   .cuatro-fondo { grid-template-columns: repeat(2, 1fr); }
   .sunass-contenido, .sunass-cabecera { padding-left: 14px; padding-right: 14px; }
@@ -580,7 +572,6 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .sobre-enlace { position: relative; z-index: 2; }
 @media (max-width: 860px) {
   .dialogo-lateral > div { border-radius: 0; max-width: 100vw; }
-  .corte-controles { right: auto; left: 0; }
 }
 
 /* ---------------------------------------------------- Revisión de UX: ruta del dinero */
@@ -609,14 +600,103 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 /* Tablas que pasan a tarjetas en celular (panel de expedientes del tablero). */
 @media (max-width: 640px) {
   .tabla-tarjetas thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .tabla-tarjetas, .tabla-tarjetas tbody, .tabla-tarjetas tr, .tabla-tarjetas td { display: block; width: 100%; }
+  .tabla-tarjetas, .tabla-tarjetas tbody, .tabla-tarjetas tr { display: block; width: 100%; }
+  .tabla-tarjetas td { width: 100%; }
   .tabla-tarjetas tr { border: 1px solid var(--line); border-radius: var(--radio-s); padding: 8px 12px; margin: 0 0 10px; background: #fff; }
   .tabla-tarjetas td { display: grid; grid-template-columns: 110px 1fr; gap: 8px; border: 0; padding: 3px 0; }
   .tabla-tarjetas td::before { content: attr(data-label); font-size: .76rem; color: var(--mut); font-weight: 600; }
 }
+
+/* ---------------------------------------------------- Ajustes finales: análisis plegable y carga */
+.analisis-detallado { margin-top: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--radio); padding: 4px 18px; }
+.analisis-detallado > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 0;
+  list-style: none; }
+.analisis-detallado > summary::-webkit-details-marker { display: none; }
+.analisis-detallado > summary::before { content: "▸"; color: var(--b7); font-weight: 700; }
+.analisis-detallado[open] > summary::before { content: "▾"; }
+.analisis-detallado > summary h2 { display: inline; margin: 0; }
+.analisis-detallado > summary .sub { margin: 0; }
+.fila-accion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* ===================================================== Vista ciudadana adaptable */
+.ciu-interior { max-width: 1200px; margin: 0 auto; }
+.obras-grilla { list-style: none; padding: 0; margin: 0; }
+.ciu-lateral { display: grid; gap: 12px; align-content: start; }
+.leyenda-etapas { background: #fff; border: 1px solid var(--line); border-radius: var(--radio-s); padding: 10px 14px; }
+.leyenda-etapas h3 { margin: 0 0 6px; font-size: .9rem; display: flex; align-items: center; gap: 6px; }
+.leyenda-etapas ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: .82rem; }
+.leyenda-etapas li { display: flex; align-items: center; gap: 6px; }
+.leyenda-etapas i { display: inline-block; width: 22px; height: 6px; border-radius: 4px; }
+.l-hecho { background: var(--b7); } .l-actual { background: var(--warn); } .l-detenida { background: var(--bad); } .l-pendiente { background: var(--line); }
+.que-significa { position: relative; display: inline-flex; vertical-align: middle; }
+.qs-boton { background: none; border: 0; padding: 2px; color: var(--b7); box-shadow: none; border-radius: 50%; min-height: 0; }
+.qs-boton:hover { background: var(--info-bg); color: var(--n9); transform: none; }
+.qs-pop { position: absolute; z-index: 30; left: 50%; transform: translateX(-50%); top: calc(100% + 4px); width: min(300px, 80vw);
+  background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radio-s); box-shadow: var(--sombra-alta);
+  padding: 10px 12px; display: grid; gap: 4px; font-size: .86rem; font-weight: 400; text-align: left; }
+.qs-pop strong { color: var(--n9); }
+.explicado { padding: 6px 0; border-top: 1px solid var(--line); }
+.explicado:first-of-type { border-top: 0; }
+.explicado p { margin: 2px 0; }
+.recuadro-explica { background: var(--info-bg); border-color: var(--info-bg); }
+.sin-obras h2 { margin-top: 0; font-size: 1.05rem; }
+.ficha-panel .etapas-lista.horizontal { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.ficha-panel .etapas-lista.horizontal li { grid-template-columns: 1fr; justify-items: center; text-align: center; align-items: start; font-size: .82rem; }
+.ficha-panel .etapas-lista.horizontal li .detalle { display: none; }
+.ficha-panel .etapas-lista.horizontal li.actual .detalle { display: block; }
+
+/* Tableta (641–1023 px): como celular, pero más ancha y con dos obras por fila. */
+@media (min-width: 641px) {
+  .ciudadana { max-width: 760px; }
+  .pestanas { max-width: 760px; }
+  .obras-grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .obras-grilla .obra { margin: 0; height: 100%; }
+  .ciu-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .ciu-dos > * { min-width: 0; }
+}
+
+/* Computadora (desde 1 024 px): menú superior, encabezado a todo el ancho y dos columnas en Inicio. */
+@media (min-width: 1024px) {
+  .ciudadana { max-width: none; padding-bottom: 32px; }
+  .ciu-cabecera { border-radius: 0; padding: 14px 24px 22px; }
+  .ciu-cabecera .fila { gap: 24px; }
+  .ciu-cabecera h1 { font-size: 1.8rem; }
+  .pestanas-sup { display: flex; gap: 4px; margin-right: auto; }
+  .pestanas-sup button { background: transparent; color: #fff; border: 0; box-shadow: none; border-radius: 999px; padding: 6px 14px;
+    font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+  .pestanas-sup button:hover { background: rgba(255, 255, 255, .16); color: #fff; transform: none; }
+  .pestanas-sup button[aria-current="page"] { background: #fff; color: var(--n8); }
+  .ciu-fila-sel { display: flex; align-items: end; gap: 16px; flex-wrap: wrap; }
+  .ciu-fila-sel .selectores { flex: 1 1 520px; max-width: 760px; }
+  .ciu-fila-sel .audio { margin: 0; }
+  .ciu-cuerpo { max-width: 1200px; margin: 0 auto; padding: 20px 24px 0; }
+  .ciu-inicio { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  .ciu-lateral { position: sticky; top: 16px; }
+  .mapa-mini .mapa-esq { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); max-height: 320px; overflow-y: auto; }
+}
+.qs-pop.qs-der { left: auto; right: 0; transform: none; }
+.qs-pop.qs-izq { left: 0; transform: none; }
 .ia-campo { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
 
 /* ---------------------------------------------------- Fase 6: leer un documento con IA */
 .con-icono { display: flex; align-items: center; gap: 8px; margin-top: 0; }
 .leer-ia-controles { margin: 6px 0; align-items: end; }
 .leer-ia .ia-campo .cita-bloque { display: flex; gap: 6px; align-items: flex-start; justify-content: space-between; }
+
+/* ---------------------------------------------------- Flujogramas: aviso junto a un hito */
+.aviso-flujo { margin: 4px 0 0; padding: 4px 8px; border-left: 3px solid var(--vio); background: var(--vio-bg); border-radius: 6px;
+  font-size: .82rem; color: var(--vio-tx); }
+.aviso-flujo .meta { color: var(--vio-tx); }
+
+/* Modo MVP: interruptor en la barra y aviso de base pequeña */
+.demo-mvp { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.demo-mvp .btn-enlace { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+.aviso-base { border-left: 3px solid var(--warn); padding: 6px 10px; background: var(--warn-bg); color: var(--warn-tx); margin: 8px 0; }
+
+/* Cuadros de los documentos de los casos reales */
+.cuadro-doc { margin: 12px 0; }
+.cuadro-doc figcaption { margin-bottom: 6px; }
+.cuadro-doc td.no-legible { font-style: italic; color: var(--warn-tx); }
+.casos-reales-pub { margin-top: 24px; }
+.caso-real-pub { margin: 12px 0; }
+.caso-real-cuadros { margin: 8px 0; }

@@ -12,6 +12,7 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.config import Settings, dir_privado
 from app.db import TABLAS_DATASETS, documentos, eventos_plazo
 import yaml
@@ -27,7 +28,7 @@ from app.plazos.calendario import calendario_desde
 from app.plazos.catalogo import catalogo_desde as catalogo_plazos
 from app.plazos.motor import Expediente, MotorPlazos
 from app.plazos.repositorio import expedientes_desde_bd
-from app.vistas.pasos import catalogo as cat_pasos, pasos_de
+from app.vistas.pasos import aviso_flujograma, catalogo as cat_pasos, pasos_de
 
 DECLARADO = "declarado, no verificado"
 CODIGO_DS02 = "código en DS02, sin archivo"
@@ -170,6 +171,7 @@ def ficha(engine: Engine, s: Settings, id_expediente: str, corte: date | None = 
     por_hito: dict[str, list[dict[str, Any]]] = {}
     for d in docs:
         por_hito.setdefault(d["hito"] or "", []).append(d)
+    cp = cat_pasos(Path(s.rules_dir) / "pasos_procedimiento.yaml")
     linea = []
     for h in exp.hitos:
         linea.append({
@@ -178,8 +180,9 @@ def ficha(engine: Engine, s: Settings, id_expediente: str, corte: date | None = 
             "cuenta_plazo": h.cuenta_plazo, "estado": _estado_hito(h, corte), "fila_ds02": h.fila,
             "evidencia": pasaporte(h, por_hito.get(h.hito, [])),
             "alertas": [a for a in relojes if a.get("hito") == h.hito],
+            "aviso_flujograma": aviso_flujograma(cp, exp.tipo, h.hito),
         })
-    pasos = pasos_de(exp, cat_pasos(Path(s.rules_dir) / "pasos_procedimiento.yaml"), corte)
+    pasos = pasos_de(exp, cp, corte)
     return {"expediente": meta, "fecha_corte": corte, "pasos": pasos, "linea_de_tiempo": linea, "relojes": relojes,
             "documentos": docs, "eventos": evs, "proyectos": proyectos, "prechequeo": pre,
             "ruta_dinero": _json(_ruta_dinero(s, caso, exp, proyectos)),
@@ -212,7 +215,8 @@ def listado(engine: Engine, s: Settings, tipo: str | None = None, cod_eps: str |
     if estado:
         q = q.where(tp.c.estado == estado)
     with engine.connect() as cx:
-        res = [{**dict(r), "naturaleza": "sintético"} for r in cx.execute(q.order_by(tp.c.id_expediente)).mappings()]
+        res = [{**dict(r), "naturaleza": "sintético"} for r in cx.execute(q.order_by(tp.c.id_expediente)).mappings()
+               if alcance.visible(r["cod_eps"])]  # modo MVP (app/alcance.py)
     if not cod_eps:
         for c in casos(s).values():
             e = c.datos["expediente"]

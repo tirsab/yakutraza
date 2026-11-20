@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { pedir } from "./api";
+import { fijarAlcance, pedir } from "./api";
 import { Bandeja } from "./bandeja";
 import { PaginaBitacora } from "./bitacora";
 import { VistaCiudadana } from "./ciudadana";
-import { fecha } from "./componentes";
+import { fecha, plural } from "./componentes";
 import { DetalleProyecto, TableroRutaDelDinero } from "./dinero";
 import { t } from "./etiquetas";
 import { Icono } from "./iconos";
@@ -25,7 +25,7 @@ function AvisoPrivacidad() {
   return (
     <div className="mensaje mensaje-error" role="alert" style={{ margin: 0, borderRadius: 0 }}>
       <strong>No grabe todavía:</strong> se pidió cargar los casos reales sin su parte privada, pero la base aún tiene datos de los
-      oficios intermedios ({r.documentos} documentos, {r.eventos} eventos y {r.bitacora} entradas de bitácora). Recree la base con
+      oficios intermedios ({plural(r.documentos, "documento", "documentos")}, {plural(r.eventos, "evento", "eventos")} y {plural(r.bitacora, "entrada", "entradas")} de bitácora). Recree la base con
       <code> docker compose down -v </code> y vuelva a ejecutar <code>seed</code>.
     </div>
   );
@@ -48,6 +48,7 @@ function BarraDemo({ publica }: { publica?: boolean }) {
         <span className="demo-etq">{config.modo_demo ? "DEMO" : "PROTOTIPO"}</span>
         <span className="demo-largo">{config.rotulo} · Fecha de corte: {fecha(corte)} · Plazos en días hábiles (DH)</span>
         <span className="demo-corto">Datos sintéticos · Corte {fecha(corte)}</span>
+        <InterruptorMvp />
         {selector && (
           <div className="demo-sel" role="group" aria-label="Modo demo: ver como">
             <label htmlFor="ver-como">Ver como:</label>
@@ -67,6 +68,32 @@ function BarraDemo({ publica }: { publica?: boolean }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Modo MVP: qué EPS se ven y el interruptor para ver la muestra completa (no recarga los datos del servidor). */
+function InterruptorMvp() {
+  const { config } = useSesion();
+  const m = config.mvp;
+  if (!m?.configurado) return null;
+  const cambiar = (alcance: "muestra" | null) => {
+    fijarAlcance(alcance);
+    window.location.reload();
+  };
+  return (
+    <span className="demo-mvp" role="group" aria-label="Alcance de los datos">
+      {m.activo ? (
+        <>
+          <span className="pildora" title={m.aviso}>MVP · {m.eps.join(", ")}</span>
+          <button type="button" className="btn-enlace" onClick={() => cambiar("muestra")}>Ver la muestra completa</button>
+        </>
+      ) : (
+        <>
+          <span className="pildora pil-warn">Muestra completa · 20 EPS</span>
+          <button type="button" className="btn-enlace" onClick={() => cambiar(null)}>Volver al MVP</button>
+        </>
+      )}
+    </span>
   );
 }
 

@@ -14,7 +14,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from app import servicio
+from app import alcance, servicio
 from app.api_dinero import router as router_dinero
 from app.api_dinero import router_contexto
 from app.api_expediente import router as router_expediente
@@ -43,6 +43,9 @@ app = FastAPI(
     ),
     license_info={"name": "MIT"},
 )
+# Modo MVP: un solo filtro central al leer (app/alcance.py). Lee la configuración vigente (también en las pruebas).
+app.add_middleware(alcance.MiddlewareAlcance,
+                   obtener_settings=lambda: app.dependency_overrides.get(get_settings, get_settings)())
 
 
 class ColumnaOut(BaseModel):

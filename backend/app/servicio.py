@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from app import alcance
 from app.calidad.base import cargar_catalogo
 from app.calidad.motor import evaluar
 from app.calidad.reporte import construir_html, escribir_reporte
@@ -36,6 +37,14 @@ def _muestra_verificada(s: Settings):
     return muestra
 
 
+def _hallazgos_mvp(s: Settings, muestra) -> list | None:
+    """Modo MVP: la calidad se evalúa también solo con las EPS de MVP_EPS (se guardan con alcance «mvp»)."""
+    eps = alcance.mvp_eps(s.mvp_eps)
+    if not eps:
+        return None
+    return evaluar(alcance.filtrar_muestra(muestra, eps), _ruta_catalogo(s), s.fecha_corte)
+
+
 def seed(s: Settings) -> ResultadoSeed:
     if not Path(s.data_dir).exists():
         raise FileNotFoundError(f"DATA_DIR no existe: {s.data_dir}. Define DATA_DIR con la carpeta de los CSV.")
@@ -50,7 +59,7 @@ def seed(s: Settings) -> ResultadoSeed:
                 "ejecutar `seed`.")
     muestra = _muestra_verificada(s)
     hallazgos = evaluar(muestra, _ruta_catalogo(s), s.fecha_corte)
-    lote_id = guardar_carga(engine, muestra, hallazgos, s.fecha_corte)
+    lote_id = guardar_carga(engine, muestra, hallazgos, s.fecha_corte, _hallazgos_mvp(s, muestra))
     casos = cargar_casos(Path(s.casos_reales_dir), dir_privado(s))
     sync = sincronizar(engine, casos)
     ruta = generar_reporte(s)
@@ -71,7 +80,7 @@ def recalcular_calidad(s: Settings) -> int:
     if actuales != cargados:
         raise RuntimeError("Los CSV de DATA_DIR cambiaron desde la última carga. Ejecuta `seed` de nuevo.")
     hallazgos = evaluar(muestra, _ruta_catalogo(s), s.fecha_corte)
-    reemplazar_hallazgos(engine, lote["id"], hallazgos)
+    reemplazar_hallazgos(engine, lote["id"], hallazgos, _hallazgos_mvp(s, muestra))
     generar_reporte(s)
     return len(hallazgos)
 

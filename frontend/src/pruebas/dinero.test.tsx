@@ -34,6 +34,11 @@ const resumen = {
     escalera: peldanos(["fondo_inversiones"]), senal: null }],
   casos_reales: [{ id_expediente: "REAL-EPSSMU-2025", cod_eps: null, empresa: "EPSSMU S.A.", naturaleza: "real",
     articulo: "RGT art. 89", escalera: peldanos("reserva PCC/PAS (no el fondo de inversiones)"), senal: null }],
+  casos_reales_cuadros: [{ id_expediente: "REAL-PASCO-2024", empresa: "EMAPA PASCO S.A.", procedimiento: "revision_periodica",
+    naturaleza: "real", fuente_principal: "RCD N.° 00076-2024-SUNASS-CD", localidades: ["Pasco", "Vicco"], con_detalle_privado: true,
+    no_legibles: ["PDF escaneado sin texto: no legible."], tablas: [{ clave: "PASCO:ET-CUADRO-93", titulo: "Programa de inversiones (en soles)", documento: "Estudio tarifario final, Cuadro N° 93",
+      pagina: "137-138", publica: false, estado: "por_verificar", columnas: ["Descripción", "Año 1", "Total"],
+      filas: [["Bombeo del reservorio", "no legible", "314 868,00"]], notas: ["Por verificar: año no indicado."] }] }],
   filtros: { cod_eps: ["EPS01", "EPS02"], anios: [2025, 2026],
     fondos: { fondo_inversiones: "Fondo de inversiones", reserva_pcc: "Reserva PCC/PAS", sin_fondo_indicado: "Fondo o reserva no indicado" } },
 };
@@ -77,6 +82,19 @@ function api() {
 afterEach(() => vi.restoreAllMocks());
 
 describe("Tablero de la ruta del dinero", () => {
+  it("casos reales: cuadros de sus documentos con fuente, «Dato real», «Por verificar» y «no legible»", async () => {
+    api();
+    render(<MemoryRouter><TableroRutaDelDinero /></MemoryRouter>);
+    const resumenCaso = await screen.findByText(/EMAPA PASCO S\.A\./, { selector: "strong" });
+    await userEvent.click(resumenCaso);
+    const cuadro = screen.getByRole("figure");
+    expect(within(cuadro).getByText("Dato real")).toBeInTheDocument();
+    expect(within(cuadro).getByText("Por verificar")).toBeInTheDocument();
+    expect(within(cuadro).getByText("no legible")).toHaveClass("no-legible");
+    expect(within(cuadro).getByText("Fuente: Estudio tarifario final, Cuadro N° 93, pág. 137-138")).toBeInTheDocument();
+    expect(screen.getByText(/no legible\(s\)/)).toBeInTheDocument();
+  });
+
   it("muestra totales por fondo con la columna de emergencia (art. 90) y verificado pendiente", async () => {
     api();
     render(<MemoryRouter><TableroRutaDelDinero /></MemoryRouter>);

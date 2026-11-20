@@ -11,6 +11,53 @@ por hito, la ruta del dinero y vistas por rol. El diseño completo está en
 > **Ninguna salida de YakuTraza es una decisión regulatoria.** El sistema informa y alerta; las decisiones
 > son de Sunass.
 
+## Alcance del MVP
+
+El MVP muestra **tres EPS ficticias de la muestra, completas**, cada una junto a **un caso real del mismo
+procedimiento**. Cada caso real es una empresa real distinta y nunca se mezcla con una EPS de la muestra: en pantalla, los
+casos reales llevan «Dato real» y las EPS de la muestra, «Dato sintético».
+
+| Procedimiento | EPS de la muestra («Dato sintético») | Caso real («Dato real») |
+|---|---|---|
+| Cambio al programa de inversiones (CPI) | EPS02 | EPS TACNA S.A., RCD 032-2026 (art. 93.2) |
+| Uso excepcional del fondo (UFI) | EPS07 | EPSSMU S.A., RCD 126-2025 (art. 89, caso fortuito) |
+| Revisión periódica (RP) | EPS09 | EMAPA PASCO S.A., RD 015-2024, RCD 060-2024 y RCD 076-2024 |
+
+**Por qué estas EPS** (matriz de cobertura de las 20 EPS de la muestra, fecha de corte 2026-09-30):
+
+- **EPS02**: tiene un CPI en trámite y vencido, con información adicional, y es la EPS con más subsanaciones (8).
+- **EPS07**: es la única con dos UFI (uno concluido con subsanación y otro en trámite) y con uso excepcional del fondo
+  registrado en DS05.
+- **EPS09**: su RP-2025-0002 recorre todo el camino (subsanación, inicio, información, difusión, publicación,
+  audiencia, comentarios y evaluación) con las reglas de 2026; así se ve el contraste con Pasco, que usa las de 2024.
+- **No se usan EPS11, EPS16 ni EPS17**: son ficticias pero están en Amazonas, Tacna y Pasco, los departamentos de los
+  casos reales, y en pantalla se confundirían con la empresa real.
+- Ningún documento relaciona los casos reales con estas EPS: cada pareja solo comparte el procedimiento.
+
+**Modo MVP.** `MVP_EPS=EPS02,EPS07,EPS09` (valor por defecto en `docker compose` y en la imagen pública). La base
+conserva las 20 EPS; un solo filtro central al leer (`backend/app/alcance.py`) oculta las otras 17 en la bandeja, el
+tablero, la ruta del dinero, el portal EPS, la vista ciudadana y los selectores. En modo MVP, la bandeja, el tablero y
+los indicadores muestran solo CPI, UFI y RP; los reportes trimestrales, reajustes por IPM y verificaciones se ven en la
+ficha de cada EPS. La calidad se evalúa dos veces en el `seed` (muestra y MVP). El interruptor **«Ver la muestra
+completa»** de la barra superior muestra las 20 EPS sin volver a cargar los datos (`MVP_EPS=` vacío = muestra completa).
+
+| Indicador | Muestra (20 EPS) | Solo MVP (3 EPS) |
+|---|---|---|
+| Expedientes que superan el plazo máximo | **18,5 % (12 de 65)** | 3 de 7 (CPI, UFI y RP; con las verificaciones serían 3 de 11) |
+| `fecha_limite` y días hábiles coinciden | 64 de 65 | 11 de 11 |
+| Hallazgos de calidad | 202 | 35 |
+| Expedientes en trámite al corte | 25 | 3 (CPI, UFI y RP; 7 con los reportes trimestrales) |
+
+La cifra principal es la de la muestra de 20 EPS. Las del MVP son una **base pequeña**: cambian mucho con un solo
+expediente, y el tablero lo advierte.
+
+**Casos reales.** La parte pública (`casos_reales/*.yaml`) solo usa resoluciones publicadas, con documento y página; lo
+demás (oficios, memorandos, informes, cuadros de documentos no publicados) está en `DATA_DIR/casos_reales/*_detalle.yaml`,
+que no se versiona. EPSSMU no aparece en la vista ciudadana porque su resolución no dispone la publicación. Los datos
+que faltan o no coinciden están en `docs/preguntas_para_la_DRE.md` (DRE-31 a DRE-34). El documento técnico entregado
+(`docs/YakuTraza_Documento_tecnico.pdf`) no se modifica: describe la revisión periódica completa como fuera de alcance;
+este MVP la incluye con el caso de EMAPA Pasco.
+
 ## Estado
 
 | Fase | Contenido | Estado |
@@ -492,6 +539,25 @@ Revisa cada archivo versionado contra los nombres de la lista privada, contra fr
 algún documento intermedio y contra los nombres de archivo de esos PDF. Informa archivo y tipo, nunca el texto. Los
 fragmentos que una persona revisó y aprobó (por ejemplo, texto de una norma publicada) se guardan solo como huella
 SHA-256 en `rules/privacidad_revisado.yaml`.
+
+También busca, sin necesitar la parte privada, rastros con forma de oficio: sellos de firma (nombre seguido de fecha y
+hora), cabeceras «PARA :» / «DE :» con un nombre, correos y enlaces privados (Drive, OneDrive, WeTransfer). La misma
+revisión corre como prueba (`test_repositorio_sin_rastros_de_oficios`).
+
+Para revisar además **todo el historial git** (todas las ramas y commits):
+
+```bash
+python -m app.cli verificar-privacidad --historial
+```
+
+Busca los nombres que el anonimizador reconoce en los PDF de los casos reales y los de la lista privada. Informa la
+ruta y una huella del nombre, nunca el nombre.
+
+**Qué oculta el anonimizador.** Nombres de la lista privada; nombres después de un tratamiento (Sr., Ing., Abog.…);
+nombres en las cabeceras «PARA :», «DE :», «A :» y «Señor(a):» (también en la línea siguiente); sellos de firma
+digital (nombre + fecha y hora, en la misma línea o en la anterior); «Firmado digitalmente por …»; líneas que son solo
+un nombre seguidas de un cargo o precedidas de «Firmado digitalmente», y firmantes después de «Regístrese…». Si
+después de anonimizar queda un sello de firma con nombre, el documento no se procesa.
 
 **Límites.** Sin OCR: un PDF escaneado sin texto se informa como «requiere OCR». El tiempo y la calidad del modelo
 local se miden con la evaluación del punto 3.

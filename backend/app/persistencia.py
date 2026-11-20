@@ -8,12 +8,14 @@ from typing import Any
 from sqlalchemy import delete, func, insert, inspect, select
 from sqlalchemy.engine import Engine
 
+from app import alcance
 from app.calidad.base import Hallazgo
 from app.db import TABLAS_DATASETS, calidad_hallazgos, carga_lotes, crear_esquema
 from app.ingesta.cargar import Muestra
 
 
-def guardar_carga(engine: Engine, muestra: Muestra, hallazgos: list[Hallazgo], fecha_corte: date) -> int:
+def guardar_carga(engine: Engine, muestra: Muestra, hallazgos: list[Hallazgo], fecha_corte: date,
+                  hallazgos_mvp: list[Hallazgo] | None = None) -> int:
     """Reemplaza los datos cargados y agrega un lote nuevo con sus hallazgos.
 
     Los hallazgos de lotes anteriores se conservan (historia de cargas).
@@ -37,8 +39,9 @@ def guardar_carga(engine: Engine, muestra: Muestra, hallazgos: list[Hallazgo], f
                 filas.append(fila)
             if filas:
                 cx.execute(insert(tabla), filas)
-        if hallazgos:
-            cx.execute(insert(calidad_hallazgos), [{**h.como_dict(), "lote_id": lote_id} for h in hallazgos])
+        filas_h = _filas_hallazgos(lote_id, hallazgos, hallazgos_mvp)
+        if filas_h:
+            cx.execute(insert(calidad_hallazgos), filas_h)
     return lote_id
 
 
@@ -50,15 +53,24 @@ def ultimo_lote(engine: Engine) -> dict[str, Any] | None:
         return dict(fila) if fila else None
 
 
-def reemplazar_hallazgos(engine: Engine, lote_id: int, hallazgos: list[Hallazgo]) -> None:
+def _filas_hallazgos(lote_id: int, hallazgos: list[Hallazgo], hallazgos_mvp: list[Hallazgo] | None):
+    return ([{**h.como_dict(), "lote_id": lote_id, "alcance": "muestra"} for h in hallazgos]
+            + [{**h.como_dict(), "lote_id": lote_id, "alcance": "mvp"} for h in hallazgos_mvp or []])
+
+
+def reemplazar_hallazgos(engine: Engine, lote_id: int, hallazgos: list[Hallazgo],
+                         hallazgos_mvp: list[Hallazgo] | None = None) -> None:
     with engine.begin() as cx:
         cx.execute(delete(calidad_hallazgos).where(calidad_hallazgos.c.lote_id == lote_id))
-        if hallazgos:
-            cx.execute(insert(calidad_hallazgos), [{**h.como_dict(), "lote_id": lote_id} for h in hallazgos])
+        filas = _filas_hallazgos(lote_id, hallazgos, hallazgos_mvp)
+        if filas:
+            cx.execute(insert(calidad_hallazgos), filas)
 
 
 def leer_hallazgos(engine: Engine, lote_id: int, **filtros: str | None) -> list[dict[str, Any]]:
-    q = select(calidad_hallazgos).where(calidad_hallazgos.c.lote_id == lote_id)
+    """Hallazgos del lote con el alcance de la solicitud: los del MVP en modo MVP, los de la muestra si no."""
+    q = select(calidad_hallazgos).where(calidad_hallazgos.c.lote_id == lote_id,
+                                        calidad_hallazgos.c.alcance == ("mvp" if alcance.modo_mvp() else "muestra"))
     for col, valor in filtros.items():
         if valor:
             q = q.where(calidad_hallazgos.c[col] == valor)

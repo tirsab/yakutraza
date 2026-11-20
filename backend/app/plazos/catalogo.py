@@ -60,6 +60,9 @@ class ReglaPlazo:
         partes = []
         for f in self.fuentes:
             doc = documentos.get(f["doc"], {}).get("titulo", f["doc"])
+            if f["doc"].startswith("FLUJO_"):  # «Flujograma, Anexo 2, pág. 9»
+                partes.append(f"{doc.split(' (')[0]}, {f['ubicacion']}" if f.get("ubicacion") else doc.split(" (")[0])
+                continue
             corto = doc.split(" (")[0].split(",")[0] if f["doc"] not in ("RGT", "TUO_27444") else (
                 "RGT (RCD 028-2021-SUNASS-CD)" if f["doc"] == "RGT" else "TUO Ley 27444 (DS 006-2026-JUS)")
             partes.append(f"{corto}, {f['ubicacion']}" if f.get("ubicacion") else corto)

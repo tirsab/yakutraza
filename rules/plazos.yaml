@@ -75,9 +75,10 @@ fuentes_documentales:
   DICC_LEAME: {titulo: "Diccionario de variables, hoja Léame (Cómputo de plazos)"}
   DICC_HITOS: {titulo: "Diccionario de variables, hoja Hitos"}
   DICC_SUPUESTOS: {titulo: "Diccionario de variables, hoja Supuestos"}
-  FLUJO_UFI: {titulo: "Expediente General del Desafío 3, Anexo 2 (pág. 9): flujo propuesto de uso excepcional del FI"}
-  FLUJO_RP: {titulo: "Expediente General del Desafío 3, Anexo D (pág. 10): flujo propuesto de revisión periódica"}
-  FLUJO_CPI: {titulo: "Expediente General del Desafío 3, Anexo E (pág. 11): flujo propuesto de cambio al programa de inversiones"}
+  # Descripción verificada contra los diagramas: docs/Flujos_Anexos_Expediente.md.
+  FLUJO_UFI: {titulo: "Flujograma, Anexo 2, pág. 9 (Expediente General del Desafío 3: flujo propuesto de uso excepcional del FI)"}
+  FLUJO_RP: {titulo: "Flujograma, Anexo D, pág. 10 (Expediente General del Desafío 3: flujo propuesto de revisión periódica)"}
+  FLUJO_CPI: {titulo: "Flujograma, Anexo E, pág. 11 (Expediente General del Desafío 3: flujo propuesto de cambio al programa de inversiones)"}
   DS02: {titulo: "DS02 procedimientos (plazo_maximo_dh, dias_suspension_dh, fecha_limite)"}
 
 reglas:
@@ -317,6 +318,8 @@ reglas:
       - {doc: RGT, ubicacion: "art. 47.5 (texto anterior a la RCD 124-2025)", cita: "hasta el quinto día hábil siguiente a la realización de la audiencia pública"}
     estado_validacion: por validar
     no_comparable: "La norma vigente entonces fijaba plazos distintos para los interesados (5 DH tras la audiencia) y para la EP (40 DH desde la notificación del proyecto), y DS02 registra ambos en un solo hito «comentarios»: no se puede calificar el hito con un solo plazo."
+    # Un caso real que documenta solo el plazo de los interesados (hito con plazo_de: interesados) sí se compara.
+    plazo_de: interesados
     nota: "Plazo de los interesados. La EP tenía además 40 DH improrrogables desde la notificación del proyecto (PLZ-O-RP-COMENTARIOS-EP-40). El motor no califica el hito combinado de DS02 con esta versión: lo informa como no comparable."
 
   - id: PLZ-N-RP-COMENTARIOS-V2025
@@ -486,6 +489,7 @@ reglas:
       - {doc: RGT, ubicacion: "art. 45.2", cita: "Dentro de los diez primeros días hábiles del plazo señalado en el párrafo anterior, en una sola oportunidad, la Dirección de Regulación Tarifaria puede formular observaciones"}
       - {doc: FLUJO_RP, ubicacion: "DRE firma oficio", cita: "el plazo para elaborar el oficio es 10dh"}
     estado_validacion: por validar
+    nota: "DS02 registra a la SRT como responsable del oficio; el flujograma indica que lo firma la DRE (DRE-30)."
     discrepancia: {fuente: FLUJO_RP, valor: "2 DH", descripcion: "El flujograma marca además «2 DH» junto a la firma del oficio. Y 1 + 1 + 7 + 10 + 17 = 36 DH supera los 30 DH de la etapa si se cuentan en serie."}
     pregunta_dre: DRE-08
 
@@ -585,6 +589,47 @@ reglas:
       - {doc: FLUJO_RP, ubicacion: "bloque verde de la etapa 4", cita: "Corresponde aun solo hito/actividad que dura 10 dh"}
     estado_validacion: por validar
 
+  # Anexo D: los recuadros del flujograma abarcan varios hitos. El reloj interno principal usa la hoja Hitos
+  # (reglas por hito de arriba); estas versiones del bloque se muestran solo en el detalle del reloj.
+
+  - id: PLZ-I-RP-BLOQUE-INICIO
+    procedimiento: revision_periodica
+    hitos: [informe_inicio, firma_informe_inicio, resolucion_inicio]
+    tipo_reloj: interno
+    plazo_dh: 17
+    respaldo: solo_flujograma
+    solo_detalle: true
+    fuentes:
+      - {doc: FLUJO_RP, ubicacion: "etapa 1, recuadro rojo (informe, firma de la SRT y resolución de la DRE)", cita: "17dh"}
+    estado_validacion: por validar
+    nota: "La hoja Hitos asigna los 17 DH solo al informe de inicio (PLZ-I-RP-INFORME-INICIO)."
+    pregunta_dre: DRE-08
+
+  - id: PLZ-I-RP-BLOQUE-EVALUACION
+    procedimiento: revision_periodica
+    hitos: [proyecto_estudio, oficio_informacion, informe_difusion, firma_informe_difusion]
+    tipo_reloj: interno
+    plazo_dh: 50
+    respaldo: solo_flujograma
+    solo_detalle: true
+    fuentes:
+      - {doc: FLUJO_RP, ubicacion: "etapa 2, recuadro amarillo (pasos 1 a 4: proyecto, oficio, culminación, informe y firma de la SRT)", cita: "50dh"}
+    estado_validacion: por validar
+    nota: "La hoja Hitos asigna los 50 DH solo al proyecto de estudio (PLZ-I-RP-PROYECTO). La información de la EP no suma: suspende."
+    pregunta_dre: DRE-09
+
+  - id: PLZ-I-RP-BLOQUE-APROBACION
+    procedimiento: revision_periodica
+    hitos: [evaluacion_comentarios, firma_informe_final]
+    tipo_reloj: interno
+    plazo_dh: 50
+    respaldo: solo_flujograma
+    solo_detalle: true
+    fuentes:
+      - {doc: FLUJO_RP, ubicacion: "etapa 4, recuadro naranja (pasos 2 y 3: evaluación de comentarios e informe firmado por la SRT)", cita: "50dh"}
+    estado_validacion: por validar
+    nota: "La hoja Hitos asigna los 50 DH solo a la evaluación de comentarios (PLZ-I-RP-EVAL-COMENTARIOS)."
+
   - id: PLZ-I-CPI-BLOQUE-24
     procedimiento: cambio_programa_inversiones
     hitos: [asignacion, verificacion_tupa, oficio_subsanacion, evaluacion, oficio_informacion, informe, firma_informe]
@@ -610,25 +655,27 @@ reglas:
 
   - id: PLZ-I-UFI-BLOQUE-24
     procedimiento: uso_excepcional_fondo
-    hitos: [verificacion_tupa, oficio_subsanacion, evaluacion, oficio_informacion, informe, visado_informe, firma_informe_dre, firma_informe_oaj]
+    hitos: [verificacion_tupa, oficio_subsanacion, evaluacion, oficio_informacion, informe, visado_informe, firma_informe_oaj]
     tipo_reloj: interno
     plazo_dh: 24
     respaldo: solo_flujograma
     fuentes:
       - {doc: FLUJO_UFI, ubicacion: "bloque rojo (de la verificación TUPA a la firma de la OAJ)", cita: "24 dh"}
     estado_validacion: por validar
-    discrepancia: {fuente: FLUJO_UFI, valor: "asignación fuera de los bloques", descripcion: "La asignación al equipo SRT queda fuera de los bloques de 24 y 5 dh; con la derivación (1 DH) suman 30, sin tiempo para la asignación. La firma del informe por la DRE aparece en el bloque verde."}
+    discrepancia: {fuente: FLUJO_UFI, valor: "asignación fuera de los bloques", descripcion: "La asignación al equipo SRT queda fuera de los bloques de 24 y 5 dh; con la derivación (1 DH) suman 30, sin tiempo para la asignación."}
+    nota: "El bloque cierra con la firma de la OAJ. Los hitos a cargo de la EP (subsanación, información) no suman: suspenden."
     pregunta_dre: DRE-12
 
   - id: PLZ-I-UFI-BLOQUE-5
     procedimiento: uso_excepcional_fondo
-    hitos: [memo_gg, elevacion_cd, resolucion_cd]
+    hitos: [firma_informe_dre, memo_gg, elevacion_cd, resolucion_cd]
     tipo_reloj: interno
     plazo_dh: 5
     respaldo: solo_flujograma
     fuentes:
-      - {doc: FLUJO_UFI, ubicacion: "bloque verde", cita: "5 dh"}
+      - {doc: FLUJO_UFI, ubicacion: "bloque verde (firmas de la DRE: memo e informe; elevación de la GG; CD)", cita: "5 dh"}
     estado_validacion: por validar
+    nota: "Según el flujograma, la DRE firma el memo a la GG y el informe dentro del bloque de 5 dh (por validar, DRE-12). En DS02 la firma de la DRE ocurre antes que la de la OAJ."
     pregunta_dre: DRE-12
 
   # ===================================================== reloj del oficio

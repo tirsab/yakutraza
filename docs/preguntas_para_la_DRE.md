@@ -89,6 +89,53 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 
 ---
 
+### DRE-28 · Re-verificación de requisitos tras la subsanación (Anexos 2 y E)
+- **Pregunta.** Cuando la EP subsana las observaciones del TUPA, ¿el equipo SRT vuelve a verificar los requisitos antes de evaluar? ¿Cómo se registra ese paso?
+- **Fuentes.**
+  - Flujograma, Anexo 2, pág. 9, y Anexo E, pág. 11: lo subsanado reingresa por Mesa de Partes → DRE → SRT → Equipo SRT y vuelve a «Verifica requisitos del TUPA» (`docs/Flujos_Anexos_Expediente.md`).
+  - DS02: en los 4 expedientes con subsanación de la muestra (CPI-2025-0002, CPI-2026-0002, UFI-2024-0001, UFI-2025-0001), el hito siguiente es directamente la evaluación o el cierre; no hay una segunda verificación.
+- **Qué cambia en el motor.** Hoy la línea de tiempo muestra, junto a la subsanación, el aviso «Según el flujograma, lo subsanado reingresa por Mesa de Partes y se vuelve a verificar los requisitos del TUPA; los datos de la muestra no registran ese paso». Si la DRE confirma que se registra, habría que agregar ese hito al diccionario y una meta interna para la re-verificación, dentro del bloque de 24 dh.
+
+### DRE-29 · Quién cierra el procedimiento si la EP no subsana (Anexo E)
+- **Pregunta.** En un cambio al programa de inversiones, si la EP no subsana, ¿quién dispone el cierre: la DRE o la SRT?
+- **Fuentes.**
+  - Flujograma, Anexo E, pág. 11: «se cierra el procedimiento» en el carril de la DRE. En el Anexo 2, la DRE «dispone que se archive».
+  - DS02: el cierre de CPI-2026-0002 figura a cargo de la SRT.
+- **Qué cambia en el motor.** Hoy se muestra el cierre a cargo de la SRT, como en los datos, con el aviso «El flujograma asigna el cierre a la DRE». Si manda el flujograma, cambia el responsable del hito `cierre` y, con él, la bandeja de quién debe actuar.
+
+### DRE-30 · Quién firma los oficios de la revisión periódica (Anexo D)
+- **Pregunta.** En la revisión periódica, ¿el oficio de subsanación (etapa 1) y el de información (etapa 2) los firma la DRE o la SRT?
+- **Fuentes.**
+  - Flujograma, Anexo D, pág. 10: el equipo SRT elabora el proyecto, la SRT lo revisa y la **DRE firma** el oficio, en ambas etapas.
+  - DS02: `oficio_subsanacion` y `oficio_informacion` de las revisiones periódicas figuran a cargo de la SRT.
+- **Qué cambia en el motor.** Hoy se muestra a la SRT como responsable, como en los datos, con el aviso «El flujograma indica que firma la DRE». Si manda el flujograma, cambian el responsable de esos hitos, el embudo de firmas y la bandeja de quién debe actuar.
+
+### DRE-31 · EMAPA Pasco: ¿cuándo se notificó la RCD 060-2024?
+- **Pregunta.** ¿En qué fecha se notificó a EMAPA PASCO S.A. la RCD 060-2024 (difusión del proyecto)?
+- **Fuentes.**
+  - Oficio 431-2024 de la DRT (1-10-2024): remite la RCD 060-2024 y recuerda a la EP su plazo de 40 DH para comentar, que corre desde el día siguiente de la notificación (RGT art. 47.4, texto vigente en 2024).
+  - RCD 076-2024, nota 5: la RCD 060-2024 se publicó en El Peruano el 28-09-2024. Ningún documento con texto indica la fecha de notificación; dos PDF del expediente son escaneos sin texto (no legibles, sin OCR).
+- **Qué cambia en el motor.** Hoy el plazo de 40 DH de la EP aparece «no calculable: falta la fecha de notificación». Con la fecha, el motor calcula el vencimiento.
+
+### DRE-32 · EMAPA Pasco: ¿cuándo se recibió el oficio de comentarios de la EP (493-2024)?
+- **Pregunta.** ¿En qué fecha recibió la Sunass el oficio 493-2024 de EMAPA PASCO, con los comentarios de la EP al proyecto publicado?
+- **Fuentes.** El estudio tarifario final (Anexo XI, págs. 294 y 299) menciona ese oficio sin fecha. No está en los documentos con texto.
+- **Qué cambia en el motor.** Junto con DRE-31, permite saber si la EP comentó dentro de sus 40 DH. Sin la fecha, el expediente lo muestra como dato faltante.
+
+### DRE-33 · EMAPA Pasco: ¿resolución de inicio «003-2024» o «015-2024»?
+- **Pregunta.** ¿La resolución que inició la revisión periódica es la 015-2024 de la DRT, o existe además una 003-2024?
+- **Fuentes.**
+  - Resolución 015-2024 de la DRT (13-09-2024), publicada en El Peruano el 15-09-2024; la citan la RCD 076-2024 y el oficio que la notifica.
+  - Un informe de la ODS Pasco (150-2024) la menciona con el número 003-2024 y la misma fecha.
+- **Qué cambia en el motor.** Nada en los plazos. La ficha usa la 015-2024 (la publicada) y deja la otra mención como nota.
+
+### DRE-34 · EPS TACNA: ¿oficio 1447-2025 o 1447-2026?
+- **Pregunta.** ¿El número correcto de la solicitud de EPS TACNA termina en 2025 o en 2026?
+- **Fuentes.**
+  - RCD 032-2026 (publicada): la numera 1447-2025 y dice que la Sunass la recibió el 17-07-2026.
+  - Informe 031-2026 de la SRT: la numera 1447-2026.
+- **Qué cambia en el motor.** Nada: la única fecha documentada es la recepción (17-07-2026) y el año del número nunca se usa como fecha.
+
 ## C. Subplazos que no suman o cuyo cómputo no está claro
 
 ### DRE-02 · Suspensión o reinicio del plazo

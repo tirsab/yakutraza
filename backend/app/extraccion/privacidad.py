@@ -46,6 +46,17 @@ def revisados(s: Settings) -> set[str]:
     return {x["sha256"] for x in datos.get("fragmentos", [])}
 
 
+def difundidos(s: Settings) -> set[str]:
+    """Huellas (SHA-256 del PDF) de documentos que una resolución publicada manda difundir (rules/privacidad_revisado.yaml).
+    Su texto puede citarse en el repositorio; no cambia qué puede ir a una API externa."""
+    import yaml
+    ruta = Path(s.rules_dir) / "privacidad_revisado.yaml"
+    if not ruta.exists():
+        return set()
+    datos = yaml.safe_load(ruta.read_text(encoding="utf-8")) or {}
+    return {x["sha256"] for x in datos.get("documentos_difundidos", [])}
+
+
 def _palabras(t: str) -> list[str]:
     return re.findall(r"[a-z0-9ñ]+", plano(normalizar(t)))
 
@@ -95,7 +106,7 @@ def verificar(s: Settings, archivos: list[Path] | None = None) -> list[Hallazgo]
         fr: set[str] = set()
         for p in leer_pdf(d.ruta).paginas:
             fr |= _fragmentos(p)
-        if any(pat.search(d.ruta.name) for pat in PUBLICADOS):
+        if d.publicado or d.sha256 in difundidos(s):
             publicos |= fr
         else:
             por_doc[d.alias] = fr
@@ -122,3 +133,89 @@ def verificar(s: Settings, archivos: list[Path] | None = None) -> list[Hallazgo]
         if any(st in t for st in stems):
             hallazgos.append(Hallazgo(rel, "nombre_de_archivo"))
     return hallazgos
+
+
+# ------------------------------------------------------------------ rastros por patrón (no necesita los PDF privados)
+from app.extraccion.anonimizar import CORREO, nombre_en, restos_de_firma  # noqa: E402
+
+# Nombres visiblemente inventados de las pruebas: no son rastros.
+INVENTADOS = re.compile(r"(?i)fictici|inventad|prueba|nombrea|apellidob|ñandú|ñandu")
+CORREOS_PERMITIDOS = {"ejemplo@ejemplo.pe", "noreply@anthropic.com"}
+CABECERA_REPO = re.compile(r"(?m)^[ \t]*(?:PARA|DE|A)[ \t]*:[ \t]*(.+)$")  # solo en mayúsculas, como en los oficios
+ENLACE_PRIVADO = re.compile(r"(?i)drive\.google\.com|docs\.google\.com|wetransfer\.com|onedrive\.live\.com")
+
+
+def rastros(texto: str) -> list[str]:
+    """Tipos de rastro de un oficio en un texto: sello de firma, cabecera con nombre, correo o enlace privado."""
+    tipos = []
+    sin_inventados = "\n".join(ln for ln in texto.split("\n") if not INVENTADOS.search(ln))
+    if restos_de_firma(sin_inventados):
+        tipos.append("sello_de_firma")
+    if any(nombre_en(m.group(1)) for m in CABECERA_REPO.finditer(sin_inventados)):
+        tipos.append("cabecera_con_nombre")
+    if {c.lower() for c in CORREO.findall(sin_inventados)} - CORREOS_PERMITIDOS:
+        tipos.append("correo")
+    if ENLACE_PRIVADO.search(texto):
+        tipos.append("enlace_privado")
+    return tipos
+
+
+def archivos_a_revisar() -> list[Path]:
+    """Archivos versionados (git ls-files). Sin git (por ejemplo, dentro del contenedor, donde no está el repositorio
+    completo): los archivos de texto de las carpetas montadas, es decir, reglas, casos reales públicos y backend."""
+    try:
+        return archivos_versionados()
+    except (OSError, subprocess.CalledProcessError):
+        from app.config import get_settings
+        s = get_settings()
+        raices = [Path(s.rules_dir), Path(s.casos_reales_dir), Path(__file__).resolve().parents[2]]
+        return [f for r in raices if r.exists() for f in r.rglob("*")
+                if f.is_file() and f.suffix.lower() in SUFIJOS_TEXTO and f.suffix
+                and not any(x in f.parts for x in (".venv", "node_modules", "__pycache__", ".pytest_cache"))]
+
+
+def rastros_en_repo(archivos: list[Path] | None = None) -> list[Hallazgo]:
+    """Revisa los archivos versionados con los patrones de `rastros` (corre sin la parte privada)."""
+    hallazgos = []
+    for f in archivos if archivos is not None else archivos_a_revisar():
+        try:
+            texto = f.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        rel = str(f.relative_to(RAIZ_REPO)) if f.is_relative_to(RAIZ_REPO) else str(f)
+        hallazgos += [Hallazgo(rel, t) for t in rastros(texto)]
+    return hallazgos
+
+
+def verificar_historial(s: Settings, raiz: Path = RAIZ_REPO) -> list[tuple[str, str, str]]:
+    """Busca en TODO el historial git (todas las ramas) los nombres que el anonimizador reconoce en los PDF de los
+    casos reales y los de la lista privada. Devuelve (ruta en el repo, tipo, huella del nombre); nunca el nombre."""
+    from app.extraccion.anonimizar import Anonimizador
+    nombres: dict[str, str] = {plano(n): "lista_privada" for n in lista_privada(sv.ruta_lista_privada(s))}
+    for d in sv.indice(s):
+        an = Anonimizador()
+        an.anonimizar(leer_pdf(d.ruta).paginas)
+        for n in an.alias:
+            if len(n) >= 6:
+                nombres.setdefault(n, "anonimizador")
+    salida = subprocess.run(["git", "rev-list", "--all", "--objects"], cwd=raiz, capture_output=True, text=True,
+                            encoding="utf-8", check=True).stdout.splitlines()
+    rutas = {}
+    for ln in salida:
+        partes = ln.split(" ", 1)
+        if len(partes) == 2:
+            rutas.setdefault(partes[0], partes[1])
+    encontrados = []
+    for obj, ruta in rutas.items():
+        if Path(ruta).suffix.lower() not in SUFIJOS_TEXTO:
+            continue
+        r = subprocess.run(["git", "cat-file", "-p", obj], cwd=raiz, capture_output=True)
+        if r.returncode != 0:
+            continue
+        t = plano(r.stdout.decode("utf-8", "ignore"))
+        for n, tipo in nombres.items():
+            if re.search(r"\b" + re.escape(n).replace(r"\ ", r"\s+") + r"\b", t):
+                encontrados.append((ruta, tipo, huella(n)[:12]))
+        tipos = rastros(r.stdout.decode("utf-8", "ignore"))
+        encontrados += [(ruta, t2, "-") for t2 in tipos]
+    return sorted(set(encontrados))

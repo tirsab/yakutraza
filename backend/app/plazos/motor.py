@@ -38,6 +38,9 @@ class Hito:
     documento: str | None
     descripcion: str | None = None
     fila: int | None = None
+    # Caso real: a quién corresponde el plazo del hito cuando el documento lo separa (p. ej. «interesados» en los
+    # comentarios de una revisión periódica de 2024). En DS02 queda vacío.
+    plazo_de: str | None = None
 
 
 @dataclass
@@ -75,6 +78,8 @@ class EventoPlazo:
     fecha_solicitud: date | None = None
     naturaleza: str = "real"
     fuente: str = ""
+    # Fecha en que se notificó el documento que fija el plazo (None si ningún documento la indica).
+    fecha_notificacion: date | None = None
 
 
 @dataclass
@@ -270,6 +275,12 @@ class MotorPlazos:
             return self._base(exp, reloj, regla, estado="no_calculable",
                               mensaje=f"No puedo calcular: falta una fecha confiable en el hito {h.nro} "
                                       f"(fila {h.fila}).", **comun)
+        if h.fecha_fin is None and exp.fecha_conclusion is not None and exp.fecha_conclusion <= corte:
+            # Expediente concluido con un hito sin fecha de fin (p. ej. la parte pública de un caso real): no está
+            # «en curso» ni vencido; falta el dato.
+            return self._base(exp, reloj, regla, estado="no_calculable",
+                              mensaje=f"No puedo calcular: el expediente concluyó el {exp.fecha_conclusion}, pero no "
+                                      f"se conoce cuándo terminó el hito {h.hito}.", **comun)
         usados = self._dias(h, corte)
         nota_ds02 = ""
         if reloj == "interno" and h.plazo_referencial_dh is not None and h.plazo_referencial_dh != regla.plazo_dh:
@@ -297,7 +308,8 @@ class MotorPlazos:
             if regla is None:
                 continue
             motivo = regla.extra.get("no_comparable")
-            if motivo:
+            # Un caso real puede separar los plazos (p. ej. solo el de los interesados): entonces sí se compara.
+            if motivo and (regla.extra.get("plazo_de") is None or h.plazo_de != regla.extra.get("plazo_de")):
                 res.append(self._base(exp, "normativo", regla, estado="no_calculable", hito=h.hito, etapa=h.etapa,
                                       titulo=f"Plazo de la norma: {h.hito}", plazo_dh=regla.plazo_dh,
                                       fecha_inicio=h.fecha_inicio,
@@ -334,7 +346,7 @@ class MotorPlazos:
                 dias_transcurridos=usados, dias_restantes=restantes,
                 mensaje=f"Referencia solo del flujograma (la hoja Hitos no le da plazo): {', '.join(regla.hitos)} "
                         f"llevan {_texto_dh(usados)} de {regla.plazo_dh}.",
-                detalle={"solo_flujograma": True}))
+                detalle={"solo_flujograma": True, "solo_detalle": bool(regla.extra.get("solo_detalle"))}))
         return res
 
     # ----------------------------------------------------------------- oficio
@@ -412,6 +424,35 @@ class MotorPlazos:
         return res
 
     # ----------------------------------------------------------------- todos
+    def plazos_de_documento(self, exp: Expediente, corte: date,
+                            eventos: list[EventoPlazo] | None = None) -> list[Alerta]:
+        """Plazos fijados por un documento para un hito que la Sunass también cuenta (por ejemplo, los 40 DH de la EP
+        para comentar el proyecto, que corren desde la notificación). Sin fecha de notificación no se calculan."""
+        res = []
+        por_hito = {h.hito: h for h in exp.hitos}
+        for e in eventos or []:
+            h = por_hito.get(e.hito)
+            if (e.expediente != exp.id or e.tipo != "plazo_oficio" or e.dias_adicionales_dh is None or h is None
+                    or h.cuenta_plazo is False):
+                continue
+            comun = dict(titulo=f"Plazo fijado por {e.documento}: {e.hito}", hito=e.hito, etapa=h.etapa,
+                         plazo_dh=e.dias_adicionales_dh, documento_inicio=e.documento,
+                         detalle={"plazo_fijado": {"documento": e.documento, "dias_dh": e.dias_adicionales_dh,
+                                                   "naturaleza": e.naturaleza, "fuente": e.fuente}})
+            if e.fecha_notificacion is None:
+                res.append(self._base(exp, "oficio", None, estado="no_calculable", **comun,
+                                      mensaje=f"No puedo calcular: {e.documento} fija {_texto_dh(e.dias_adicionales_dh)} "
+                                              "desde su notificación, pero ningún documento indica la fecha de "
+                                              "notificación."))
+                continue
+            limite = self.cal.sumar_dias_habiles(e.fecha_notificacion, e.dias_adicionales_dh)
+            res.append(self._base(exp, "oficio", None, estado="no_calculable", fecha_inicio=e.fecha_notificacion,
+                                  fecha_limite=limite, **comun,
+                                  mensaje=f"{e.documento} fija {_texto_dh(e.dias_adicionales_dh)} desde su notificación "
+                                          f"({e.fecha_notificacion}): vence el {limite}. No puedo decir si se cumplió: "
+                                          "falta la fecha de respuesta."))
+        return res
+
     def relojes(self, exp: Expediente, corte: date, eventos: list[EventoPlazo] | None = None) -> list[Alerta]:
         return (self.reloj_normativo(exp, corte) + self.reloj_interno(exp, corte)
-                + self.reloj_oficio(exp, corte, eventos))
+                + self.reloj_oficio(exp, corte, eventos) + self.plazos_de_documento(exp, corte, eventos))
