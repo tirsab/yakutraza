@@ -92,7 +92,10 @@ def cargar_casos(dir_publico: Path, dir_privado: Path | None) -> dict[str, CasoR
             _combinar(datos.setdefault("eventos", []), extra.get("eventos"), "clave", caso.campos_privados, "evento")
             _combinar(datos["hitos"], extra.get("hitos"), "nro", caso.campos_privados, "hito")
             # Cuadros de documentos no publicados (solo con «nuevo: true») y notas de la parte privada.
-            _combinar(datos.setdefault("tablas", []), extra.get("tablas"), "clave", caso.campos_privados, "tabla")
+            # La parte pública manda: un cuadro que ya está en ella no se toca desde la parte privada.
+            publicas = {t["clave"] for t in datos.get("tablas") or []}
+            _combinar(datos.setdefault("tablas", []), [t for t in extra.get("tablas") or [] if t["clave"] not in publicas],
+                      "clave", caso.campos_privados, "tabla")
             if extra.get("no_legibles"):
                 datos["no_legibles"] = extra["no_legibles"]
                 caso.campos_privados.append("no_legibles")

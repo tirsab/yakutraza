@@ -60,6 +60,11 @@ def test_pasco_publico_solo_con_las_tres_resoluciones():
     assert next(d for d in c.datos["documentos"] if d["clave"] == "PASCO:OF-366-2024")["canal"] == "no_indicado"
     assert c.datos["expediente"]["localidades"] == ["Pasco", "Vicco"]
     assert all(t["publica"] is True for t in c.datos["tablas"])
+    # Cuadros 92 a 94 del estudio final: públicos porque la RCD 076-2024 (art. 6) dispone su difusión.
+    est = [t for t in c.datos["tablas"] if t["clave"].startswith("PASCO:ET-CUADRO-")]
+    assert len(est) == 3 and all("art. 6" in " ".join(t["notas"]) for t in est)
+    c93 = next(t for t in est if t["clave"] == "PASCO:ET-CUADRO-93")
+    assert c93["estado"] == "por_verificar" and c93["filas"][-1][-1] == "2 237 550"
 
 
 def test_cuadros_de_tacna_cuadran_con_la_resolucion():
@@ -85,7 +90,9 @@ def _pasco_con_privado(tmp_path) -> Path:
                         "hito": "comentarios", "remitente": "DRT", "fecha_emision": date(2024, 10, 1)}],
         "hitos": [{"nro": 8, "fin": date(2024, 11, 15)}, {"nro": 9, "inicio": date(2024, 11, 15), "fin": date(2024, 12, 5)},
                   {"nro": 10, "inicio": date(2024, 12, 5)}],
-        "tablas": [{"clave": "PASCO:PRIVADA", "nuevo": True, "titulo": "Cuadro privado", "documento": "Informe interno",
+        "tablas": [{"clave": "PASCO:ET-CUADRO-92", "nuevo": True, "titulo": "Copia privada", "documento": "x",
+                    "pagina": "1", "publica": False, "columnas": ["a"], "filas": [["1"]]},
+                   {"clave": "PASCO:PRIVADA", "nuevo": True, "titulo": "Cuadro privado", "documento": "Informe interno",
                     "pagina": "1", "publica": True, "estado": "verificado", "columnas": ["a"], "filas": [["1"]]}],
     }, allow_unicode=True), encoding="utf-8")
     return privado
@@ -135,6 +142,9 @@ def test_vista_ciudadana_solo_casos_con_resolucion_publicada(cliente_casos):
     assert "10 %" in pasco["texto"] and "12,1 %" in pasco["texto"]
     # Un cuadro de la parte privada nunca sale en la vista ciudadana, aunque diga «publica: true».
     assert "PASCO:PRIVADA" not in {t["clave"] for t in pasco["tablas"]}
+    # La copia privada de un cuadro público no lo reemplaza.
+    c92 = next(t for t in pasco["tablas"] if t["clave"] == "PASCO:ET-CUADRO-92")
+    assert c92["titulo"] != "Copia privada" and c92["publica"]
     texto = str(casos).lower()
     assert "oficio de prueba" not in texto and "informe interno" not in texto
 

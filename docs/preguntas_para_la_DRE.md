@@ -111,29 +111,29 @@ Si solo hay tiempo para cinco preguntas, estas son, en orden:
 - **Qué cambia en el motor.** Hoy se muestra a la SRT como responsable, como en los datos, con el aviso «El flujograma indica que firma la DRE». Si manda el flujograma, cambian el responsable de esos hitos, el embudo de firmas y la bandeja de quién debe actuar.
 
 ### DRE-31 · EMAPA Pasco: ¿cuándo se notificó la RCD 060-2024?
-- **Pregunta.** ¿En qué fecha se notificó a EMAPA PASCO S.A. la RCD N.° 00060-2024-SUNASS-CD (difusión del proyecto)?
+- **Pregunta.** ¿En qué fecha se notificó a EMAPA PASCO S.A. la RCD 060-2024 (difusión del proyecto)?
 - **Fuentes.**
-  - Oficio N.° 431-2024-SUNASS-DRT (1-10-2024): la EP «cuenta con un plazo máximo e improrrogable de cuarenta días hábiles, contados desde el día siguiente de notificada» la RCD 060-2024.
+  - Oficio 431-2024 de la DRT (1-10-2024): remite la RCD 060-2024 y recuerda a la EP su plazo de 40 DH para comentar, que corre desde el día siguiente de la notificación (RGT art. 47.4, texto vigente en 2024).
   - RCD 076-2024, nota 5: la RCD 060-2024 se publicó en El Peruano el 28-09-2024. Ningún documento con texto indica la fecha de notificación; dos PDF del expediente son escaneos sin texto (no legibles, sin OCR).
-- **Qué cambia en el motor.** Hoy el plazo de 40 DH de la EP aparece «no calculable: falta la fecha de notificación». Con la fecha, el motor calcula el vencimiento (RGT art. 47.4, texto vigente en 2024).
+- **Qué cambia en el motor.** Hoy el plazo de 40 DH de la EP aparece «no calculable: falta la fecha de notificación». Con la fecha, el motor calcula el vencimiento.
 
-### DRE-32 · EMAPA Pasco: ¿cuándo se recibió el Oficio 493-2024-GG (comentarios de la EP)?
-- **Pregunta.** ¿En qué fecha recibió la Sunass el Oficio N.° 493-2024-GG-EMAPA PASCO S.A., con los comentarios de la EP al proyecto publicado?
-- **Fuentes.** El estudio tarifario final (Anexo XI, págs. 294 y 299) dice que los comentarios de la EP llegaron por ese oficio, sin fecha. No está en los documentos con texto.
+### DRE-32 · EMAPA Pasco: ¿cuándo se recibió el oficio de comentarios de la EP (493-2024)?
+- **Pregunta.** ¿En qué fecha recibió la Sunass el oficio 493-2024 de EMAPA PASCO, con los comentarios de la EP al proyecto publicado?
+- **Fuentes.** El estudio tarifario final (Anexo XI, págs. 294 y 299) menciona ese oficio sin fecha. No está en los documentos con texto.
 - **Qué cambia en el motor.** Junto con DRE-31, permite saber si la EP comentó dentro de sus 40 DH. Sin la fecha, el expediente lo muestra como dato faltante.
 
-### DRE-33 · EMAPA Pasco: ¿«003-2024» o «015-2024»?
-- **Pregunta.** ¿La resolución que inició la revisión periódica es la N.° 00015-2024-SUNASS-DRT, o existe además una N.° 003-2024-SUNASS-DRT?
+### DRE-33 · EMAPA Pasco: ¿resolución de inicio «003-2024» o «015-2024»?
+- **Pregunta.** ¿La resolución que inició la revisión periódica es la 015-2024 de la DRT, o existe además una 003-2024?
 - **Fuentes.**
-  - Resolución N.° 00015-2024-SUNASS-DRT (13-09-2024), publicada en El Peruano el 15-09-2024; la citan la RCD 076-2024 y el Oficio 409-2024-DRT.
-  - Informe de Especialista N.° 00150-2024-SUNASS-ODS-PAS, pág. 1: la cita como «Resolución de Dirección de Regulación Tarifaria N.º 003-2024-SUNASS-DRT de 13 de setiembre de 2024».
-- **Qué cambia en el motor.** Nada en los plazos. La ficha usa la 015-2024 (la publicada) y deja la otra cita como nota.
+  - Resolución 015-2024 de la DRT (13-09-2024), publicada en El Peruano el 15-09-2024; la citan la RCD 076-2024 y el oficio que la notifica.
+  - Un informe de la ODS Pasco (150-2024) la menciona con el número 003-2024 y la misma fecha.
+- **Qué cambia en el motor.** Nada en los plazos. La ficha usa la 015-2024 (la publicada) y deja la otra mención como nota.
 
-### DRE-34 · EPS TACNA: ¿Oficio 1447-2025 o 1447-2026?
-- **Pregunta.** ¿El número correcto de la solicitud de EPS TACNA es Oficio N.° 1447-2025/300.600 o 1447-2026/300.600?
+### DRE-34 · EPS TACNA: ¿oficio 1447-2025 o 1447-2026?
+- **Pregunta.** ¿El número correcto de la solicitud de EPS TACNA termina en 2025 o en 2026?
 - **Fuentes.**
-  - RCD N.° 00032-2026-SUNASS-CD (publicada): «Oficio N.º 1447-2025», recibido por la Sunass el 17-07-2026.
-  - Informe N.° 031-2026-SUNASS-DRE-SRT: lo cita como «1447-2026».
+  - RCD 032-2026 (publicada): la numera 1447-2025 y dice que la Sunass la recibió el 17-07-2026.
+  - Informe 031-2026 de la SRT: la numera 1447-2026.
 - **Qué cambia en el motor.** Nada: la única fecha documentada es la recepción (17-07-2026) y el año del número nunca se usa como fecha.
 
 ## C. Subplazos que no suman o cuyo cómputo no está claro

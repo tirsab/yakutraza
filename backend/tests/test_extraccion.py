@@ -494,3 +494,11 @@ def test_anthropic_solo_recibe_documentos_publicados(s_ext, privado):
     alias = next(d.alias for d in sv.indice(s_ext) if d.publicado)
     assert sv.extraer(s_ext, alias, proveedor=p)["proveedor"] == "anthropic"
     assert p.recibido is not None
+
+
+def test_documentos_difundidos_por_huella(tmp_path):
+    """Un documento que una resolución manda difundir se registra por la huella de su PDF, nunca por su texto."""
+    (tmp_path / "privacidad_revisado.yaml").write_text(
+        "version: 1\nfragmentos: []\ndocumentos_difundidos:\n  - {sha256: abc123, documento: x, motivo: y}\n", encoding="utf-8")
+    assert privacidad.difundidos(Settings(rules_dir=tmp_path)) == {"abc123"}
+    assert privacidad.difundidos(Settings(rules_dir=tmp_path / "no-existe")) == set()

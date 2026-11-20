@@ -46,6 +46,17 @@ def revisados(s: Settings) -> set[str]:
     return {x["sha256"] for x in datos.get("fragmentos", [])}
 
 
+def difundidos(s: Settings) -> set[str]:
+    """Huellas (SHA-256 del PDF) de documentos que una resolución publicada manda difundir (rules/privacidad_revisado.yaml).
+    Su texto puede citarse en el repositorio; no cambia qué puede ir a una API externa."""
+    import yaml
+    ruta = Path(s.rules_dir) / "privacidad_revisado.yaml"
+    if not ruta.exists():
+        return set()
+    datos = yaml.safe_load(ruta.read_text(encoding="utf-8")) or {}
+    return {x["sha256"] for x in datos.get("documentos_difundidos", [])}
+
+
 def _palabras(t: str) -> list[str]:
     return re.findall(r"[a-z0-9ñ]+", plano(normalizar(t)))
 
@@ -95,7 +106,7 @@ def verificar(s: Settings, archivos: list[Path] | None = None) -> list[Hallazgo]
         fr: set[str] = set()
         for p in leer_pdf(d.ruta).paginas:
             fr |= _fragmentos(p)
-        if d.publicado:
+        if d.publicado or d.sha256 in difundidos(s):
             publicos |= fr
         else:
             por_doc[d.alias] = fr

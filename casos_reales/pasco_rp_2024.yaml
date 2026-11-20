@@ -6,6 +6,8 @@
 # - RCD N.° 00060-2024-SUNASS-CD (25-09-2024; publicada el 28-09-2024): difusión del proyecto.
 # - RCD N.° 00076-2024-SUNASS-CD (13-12-2024; publicada el 20-12-2024; art. 6: «deberán publicarse en el diario
 #   oficial El Peruano»): aprobación de la fórmula tarifaria, estructura tarifaria y metas de gestión.
+# Además, los cuadros 92 a 94 del estudio tarifario final, porque la RCD 076-2024 dispone su difusión: «El estudio
+# tarifario se difundirá en el portal institucional de la Sunass» (art. 6, pág. 2).
 # Páginas: la del PDF de cada separata; la página impresa de El Peruano va entre paréntesis cuando se lee.
 #
 # Lo que solo aparece en oficios, memorandos e informes (fechas internas, el plazo de 40 DH de la EP, el fin de los
@@ -248,6 +250,270 @@ tablas:
       - ["Año 2", "12,0%", "1,0%", "0,8%", "2,0%", "10,1%", "0,8%"]
       - ["Año 3", "12,0%", "1,5%", "0,6%", "2,0%", "10,1%", "0,8%"]
     notas: ["Porcentajes del importe facturado por agua potable y saneamiento, incluido el cargo fijo, sin IGV ni Impuesto de Promoción Municipal."]
+
+  # Cuadros del estudio tarifario FINAL (2025-2027), que la RCD 076-2024 manda difundir: «El estudio tarifario se
+  # difundirá en el portal institucional de la Sunass» (art. 6, pág. 2). Es el estudio aprobado: sus metas de gestión
+  # (pág. 19: 73/69/77, 28/75/100 y 23/61/100) coinciden con el Anexo 3 de la RCD 076, no con las del proyecto.
+  - clave: PASCO:ET-CUADRO-92
+    titulo: Resumen del programa de inversiones de la EP con recursos propios (en soles)
+    documento: Estudio tarifario final de EMAPA PASCO S.A. 2025-2027, Cuadro N° 92 (difundido en el portal de la Sunass)
+    pagina: 136-137
+    publica: true
+    estado: verificado
+    columnas:
+    - Descripción
+    - Año 1
+    - Año 2
+    - Año 3
+    - Total
+    filas:
+    - - Ampliación Agua
+      - '-'
+      - '-'
+      - '-'
+      - '-'
+    - - Instalación de Medidores
+      - 78 570
+      - '-'
+      - '-'
+      - 78 570
+    - - Ampliación Alcantarillado
+      - '-'
+      - '-'
+      - '-'
+      - '-'
+    - - TOTAL AMPLIACIÓN
+      - 78 570
+      - '-'
+      - '-'
+      - 78 570
+    - - Mejoramiento Agua
+      - 82 821
+      - 630 477
+      - '-'
+      - 713 298
+    - - Mejoramiento Alcantarillado
+      - '-'
+      - '-'
+      - '-'
+      - '-'
+    - - TOTAL MEJORAMIENTO
+      - 82 821
+      - 630 477
+      - '-'
+      - 713 298
+    - - Institucional Agua
+      - 533 083
+      - 201 882
+      - 657 128
+      - 1 392 093
+    - - Institucional Alcantarillado
+      - 73 263
+      - 55 451
+      - 257 580
+      - 386 294
+    - - TOTAL INSTITUCIONAL (*)
+      - 606 346
+      - 257 333
+      - 914 708
+      - 1 778 387
+    - - PCC
+      - 45 603
+      - 42 703
+      - 62 703
+      - 151 010
+    - - GRD
+      - 16 175
+      - 26 139
+      - 38 675
+      - 80 989
+    - - MRSE
+      - 18 220
+      - 61 000
+      - 22 424
+      - 101 644
+    - - TOTAL
+      - 847 736
+      - 1 017 653
+      - 1 038 510
+      - 2 903 898
+    notas:
+    - (*) Incluye inversión en reposición de equipos y maquinarias.
+    - 'Fuente del cuadro: Modelo Tarifario de EMAPA PASCO S.A. Elaboración: DRT.'
+    - 'El proyecto de estudio (no aprobado) traía S/ 2 162 477: estos montos son los del estudio final.'
+    - 'Por qué es público: RCD N.° 00076-2024-SUNASS-CD, art. 6 (pág. 2): «El estudio tarifario se difundirá en el portal institucional de la Sunass.»'
+  - clave: PASCO:ET-CUADRO-93
+    titulo: Programa de inversiones en ampliación, mejoramiento e institucional con recursos propios (en soles)
+    documento: Estudio tarifario final de EMAPA PASCO S.A. 2025-2027, Cuadro N° 93 (difundido en el portal de la Sunass)
+    pagina: 137-138
+    publica: true
+    estado: por_verificar
+    columnas:
+    - Descripción
+    - Localidad (según el nombre del proyecto)
+    - Año 1
+    - Año 2
+    - Año 3
+    - Total
+    filas:
+    - - Adquisición de datta logger para el control de continuidad y presión de las redes de distribución de la localidad de Pasco y localidad de Vicco de la EMAPA PASCO S.A.
+      - Pasco y Vicco
+      - 71 698
+      - '-'
+      - '-'
+      - 71 698
+    - - Adquisición de baterías internas para los caudalímetros electromagnéticos de la EMAPA PASCO S.A.
+      - —
+      - 16 650
+      - '-'
+      - '-'
+      - 16 650
+    - - Implementación del catastro técnico operacional de redes de agua potable y alcantarillado de la EMAPA PASCO S.A.
+      - —
+      - '-'
+      - '-'
+      - 404 258,48
+      - 404 258,48
+    - - instalación de 02 caudalímetros electromagnéticos y data logger de 02 canales para los reservorios de la localidad de Vicco de la EMAPA PASCO S.A.
+      - Vicco
+      - 41 768,92
+      - '-'
+      - '-'
+      - 41 768,92
+    - - Instalación de grifos contra incendio en la localidad de pasco para la EMAPA PASCO S.A.
+      - Pasco
+      - 20 023,74
+      - 16 686,45
+      - 16 686,45
+      - 53 396,64
+    - - Optimización del sistema de bombeo del reservorio Huancapucro de la EMAPA PASCO S.A.
+      - —
+      - no legible
+      - no legible
+      - no legible
+      - 314 868,00
+    - - Optimización del sistema de bombeo del reservorio rectangular de la EMAPA PASCO S.A.
+      - —
+      - no legible
+      - no legible
+      - no legible
+      - 314 868,00
+    - - Renovación de tuberías de distribución de agua en el sector San Juan del distrito de Yanacancha de la provincia y departamento de Pasco.
+      - —
+      - 41 781,00
+      - 41 781,00
+      - '-'
+      - 83 562,00
+    - - Adquisición de grupo electrógeno para la estación de rebombeo rectangular de la EMAPA PASCO S.A.
+      - —
+      - 108 537,00
+      - '-'
+      - '-'
+      - 108 537,00
+    - - Adquisición de equipos para el registro de datos en tiempo real del volumen de agua y presión en los reservorios de la localidad de pasco de la EMAPA PASCO S.A..
+      - Pasco
+      - 14 962,92
+      - 22 444,38
+      - '-'
+      - 37 407,30
+    - - Adquisición de 04 motocargas para el área de operaciones de la EMAPA PASCO S.A.
+      - —
+      - 15 254,24
+      - 45 762,72
+      - '-'
+      - 61 016,96
+    - - Adquisición de camioneta 4x4 para la jefatura de operaciones de la EMAPA PASCO S.A
+      - —
+      - 100 000
+      - '-'
+      - '-'
+      - 100 000
+    - - Adquisición de minicargador para la jefatura de operaciones de la EMAPA PASCO S.A
+      - —
+      - '-'
+      - '-'
+      - 204 680
+      - 204 680
+    - - Adquisición de equipos de laboratorio para el control de calidad en la EMAPA PASCO S.A.
+      - —
+      - '-'
+      - '-'
+      - 34 644
+      - 34 644
+    - - Adquisición de grupo electrógeno de para la estación de rebombeo huancapucro de la EMAPA PASCO S.A.
+      - —
+      - '-'
+      - '-'
+      - 108 537
+      - 108 537
+    - - Instalación de energía eléctrica en la estación de rebombeo rectangular de la EMAPA PASCO S.A.
+      - —
+      - '-'
+      - '-'
+      - 35 000
+      - 35 000
+    - - Actualización de catastro comercial en la localidad de Vicco
+      - Vicco
+      - 35 625
+      - '-'
+      - '-'
+      - 35 625
+    - - Recuperación de la cartera morosa en las localidades de Pasco y Vicco
+      - Pasco y Vicco
+      - 45 500,82
+      - 44 588,82
+      - '-'
+      - 90 089,64
+    - - Adquisición de moto furgoneta de 300cc
+      - —
+      - '-'
+      - 16 949,15
+      - '-'
+      - 16 949,15
+    - - Adquisición de equipo multifuncional (impresora, fotocopiadora)
+      - —
+      - 25 423,73
+      - '-'
+      - '-'
+      - 25 423,73
+    - - Instalación de micromedidores por ampliación en la localidad de Vicco
+      - Vicco
+      - 78 570,00
+      - '-'
+      - '-'
+      - 78 570,00
+    - - TOTAL, AMPLIACIÓN, MEJORAMIENTO E INSTITUCIONAL
+      - ''
+      - 656 835
+      - 776 909
+      - 803 806
+      - 2 237 550
+    notas:
+    - 'Localidad: solo cuando el nombre del proyecto la dice; no se calculan totales por localidad.'
+    - 'Reservorios Huancapucro y rectangular: el texto del PDF trae 20 520,00 y 294 348,00 sin indicar el año. Con los totales por año del cuadro cuadrarían en Año 1 y Año 2, pero eso no se lee en el documento: por verificar.'
+    - 'Fuente del cuadro: Modelo Tarifario de EMAPA PASCO S.A. Elaboración: DRT.'
+    - 'Por qué es público: RCD N.° 00076-2024-SUNASS-CD, art. 6 (pág. 2): «El estudio tarifario se difundirá en el portal institucional de la Sunass.»'
+  - clave: PASCO:ET-CUADRO-94
+    titulo: Programa de inversiones en reposición de equipos y maquinarias (en soles)
+    documento: Estudio tarifario final de EMAPA PASCO S.A. 2025-2027, Cuadro N° 94 (difundido en el portal de la Sunass)
+    pagina: '138'
+    publica: true
+    estado: verificado
+    columnas:
+    - Descripción
+    - Año 1
+    - Año 2
+    - Año 3
+    - Total
+    filas:
+    - - Reposición de equipos y maquinarias
+      - 110 902
+      - 110 902
+      - 110 902
+      - 332 705
+    notas:
+    - Valores tal como vienen en el cuadro (la suma de los tres años da 332 706 por redondeo).
+    - 'Por qué es público: RCD N.° 00076-2024-SUNASS-CD, art. 6 (pág. 2): «El estudio tarifario se difundirá en el portal institucional de la Sunass.»'
 
 # Vista ciudadana: lenguaje sencillo, solo con lo que dicen las resoluciones publicadas.
 ciudadana:
