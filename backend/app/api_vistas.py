@@ -205,6 +205,15 @@ def buscar_localidades(q: str = Query(..., min_length=2), s: Settings = Depends(
     return a_json(ciudadana.buscar(get_engine(s.database_url), _vis(s), q))
 
 
+@router.get("/publico/casos-reales", tags=["vista ciudadana"])
+def casos_reales_publicados(s: Settings = Depends(get_settings)) -> list[dict[str, Any]]:
+    """Casos reales con resolución publicada, en lenguaje sencillo, con su fuente. Solo cuadros de resoluciones
+    publicadas; EPSSMU no aparece porque su resolución no dispone la publicación. «Dato real»."""
+    from app.dinero import ruta as ruta_dinero
+    from app.expediente import vivo
+    return a_json([x for x in (ruta_dinero.ciudadana_caso_real(c) for c in vivo.casos(s).values()) if x])
+
+
 @router.get("/publico/explicaciones", tags=["vista ciudadana"])
 def ver_explicaciones(s: Settings = Depends(get_settings)) -> dict[str, Any]:
     """Explicaciones en lenguaje simple («¿Qué significa?»), editables en rules/explicaciones_ciudadanas.yaml (por validar, E-2)."""

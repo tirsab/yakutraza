@@ -60,6 +60,7 @@ def resumen(cod_eps: str | None = None, anio: int | None = None, fondo: str | No
     r["expedientes_uso"] = [ruta.ruta_expediente_uso(t, i, cfg["textos"])
                             for i in ruta._ufi(t, cod_eps, anio)["id_expediente"]]
     r["casos_reales"] = [x for x in (ruta.ruta_caso_real(c) for c in vivo.casos(s).values()) if x]
+    r["casos_reales_cuadros"] = [ruta.cuadros_caso_real(c) for c in vivo.casos(s).values()]
     r["filtros"] = {"cod_eps": sorted(set(t["ds05_fondo_inversiones_reservas"]["cod_eps"])),
                     "anios": sorted({int(m[:4]) for m in t["ds05_fondo_inversiones_reservas"]["anio_mes"]}),
                     "fondos": cfg["fondos"]}

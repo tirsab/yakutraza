@@ -23,11 +23,25 @@ from app.extraccion.proveedores import ErrorProveedor, Proveedor, crear
 from app.extraccion.texto import leer_pdf, limpiar
 
 # Palabra de la carpeta → (prefijo del alias, expediente del caso real).
-CASOS = {"TACNA": ("TACNA", "REAL-TACNA-2026"), "EPSSMU": ("EPSSMU", "REAL-EPSSMU-2025")}
+CASOS = {"TACNA": ("TACNA", "REAL-TACNA-2026"), "EPSSMU": ("EPSSMU", "REAL-EPSSMU-2025"),
+         "PASCO": ("PASCO", "REAL-PASCO-2024")}
 NOMBRES_A_OCULTAR = "nombres_a_ocultar.txt"
 # Documentos publicados oficialmente (por nombre de archivo). Solo estos pueden ir a una API externa (Anthropic):
 # los oficios intermedios, aun anonimizados, se leen solo con el modelo local.
 PUBLICADOS = (re.compile(r"(?i)^RCD 032-2026"),)
+# También es publicado un PDF que es una página de El Peruano (separatas Normas Legales o Proyectos; p. ej. RD 015-2024,
+# RCD 060-2024 y RCD 076-2024 de Pasco): se reconoce por la cabecera de página («Sábado 28 de setiembre de 2024 El
+# Peruano»), no por el nombre del archivo.
+SEPARATA = (re.compile(r"(?i)(lunes|martes|mi[ée]rcoles|jueves|viernes|s[áa]bado|domingo)\s+\d{1,2}\s+de\s+[a-záéíóú]+"
+                       r"\s+de\s+\d{4}\s*El\s*Peruano"),)
+
+
+def es_separata_el_peruano(ruta: Path) -> bool:
+    try:
+        primera = leer_pdf(ruta).paginas[0]
+    except Exception:  # noqa: BLE001 (un PDF ilegible no es publicado)
+        return False
+    return all(p.search(primera) for p in SEPARATA)
 
 
 class ErrorPrivacidad(RuntimeError):
@@ -40,10 +54,7 @@ class DocReal:
     id_expediente: str | None
     ruta: Path      # nunca sale de este módulo
     sha256: str
-
-    @property
-    def publicado(self) -> bool:
-        return any(p.search(self.ruta.name) for p in PUBLICADOS)
+    publicado: bool = False  # resolución publicada (por nombre o por ser una página de El Peruano)
 
     def publico(self) -> dict[str, Any]:
         return {"alias": self.alias, "id_expediente": self.id_expediente, "huella": self.sha256[:12],
@@ -61,8 +72,12 @@ def indice(s: Settings) -> list[DocReal]:
         clave = next(((pref, exp) for k, (pref, exp) in CASOS.items() if k in carpeta.name.upper()), None)
         if clave is None:
             continue
-        for i, pdf in enumerate(sorted(carpeta.glob("*.pdf"), key=lambda p: p.name.casefold()), 1):
-            docs.append(DocReal(f"{clave[0]}-{i:02d}", clave[1], pdf, hashlib.sha256(pdf.read_bytes()).hexdigest()))
+        # También en subcarpetas (Pasco) y con extensión .PDF; orden por la ruta relativa.
+        pdfs = sorted((p for p in carpeta.rglob("*") if p.is_file() and p.suffix.lower() == ".pdf"),
+                      key=lambda p: str(p.relative_to(carpeta)).replace("\\", "/").casefold())
+        for i, pdf in enumerate(pdfs, 1):
+            pub = any(p.search(pdf.name) for p in PUBLICADOS) or es_separata_el_peruano(pdf)
+            docs.append(DocReal(f"{clave[0]}-{i:02d}", clave[1], pdf, hashlib.sha256(pdf.read_bytes()).hexdigest(), pub))
     return docs
 
 

@@ -217,5 +217,6 @@ def eventos_para_motor(engine: Engine, id_expediente: str) -> list[EventoPlazo]:
             fecha_documento=fecha_doc or date.min, dias_adicionales_dh=e["dias_dh"],
             nueva_fecha_limite=e["nueva_fecha_limite"], documento_solicitud=sol.get("numero"),
             fecha_solicitud=e["fecha_solicitud"], naturaleza=e["naturaleza"], fuente=e.get("fuente") or "",
+            fecha_notificacion=doc.get("fecha_notificacion"),
         ))
     return res

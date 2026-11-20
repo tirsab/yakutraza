@@ -21,7 +21,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     DATA_DIR=/data RULES_DIR=/rules CASOS_REALES_DIR=/casos_reales REPORTES_DIR=/srv/reportes \
     DATABASE_URL=sqlite:////srv/yakutraza.db WEB_DIR=/web \
-    CASOS_REALES_PRIVADOS=false MODO_DEMO=true FECHA_CORTE=2026-09-30 TZ=America/Lima
+    CASOS_REALES_PRIVADOS=false MODO_DEMO=true MVP_EPS=EPS02,EPS07,EPS09 FECHA_CORTE=2026-09-30 TZ=America/Lima
 
 COPY backend/pyproject.toml ./
 COPY backend/app ./app

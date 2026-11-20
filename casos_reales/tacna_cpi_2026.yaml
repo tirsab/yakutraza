@@ -187,3 +187,89 @@ hitos:
   - {nro: 4, hito: informe, responsable: Equipo SRT, inicio: 2026-08-14, fin: , cuenta_plazo: true, documento: "TACNA:INF-031-2026",
      nota: "La resolución no indica la fecha del informe ni la del memorando: el fin de este hito queda sin fecha en la parte pública."}
   - {nro: 5, hito: resolucion_cd, responsable: CD, inicio: , fin: 2026-08-28, cuenta_plazo: true, documento: "TACNA:RCD-00032-2026"}
+
+# Dónde está el proyecto (RCD 032-2026, pág. 6): «en el distrito de Locumba – provincia Jorge Basadre y en los
+# distritos de Tacna y Pachía de la provincia de Tacna – departamento de Tacna».
+localidades: ["Tacna", "Pachía", "Locumba"]
+
+# Cuadros de la RCD 032-2026 (publicada), tal como vienen (valores exactos como texto). «Dato real».
+# Los años son los del periodo regulatorio 2024-2028 («Año 1» a «Año 5»), sin convertirlos a años calendario.
+tablas:
+  - clave: "TACNA:RCD032-CUADRO-1"
+    titulo: "Proyecto «Adquisición de micromedidores ultrasónicos»: montos por localidad y año (en soles)"
+    documento: "RCD N.° 00032-2026-SUNASS-CD, Cuadro N° 1"
+    pagina: "4"
+    publica: true
+    estado: verificado
+    columnas: ["Componente", "Localidad", "Año 1", "Año 2", "Año 3", "Año 4", "Año 5", "Total"]
+    filas:
+      - ["Mejoramiento y/o rehabilitación", "Tacna", "-", "-", "1 581 298", "817 748", "-", "2 399 046"]
+      - ["Mejoramiento y/o rehabilitación", "Pachía", "-", "-", "-", "-", "-", "-"]
+      - ["Mejoramiento y/o rehabilitación", "Locumba", "-", "-", "-", "-", "-", "-"]
+      - ["Ampliación", "Tacna", "-", "-", "1 390 746", "-", "-", "1 390 746"]
+      - ["Ampliación", "Pachía", "-", "-", "9 001", "-", "-", "9 001"]
+      - ["Ampliación", "Locumba", "-", "-", "18 959", "-", "-", "18 959"]
+      - ["Total", "", "-", "-", "3 000 004", "817 748", "", "3 817 752"]
+    notas:
+      - "Fuente del cuadro: Oficio N.° 1628-2026-300-600-EPS TACNA S.A. y correo electrónico de fecha 20.08.2026. Elaboración: Subdirección de Regulación Tarifaria."
+
+  - clave: "TACNA:RCD032-CUADRO-2"
+    titulo: "Proyecto «Adquisición de micromedidores ultrasónicos»: medidores por localidad y año (en cantidad)"
+    documento: "RCD N.° 00032-2026-SUNASS-CD, Cuadro N° 2"
+    pagina: "4"
+    publica: true
+    estado: verificado
+    columnas: ["Componente", "Localidad", "Año 1", "Año 2", "Año 3", "Año 4", "Año 5", "Total"]
+    filas:
+      - ["Mejoramiento y/o rehabilitación (renovación)", "Tacna", "-", "-", "8 257", "4 270", "-", "12 527"]
+      - ["Mejoramiento y/o rehabilitación (renovación)", "Pachía", "-", "-", "-", "-", "-", "-"]
+      - ["Mejoramiento y/o rehabilitación (renovación)", "Locumba", "-", "-", "-", "-", "-", "-"]
+      - ["Ampliación", "Tacna", "-", "-", "7 262", "-", "-", "7 262"]
+      - ["Ampliación", "Pachía", "-", "-", "47", "-", "-", "47"]
+      - ["Ampliación", "Locumba", "-", "-", "99", "-", "-", "99"]
+      - ["Total", "", "-", "-", "15 665", "4 270", "", "19 935"]
+    notas:
+      - "Renovación: 12 527 medidores; ampliación: 7 408 medidores (7 262 + 47 + 99)."
+      - "En el total de la columna «Año 5» el cuadro no trae valor."
+
+  - clave: "TACNA:RCD032-CUADRO-5"
+    titulo: "Cómo se determinaron los medidores para renovación"
+    documento: "RCD N.° 00032-2026-SUNASS-CD, Cuadro N° 5"
+    pagina: "8"
+    publica: true
+    estado: verificado
+    columnas: ["Concepto", "Unidades"]
+    filas:
+      - ["Medidores con más de 5 años de antigüedad", "34 861"]
+      - ["(-) Medidores por ejecutar programados en el ET", "12 834"]
+      - ["(-) Adquisición prevista para 2026", "9 500"]
+      - ["Medidores solicitados para renovación", "12 527"]
+
+  - clave: "TACNA:RCD032-CUADRO-7"
+    titulo: "Cómo se determinaron los medidores para ampliación"
+    documento: "RCD N.° 00032-2026-SUNASS-CD, Cuadro N° 7"
+    pagina: "10"
+    publica: true
+    estado: verificado
+    columnas: ["Concepto", "Unidades"]
+    filas:
+      - ["Conexiones con asignación de consumo", "19 139"]
+      - ["(-) Medidores por ejecutar del Proyecto de medidores", "11 731"]
+      - ["Medidores solicitados para ampliación", "7 408"]
+
+# Vista ciudadana: lenguaje sencillo, solo con lo que dice la RCD 032-2026 (publicada).
+ciudadana:
+  mostrar: true
+  titulo: "Nuevos medidores de agua en Tacna, Pachía y Locumba"
+  localidades: ["Tacna", "Pachía", "Locumba"]
+  texto: >-
+    La Sunass aprobó que EPS Tacna cambie su programa de inversiones para destinar S/ 3 817 752 a la compra e
+    instalación de 19 935 medidores de agua: 12 527 para renovar medidores existentes y 7 408 para ampliar la medición.
+    La renovación es en Tacna (S/ 2 399 046) y la ampliación, en Tacna (7 262 medidores), Pachía (47) y
+    Locumba (99). Ese dinero sale de recursos que quedaron libres cuando otra fuente financió inversiones previstas; el
+    saldo, S/ 1 503 006, debe mantenerse en el fondo de inversiones.
+  puntos:
+    - "Montos por año del periodo regulatorio 2024-2028: Año 3, S/ 3 000 004; Año 4, S/ 817 748."
+    - "Según la resolución, ampliar la medición permite que los usuarios tengan información directa sobre su consumo y una facturación basada en el consumo medido (pág. 10)."
+  fuentes:
+    - "RCD N.° 00032-2026-SUNASS-CD, Cuadros N° 1, 2, 5 y 7 (págs. 4, 8 y 10) y págs. 12-13"

@@ -32,6 +32,9 @@ services:
       FECHA_CORTE: ${FECHA_CORTE:-2026-09-30}
       # Modo demo (selector «Ver como»). En un enlace público: MODO_DEMO=false.
       MODO_DEMO: ${MODO_DEMO:-true}
+      # Modo MVP: solo estas EPS de la muestra se ven (la base conserva las 20). Vacío = muestra completa.
+      # Las pruebas no usan esta variable: las de la muestra completa corren siempre sin MVP_EPS.
+      MVP_EPS: ${MVP_EPS-EPS02,EPS07,EPS09}
       # Casos reales sin su parte privada (tomas públicas): CASOS_REALES_PRIVADOS=false y una base nueva.
       CASOS_REALES_PRIVADOS: ${CASOS_REALES_PRIVADOS:-true}
       # Fase 6: extracción asistida. ninguno | ollama (modelo local en Windows) | anthropic (solo texto anonimizado).

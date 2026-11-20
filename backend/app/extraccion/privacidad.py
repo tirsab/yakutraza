@@ -95,7 +95,7 @@ def verificar(s: Settings, archivos: list[Path] | None = None) -> list[Hallazgo]
         fr: set[str] = set()
         for p in leer_pdf(d.ruta).paginas:
             fr |= _fragmentos(p)
-        if any(pat.search(d.ruta.name) for pat in PUBLICADOS):
+        if d.publicado:
             publicos |= fr
         else:
             por_doc[d.alias] = fr

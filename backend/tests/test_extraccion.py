@@ -33,7 +33,7 @@ PAG1 = ["SUPERINTENDENCIA SINTETICA DE PRUEBA",
         "OFICIO N.° 999-2099-PRUEBA",
         "Lugar de prueba, 14 de agosto de 2099",
         "Asunto: plazo de prueba",
-        "Se otorga una prórroga de dos (2) días hábiles para remitir la información.",
+        "Se otorga una prórroga de dos (2) días hábiles para enviar lo pedido.",
         "Se requiere remitir el anexo de prueba.",
         "Atentamente",
         "NOMBREA APELLIDOB"]

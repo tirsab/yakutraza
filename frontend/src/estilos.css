@@ -692,3 +692,11 @@ footer.pie { color: var(--mut); font-size: .82rem; border-top: 1px solid var(--l
 .demo-mvp { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .demo-mvp .btn-enlace { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
 .aviso-base { border-left: 3px solid var(--warn); padding: 6px 10px; background: var(--warn-bg); color: var(--warn-tx); margin: 8px 0; }
+
+/* Cuadros de los documentos de los casos reales */
+.cuadro-doc { margin: 12px 0; }
+.cuadro-doc figcaption { margin-bottom: 6px; }
+.cuadro-doc td.no-legible { font-style: italic; color: var(--warn-tx); }
+.casos-reales-pub { margin-top: 24px; }
+.caso-real-pub { margin: 12px 0; }
+.caso-real-cuadros { margin: 8px 0; }

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { pedir } from "./api";
-import { dh, fecha, plural } from "./componentes";
+import { CuadroDocumento, dh, fecha, plural, Rotulo, type TablaDocumento } from "./componentes";
 import { entero, soles } from "./dinero";
 import { t } from "./etiquetas";
 import { Icono } from "./iconos";
@@ -276,6 +276,7 @@ export function VistaCiudadana() {
               </div>
             </div>
             <h1>¿Qué obras de agua hay en tu distrito?</h1>
+            <p className="meta"><Rotulo naturaleza="sintético" /> Obras de la muestra del Hackathon: EPS ficticias, no la localidad real.</p>
             <div className="ciu-fila-sel">
               <div className="selectores">
                 <label>Departamento
@@ -377,9 +378,51 @@ export function VistaCiudadana() {
           )}
         </div>
 
+        <CasosRealesPublicados />
+
         {!escritorio && nav(false)}
       </div>
     </Ctx.Provider>
+  );
+}
+
+// ---------------------------------------------------------------- casos reales publicados
+interface CasoPublicado {
+  id_expediente: string;
+  empresa: string;
+  titulo: string;
+  texto: string;
+  puntos: string[];
+  fuentes: string[];
+  localidades: string[];
+  tablas: TablaDocumento[];
+}
+
+/** Casos reales con resolución publicada (Tacna y Pasco), en lenguaje sencillo y con su fuente. «Dato real». */
+function CasosRealesPublicados() {
+  const [casos, setCasos] = useState<CasoPublicado[] | null>(null);
+  useEffect(() => { pedir<CasoPublicado[]>("/publico/casos-reales").then((x) => setCasos(Array.isArray(x) ? x : [])).catch(() => setCasos([])); }, []);
+  if (!casos || casos.length === 0) return null;
+  return (
+    <section className="casos-reales-pub" aria-labelledby="cr-titulo">
+      <h2 id="cr-titulo">Casos reales con resolución publicada <Rotulo naturaleza="real" /></h2>
+      <p className="meta">Empresas reales, distintas de las EPS de la muestra (que son datos sintéticos). Solo información de resoluciones publicadas.</p>
+      {casos.map((c) => (
+        <article key={c.id_expediente} className="tarjeta caso-real-pub">
+          <h3>{c.titulo}</h3>
+          <p className="meta">{c.empresa}{c.localidades.length > 0 && <> · {c.localidades.join(", ")}</>}</p>
+          <p>{c.texto}</p>
+          {c.puntos.length > 0 && <ul>{c.puntos.map((x) => <li key={x}>{x}</li>)}</ul>}
+          <p className="meta">Fuente: {c.fuentes.join("; ")}.</p>
+          {c.tablas.length > 0 && (
+            <details>
+              <summary>Ver los cuadros de la resolución ({c.tablas.length})</summary>
+              {c.tablas.map((tb) => <CuadroDocumento key={tb.clave} t={tb} />)}
+            </details>
+          )}
+        </article>
+      ))}
+    </section>
   );
 }
 

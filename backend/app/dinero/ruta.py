@@ -133,6 +133,44 @@ def ruta_caso_real(caso) -> dict[str, Any] | None:
             "con_detalle_privado": caso.con_detalle_privado}
 
 
+def _tabla(t: dict[str, Any]) -> dict[str, Any]:
+    return {"clave": t["clave"], "titulo": t["titulo"], "documento": t["documento"], "pagina": str(t.get("pagina", "")),
+            "publica": bool(t.get("publica")), "estado": t.get("estado", "por_verificar"),
+            "columnas": list(t.get("columnas", [])), "filas": [[str(c) for c in f] for f in t.get("filas", [])],
+            "notas": list(t.get("notas") or [])}
+
+
+def tablas_publicas(caso) -> list[dict[str, Any]]:
+    """Cuadros de resoluciones publicadas: los de la parte pública marcados `publica: true`. Nunca uno que venga de la
+    parte privada, aunque diga lo contrario."""
+    privadas = {m.removeprefix("tabla ").split(": ", 1)[0] for m in caso.campos_privados if m.startswith("tabla ")}
+    return [_tabla(t) for t in caso.datos.get("tablas") or [] if t.get("publica") is True and t["clave"] not in privadas]
+
+
+def cuadros_caso_real(caso) -> dict[str, Any]:
+    """Ruta del dinero de un caso real: los cuadros de sus propios documentos, con documento y página. «Dato real».
+    En la vista interna se ven también los cuadros de la parte privada (si CASOS_REALES_PRIVADOS=true)."""
+    e = caso.datos["expediente"]
+    return {"id_expediente": e["id"], "empresa": e.get("empresa"), "procedimiento": e["procedimiento"],
+            "naturaleza": "real", "fuente_principal": caso.datos.get("fuente_principal"),
+            "localidades": caso.datos.get("localidades") or e.get("localidades") or [],
+            "tablas": [_tabla(t) for t in caso.datos.get("tablas") or []],
+            "no_legibles": [x.get("nota") for x in caso.datos.get("no_legibles") or []],
+            "con_detalle_privado": caso.con_detalle_privado}
+
+
+def ciudadana_caso_real(caso) -> dict[str, Any] | None:
+    """Texto en lenguaje sencillo de un caso real con resolución publicada (sección `ciudadana`, parte pública)."""
+    c = caso.datos.get("ciudadana") or {}
+    if not c.get("mostrar"):
+        return None
+    e = caso.datos["expediente"]
+    return {"id_expediente": e["id"], "empresa": e.get("empresa"), "procedimiento": e["procedimiento"],
+            "naturaleza": "real", "titulo": c.get("titulo"), "texto": " ".join(str(c.get("texto", "")).split()),
+            "puntos": list(c.get("puntos") or []), "fuentes": list(c.get("fuentes") or []),
+            "localidades": list(c.get("localidades") or []), "tablas": tablas_publicas(caso)}
+
+
 # Versión del art. 90 aplicada, para la fuente de cada uso (rules/plazos.yaml, familia PLZ-N-FONDO-EMERGENCIA).
 _VERSION_90 = {"PLZ-N-FONDO-EMERGENCIA-V2021": "texto original, RCD 028-2021",
                "PLZ-N-FONDO-EMERGENCIA-V2024": "RCD 037-2024", "PLZ-N-FONDO-EMERGENCIA-V2026": "RCD 028-2026"}

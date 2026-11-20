@@ -625,6 +625,26 @@ function montarCiudadana() {
 }
 
 describe("Vista ciudadana", () => {
+  it("casos reales con resolución publicada: texto sencillo, «Dato real», fuente y cuadros", async () => {
+    const base = apiCiudadana();
+    const original = base.getMockImplementation()!;
+    base.mockImplementation((url, init) => String(url).includes("/publico/casos-reales")
+      ? respuesta([{ id_expediente: "REAL-TACNA-2026", empresa: "EPS TACNA S.A.", titulo: "Nuevos medidores de agua en Tacna, Pachía y Locumba",
+          texto: "La Sunass aprobó destinar S/ 3 817 752 a 19 935 medidores.", puntos: ["Año 3: S/ 3 000 004."],
+          fuentes: ["RCD N.° 00032-2026-SUNASS-CD, pág. 4"], localidades: ["Tacna", "Pachía", "Locumba"],
+          tablas: [{ clave: "T1", titulo: "Montos por localidad", documento: "RCD N.° 00032-2026-SUNASS-CD, Cuadro N° 1", pagina: "4",
+            publica: true, estado: "verificado", columnas: ["Localidad", "Total"], filas: [["Pachía", "9 001"]], notas: [] }] }])
+      : original(url, init));
+    montarCiudadana();
+    const seccion = await screen.findByRole("region", { name: /Casos reales con resolución publicada/ });
+    expect(within(seccion).getAllByText("Dato real").length).toBeGreaterThan(0);
+    expect(within(seccion).getByRole("heading", { level: 3, name: "Nuevos medidores de agua en Tacna, Pachía y Locumba" })).toBeInTheDocument();
+    expect(within(seccion).getByText(/Fuente: RCD N\.° 00032-2026-SUNASS-CD, pág\. 4/)).toBeInTheDocument();
+    await userEvent.click(within(seccion).getByText("Ver los cuadros de la resolución (1)"));
+    expect(within(seccion).getByRole("cell", { name: "9 001" })).toBeInTheDocument();
+    expect(within(seccion).queryByText("Parte privada")).toBeNull();
+  });
+
   it("selectores de ubicación, filtros en píldoras y tarjetas con etapa N de 6", async () => {
     apiCiudadana();
     montarCiudadana();

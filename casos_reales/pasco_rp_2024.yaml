@@ -1,0 +1,271 @@
+# Caso real: EMAPA PASCO S.A., revisión periódica del estudio tarifario (2024, periodo regulatorio 2025-2027).
+#
+# PARTE PÚBLICA. Solo contiene lo que dicen tres resoluciones publicadas en El Peruano:
+# - Resolución de la DRT N.° 00015-2024-SUNASS-DRT (13-09-2024; publicada el 15-09-2024; art. 3: «Disponer la
+#   publicación»): inicio del procedimiento.
+# - RCD N.° 00060-2024-SUNASS-CD (25-09-2024; publicada el 28-09-2024): difusión del proyecto.
+# - RCD N.° 00076-2024-SUNASS-CD (13-12-2024; publicada el 20-12-2024; art. 6: «deberán publicarse en el diario
+#   oficial El Peruano»): aprobación de la fórmula tarifaria, estructura tarifaria y metas de gestión.
+# Páginas: la del PDF de cada separata; la página impresa de El Peruano va entre paréntesis cuando se lee.
+#
+# Lo que solo aparece en oficios, memorandos e informes (fechas internas, el plazo de 40 DH de la EP, el fin de los
+# comentarios, los cuadros del estudio tarifario) está en DATA_DIR/casos_reales/pasco_rp_2024_detalle.yaml, que no
+# se versiona.
+#
+# - Sin nombres de personas.
+# - Transcrito con asistencia de IA: todo entra como «propuesto» y solo afecta a los relojes cuando una persona lo
+#   confirma.
+# - Los hitos están reconstruidos a partir de los documentos: las resoluciones no detallan los hitos internos.
+# - Reglas de plazo: las del RGT vigente en 2024 (antes de la RCD 124-2025), como dice la RCD 076 (pág. 1-2).
+
+version: 1
+caso: PASCO-RP-2024
+naturaleza: real
+origen: transcrito_ia
+estado_inicial: propuesto
+fuente_principal: "RCD N.° 00076-2024-SUNASS-CD (Lima, 13 de diciembre de 2024; El Peruano, 20-12-2024)"
+
+expediente:
+  id: REAL-PASCO-2024
+  numero_expediente_sunass: "014-2024-SUNASS-DRT-FT"  # RCD 060-2024, pág. 1 («EXP.: 014-2024-SUNASS-DRT-FT»)
+  procedimiento: revision_periodica
+  empresa: "EMAPA PASCO S.A."
+  periodo_regulatorio: "2025-2027"
+  localidades: ["Pasco", "Vicco"]
+  fecha_inicio: 2024-08-27
+  fecha_conclusion: 2024-12-13
+  estado: concluido
+  resultado: "aprobadas la fórmula tarifaria, la estructura tarifaria y las metas de gestión 2025-2027"
+  fuente: {documento: "RD N.° 00015-2024-SUNASS-DRT", pagina: 2, cita: "Recibido por la Sunass el 27 de agosto de 2024."}
+
+base_normativa:
+  articulo: "RGT, arts. 45 a 49 (texto vigente en 2024)"
+  pagina: 1
+  cita: "le resulta aplicable el RGT y se ha adecuado el estudio tarifario conforme a lo establecido en las Disposiciones"
+  documento: "RCD N.° 00076-2024-SUNASS-CD"
+
+documentos:
+  - clave: "PASCO:OF-355-2024"
+    tipo: OF
+    numero: "Oficio N.º 355-2024-GG-EMAPA PASCO S.A."
+    hito: solicitud
+    asunto: "Solicitud de revisión periódica (adjunta su plan maestro optimizado)"
+    remitente: EP
+    fecha_recepcion: 2024-08-27
+    canal: no_indicado
+    pagina: 2
+    cita: "Recibido por la Sunass el 27 de agosto de 2024."
+    fuente_documento: "RD N.° 00015-2024-SUNASS-DRT, nota 1"
+
+  - clave: "PASCO:OF-396-2024"
+    tipo: OF
+    numero: "Oficio N.º 396-2024-SUNASS-DRT"
+    hito: oficio_subsanacion
+    asunto: "Observaciones a la solicitud; plazo de 10 días hábiles para subsanar"
+    remitente: DRT
+    fecha_notificacion: 2024-08-29
+    plazo_otorgado_dh: 10
+    canal: no_indicado
+    pagina: 1
+    cita: "la Sunass formuló observaciones a la solicitud de revisión tarifaria periódica de EMAPA PASCO y le otorgó un plazo de 10 días hábiles para que las subsane"
+    fuente_documento: "RD N.° 00015-2024-SUNASS-DRT, pág. 1 y nota 9 («Recibido por EMAPA PASCO el 29 de agosto de 2024.»)"
+
+  - clave: "PASCO:OF-366-2024"
+    tipo: OF
+    numero: "Oficio N.º 366-2024-GG-EMAPA PASCO S.A."
+    hito: subsanacion_ep
+    asunto: "Subsana las observaciones"
+    remitente: EP
+    fecha_recepcion: 2024-09-05
+    canal: no_indicado
+    pagina: 2
+    cita: "Recibido por la Sunass el 5 de setiembre de 2024."
+    fuente_documento: "RD N.° 00015-2024-SUNASS-DRT, nota 2"
+    nota: "Ningún documento indica el canal por el que se remitió la subsanación."
+
+  - clave: "PASCO:RD-015-2024"
+    tipo: RD
+    numero: "Resolución N.° 00015-2024-SUNASS-DRT"
+    hito: resolucion_inicio
+    asunto: "Inicia el procedimiento de revisión tarifaria periódica"
+    remitente: DRT
+    fecha_emision: 2024-09-13
+    fecha_publicacion: 2024-09-15
+    canal: tramite
+    pagina: 1
+    cita: "Lima, 13 de setiembre de 2024"
+    nota: "Publicada en El Peruano el domingo 15 de setiembre de 2024 (págs. 39-40 de la separata)."
+
+  - clave: "PASCO:RCD-060-2024"
+    tipo: RCD
+    numero: "Resolución de Consejo Directivo N.° 00060-2024-SUNASS-CD"
+    hito: resolucion_difusion
+    asunto: "Dispone la publicación del proyecto de resolución tarifaria y convoca a audiencia pública"
+    remitente: CD
+    fecha_emision: 2024-09-25
+    fecha_publicacion: 2024-09-28
+    canal: tramite
+    pagina: 1
+    cita: "Lima, 25 de setiembre de 2024"
+    nota: "Publicada en El Peruano el 28 de setiembre de 2024 (RCD 076-2024, nota 5). La fecha en que se notificó a la EP no figura en los documentos con texto (pregunta DRE-31)."
+
+  - clave: "PASCO:MEM-743-2024"
+    tipo: MEM
+    numero: "Memorando N.° 00743-2024-SUNASS-DRT"
+    hito: memo_gg_final
+    asunto: "Presenta el estudio tarifario final y el proyecto de resolución"
+    remitente: DRT
+    canal: tramite
+    pagina: 1
+    cita: "el Memorando N° 00743-2024-SUNASS-DRT de la Dirección de Regulación Tarifaria, mediante el cual presenta el proyecto de estudio tarifario que sustenta la propuesta final"
+    fuente_documento: "RCD N.° 00076-2024-SUNASS-CD, VISTO"
+    nota: "La RCD no indica la fecha del memorando."
+
+  - clave: "PASCO:RCD-076-2024"
+    tipo: RCD
+    numero: "Resolución de Consejo Directivo N.° 00076-2024-SUNASS-CD"
+    hito: resolucion_tarifaria
+    asunto: "Aprueba la fórmula tarifaria, estructura tarifaria, metas de gestión y costos máximos 2025-2027"
+    remitente: CD
+    fecha_emision: 2024-12-13
+    fecha_publicacion: 2024-12-20
+    canal: tramite
+    pagina: 1
+    cita: "Lima, 13 de diciembre de 2024"
+    nota: "Aprobada en la sesión del Consejo Directivo del 12 de diciembre de 2024 (pág. 2). Publicada en El Peruano el viernes 20 de diciembre de 2024."
+
+# Plazos fijados por documento.
+eventos:
+  - clave: "PASCO:PLAZO-OF-396"
+    tipo: plazo_oficio
+    hito: subsanacion_ep
+    dias_dh: 10
+    documento: "PASCO:OF-396-2024"
+    pagina: 1
+    cita: "le otorgó un plazo de 10 días hábiles para que las subsane"
+
+# Hitos reconstruidos a partir de las tres resoluciones. La fecha de fin de cada hito es la del documento que lo
+# cierra; lo que las resoluciones no dicen queda sin fecha en la parte pública.
+hitos:
+  - {nro: 1, etapa: 1_inicio, hito: solicitud, responsable: EP, inicio: 2024-08-27, fin: 2024-08-27, cuenta_plazo: true,
+     documento: "PASCO:OF-355-2024"}
+  - {nro: 2, etapa: 1_inicio, hito: oficio_subsanacion, responsable: DRT, inicio: 2024-08-27, fin: 2024-08-29,
+     cuenta_plazo: true, documento: "PASCO:OF-396-2024",
+     nota: "Agrupa derivación, asignación, evaluación de requisitos y el Oficio 396 (recibido por la EP el 29-08-2024)."}
+  - {nro: 3, etapa: 1_inicio, hito: subsanacion_ep, responsable: EP, inicio: 2024-08-29, fin: 2024-09-05, cuenta_plazo: false,
+     documento: "PASCO:OF-366-2024"}
+  - {nro: 4, etapa: 1_inicio, hito: resolucion_inicio, responsable: DRT, inicio: 2024-09-05, fin: 2024-09-13,
+     cuenta_plazo: true, documento: "PASCO:RD-015-2024", nota: "Agrupa el informe de inicio, su firma y la resolución."}
+  - {nro: 5, etapa: 2_evaluacion, hito: resolucion_difusion, responsable: CD, inicio: 2024-09-13, fin: 2024-09-25,
+     cuenta_plazo: true, documento: "PASCO:RCD-060-2024",
+     nota: "Agrupa el proyecto de estudio, el informe, el memorándum, la elevación y la RCD que dispone la difusión."}
+  - {nro: 6, etapa: 3_difusion, hito: publicacion, responsable: GG, inicio: 2024-09-25, fin: 2024-09-28, cuenta_plazo: true,
+     documento: "PASCO:RCD-060-2024", nota: "Publicación del proyecto en El Peruano el 28-09-2024 (RCD 076-2024, nota 5)."}
+  - {nro: 7, etapa: 3_difusion, hito: audiencia_publica, responsable: DU, inicio: 2024-09-28, fin: 2024-11-08,
+     cuenta_plazo: true, nota: "«realizar la audiencia pública correspondiente el 8 de noviembre de 2024» (RCD 076-2024, pág. 2)."}
+  - {nro: 8, etapa: 3_difusion, hito: comentarios, responsable: EP e interesados, inicio: 2024-11-08, fin: , cuenta_plazo: true,
+     plazo_de: interesados,
+     nota: "La RCD 060-2024 fija el plazo de los interesados: hasta el quinto día hábil siguiente a la audiencia. La fecha de cierre no figura en las resoluciones."}
+  - {nro: 9, etapa: 4_aprobacion, hito: evaluacion_comentarios, responsable: Equipo SRT, inicio: , fin: , cuenta_plazo: true,
+     nota: "«ha evaluado los comentarios realizados al proyecto publicado, conforme se aprecia en el Anexo XI del estudio tarifario» (RCD 076-2024, pág. 2)."}
+  - {nro: 10, etapa: 4_aprobacion, hito: resolucion_tarifaria, responsable: CD, inicio: , fin: 2024-12-13, cuenta_plazo: true,
+     documento: "PASCO:RCD-076-2024"}
+
+# Cuadros de las resoluciones publicadas, tal como vienen (valores exactos como texto). «Dato real».
+tablas:
+  - clave: "PASCO:RCD076-FORMULA"
+    titulo: "Fórmula tarifaria base: incrementos de la tarifa media"
+    documento: "RCD N.° 00076-2024-SUNASS-CD, Anexo N° 1"
+    pagina: "3 (pág. 89 de El Peruano)"
+    publica: true
+    estado: verificado
+    columnas: ["Año regulatorio", "Agua potable", "Saneamiento"]
+    filas:
+      - ["Año 1", "T1 = T0 (1 + 0,100) (1 + ϴ) (1 + Φ)", "T1 = T0 (1 + 0,100) (1 + ϴ) (1 + Φ)"]
+      - ["Año 2", "T2 = T1 (1 + 0,121) (1 + ϴ) (1 + Φ)", "T2 = T1 (1 + 0,121) (1 + ϴ) (1 + Φ)"]
+      - ["Año 3", "T3 = T2 (1 + 0,000) (1 + ϴ) (1 + Φ)", "T3 = T2 (1 + 0,000) (1 + ϴ) (1 + Φ)"]
+    notas:
+      - "«Los incrementos tarifarios del primer y segundo años regulatorios de 10% y 12,1% respectivamente, en los servicios de agua potable y saneamiento»."
+      - "En el tercer año, los reordenamientos de la estructura tarifaria representan «un incremento en la tarifa media de 3,3%»."
+      - "ϴ y Φ: tasas de crecimiento del Índice de Precios al por Mayor (al inicio del periodo y durante el año regulatorio)."
+
+  - clave: "PASCO:RCD076-CONDICIONADO"
+    titulo: "Incremento tarifario condicionado"
+    documento: "RCD N.° 00076-2024-SUNASS-CD, Anexo N° 1, literal B"
+    pagina: "4 (pág. 90 de El Peruano)"
+    publica: true
+    estado: verificado
+    columnas: ["Concepto", "Por el servicio de agua potable"]
+    filas:
+      - ["Entrada en operación del Componente 1 del proyecto «Mejoramiento y ampliación de los servicios de saneamiento y fortalecimiento institucional integral de la EMAPA PASCO» con CUI 2084815, y del reservorio Lucerito", "61,80%"]
+    notas: ["Es adicional a los incrementos de la fórmula tarifaria base."]
+
+  - clave: "PASCO:RCD076-METAS-EP"
+    titulo: "Metas de gestión a nivel de EMAPA PASCO S.A."
+    documento: "RCD N.° 00076-2024-SUNASS-CD, Anexo N° 3, literal a)"
+    pagina: "5 (pág. 91 de El Peruano)"
+    publica: true
+    estado: verificado
+    columnas: ["Meta de gestión base", "Unidad", "Año 1", "Año 2", "Año 3"]
+    filas:
+      - ["Relación de Trabajo de la EP", "%", "73", "69", "77"]
+      - ["Porcentaje de avance financiero del programa de inversiones de la EP", "%", "28", "75", "100"]
+      - ["Porcentaje de ejecución de las reservas para el plan de control de calidad (PCC), mecanismos de retribución por servicios ecosistémicos (MRSE) y gestión de riesgos de desastres y adaptación al cambio climático (GRD y ACC)", "%", "23", "61", "100"]
+
+  - clave: "PASCO:RCD076-METAS-LOCALIDAD"
+    titulo: "Metas de gestión a nivel de localidad"
+    documento: "RCD N.° 00076-2024-SUNASS-CD, Anexo N° 3, literal b)"
+    pagina: "5 (pág. 91 de El Peruano)"
+    publica: true
+    estado: verificado
+    columnas: ["Localidad", "Meta de gestión base", "Unidad", "Año 1", "Año 2", "Año 3"]
+    filas:
+      - ["Pasco", "Continuidad", "h/d", "-", "-", "C"]
+      - ["Pasco", "Presión", "m.c.a.", "-", "-", "P"]
+      - ["Pasco", "Catastro Técnico", "%", "-", "-", "100"]
+      - ["Pasco", "Catastro Comercial", "%", "100", "100", "100"]
+      - ["Vicco", "Eficiencia de la micromedición", "%", "100", "100", "100"]
+      - ["Vicco", "Continuidad", "h/d", "-", "-", "C"]
+      - ["Vicco", "Presión", "m.c.a.", "-", "-", "P"]
+      - ["Vicco", "Catastro Técnico", "%", "-", "-", "100"]
+      - ["Vicco", "Catastro Comercial", "%", "100", "100", "100"]
+    notas:
+      - "C y P: «La ODS Pasco determinará el valor del año base» en el segundo año regulatorio, con manómetro y data logger."
+      - "Eficiencia de la micromedición: conexiones leídas entre conexiones activas de agua potable."
+
+  - clave: "PASCO:RCD076-FONDO-RESERVAS"
+    titulo: "Fondo de inversiones y reservas (porcentaje de los ingresos)"
+    documento: "RCD N.° 00076-2024-SUNASS-CD, Anexo N° 5"
+    pagina: "8 (pág. 94 de El Peruano)"
+    publica: true
+    estado: verificado
+    columnas: ["Año", "Fondo de Inversiones", "Gestión del riesgo de desastres y adaptación al cambio climático (GRD y ACC)",
+               "Mecanismos de retribución por servicios ecosistémicos (MRSE)", "Plan de Control de Calidad (PCC)",
+               "Costos de mantenimiento de infraestructuras y reposición de equipos y maquinarias",
+               "Atención del servicio de agua potable ante interrupciones"]
+    filas:
+      - ["Año 1", "7,5%", "0,5%", "0,8%", "2,0%", "12,4%", "0,9%"]
+      - ["Año 2", "12,0%", "1,0%", "0,8%", "2,0%", "10,1%", "0,8%"]
+      - ["Año 3", "12,0%", "1,5%", "0,6%", "2,0%", "10,1%", "0,8%"]
+    notas: ["Porcentajes del importe facturado por agua potable y saneamiento, incluido el cargo fijo, sin IGV ni Impuesto de Promoción Municipal."]
+
+# Vista ciudadana: lenguaje sencillo, solo con lo que dicen las resoluciones publicadas.
+ciudadana:
+  mostrar: true
+  titulo: "Nuevas tarifas de EMAPA Pasco para 2025-2027"
+  localidades: ["Pasco", "Vicco"]
+  texto: >-
+    La Sunass revisó las tarifas de EMAPA Pasco para el periodo 2025-2027. Primero publicó la propuesta en El Peruano
+    (28 de setiembre de 2024) para recibir comentarios y luego hizo una audiencia pública el 8 de noviembre de 2024; se
+    podían enviar comentarios hasta el quinto día hábil después de la audiencia. Al final aprobó alzas de la tarifa media
+    de 10 % en el primer año y de 12,1 % en el segundo, en Pasco y Vicco. En el tercer año no hay alza
+    base, pero el reordenamiento de la estructura tarifaria sube la tarifa media en 3,3 %. Además, habrá un alza
+    adicional de 61,80 % en agua potable solo cuando entren en operación el Componente 1 del proyecto con CUI 2084815 y
+    el reservorio Lucerito.
+  puntos:
+    - "Parte de lo que pagas va a un fondo de inversiones (7,5 % de los ingresos el primer año y 12 % el segundo y el tercero) y a reservas para riesgos de desastres, servicios ecosistémicos, calidad del agua, mantenimiento e interrupciones."
+    - "Metas que la EPS debe cumplir: por ejemplo, catastro comercial al 100 % cada año en Pasco y Vicco, y en Vicco leer el 100 % de los medidores."
+  fuentes:
+    - "RCD N.° 00060-2024-SUNASS-CD (publicación del proyecto y plazo de comentarios)"
+    - "RCD N.° 00076-2024-SUNASS-CD, pág. 2 (audiencia del 8-11-2024), Anexos 1, 3 y 5"
+    - "RD N.° 00015-2024-SUNASS-DRT (inicio del procedimiento)"

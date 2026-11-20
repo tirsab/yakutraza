@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { pedir } from "./api";
-import { Rotulo, plural } from "./componentes";
+import { CuadroDocumento, Rotulo, plural, type TablaDocumento } from "./componentes";
 import { ChipFuente } from "./ui";
 import { humanizar, t } from "./etiquetas";
 
@@ -16,6 +16,18 @@ export interface Peldano {
   area?: string | null;
   detalle: string;
   fuente: string;
+}
+
+export interface CuadrosCasoReal {
+  id_expediente: string;
+  empresa: string;
+  procedimiento: string;
+  naturaleza: string;
+  fuente_principal: string;
+  localidades: string[];
+  tablas: TablaDocumento[];
+  no_legibles: string[];
+  con_detalle_privado: boolean;
 }
 
 export interface RutaUso {
@@ -64,6 +76,7 @@ interface Resumen {
   usos_emergencia: UsoEmergencia[];
   expedientes_uso: RutaUso[];
   casos_reales: RutaUso[];
+  casos_reales_cuadros?: CuadrosCasoReal[];
   filtros: { cod_eps: string[]; anios: number[]; fondos: Record<string, string> };
 }
 
@@ -356,6 +369,23 @@ export function TableroRutaDelDinero() {
       <h2>Usos excepcionales (art. 89): de dónde sale cada sol</h2>
       {res.casos_reales.map((r) => <RutaDeUso key={r.id_expediente} r={r} fondos={fondos} />)}
       {res.expedientes_uso.map((r) => <RutaDeUso key={r.id_expediente} r={r} fondos={fondos} />)}
+
+      <h2>Casos reales: cuadros de sus propios documentos</h2>
+      <p className="sub">
+        Cada caso real es una empresa real y no se suma a la muestra <Rotulo naturaleza="real" />. Valores exactos, con documento y
+        página; lo que no se lee con certeza va como «no legible» o «por verificar».
+      </p>
+      {(res.casos_reales_cuadros ?? []).filter((c) => c.tablas.length > 0 || c.no_legibles.length > 0).map((c) => (
+        <details key={c.id_expediente} className="caso-real-cuadros">
+          <summary>
+            <strong>{c.empresa}</strong> · {t("tipo_procedimiento", c.procedimiento)}
+            {c.localidades.length > 0 && <> · {c.localidades.join(", ")}</>} · {plural(c.tablas.length, "cuadro", "cuadros")}
+          </summary>
+          <p className="meta"><Link to={`/expedientes/${c.id_expediente}`}>Ver el expediente</Link> · Fuente principal: {c.fuente_principal}</p>
+          {c.tablas.map((tb) => <CuadroDocumento key={tb.clave} t={tb} />)}
+          {c.no_legibles.length > 0 && <p className="meta">{plural(c.no_legibles.length, "documento", "documentos")} no legible(s): {c.no_legibles[0]}</p>}
+        </details>
+      ))}
 
       <h2>Programado frente a ejecutado por proyecto</h2>
       <p className="sub">

@@ -318,6 +318,8 @@ reglas:
       - {doc: RGT, ubicacion: "art. 47.5 (texto anterior a la RCD 124-2025)", cita: "hasta el quinto día hábil siguiente a la realización de la audiencia pública"}
     estado_validacion: por validar
     no_comparable: "La norma vigente entonces fijaba plazos distintos para los interesados (5 DH tras la audiencia) y para la EP (40 DH desde la notificación del proyecto), y DS02 registra ambos en un solo hito «comentarios»: no se puede calificar el hito con un solo plazo."
+    # Un caso real que documenta solo el plazo de los interesados (hito con plazo_de: interesados) sí se compara.
+    plazo_de: interesados
     nota: "Plazo de los interesados. La EP tenía además 40 DH improrrogables desde la notificación del proyecto (PLZ-O-RP-COMENTARIOS-EP-40). El motor no califica el hito combinado de DS02 con esta versión: lo informa como no comparable."
 
   - id: PLZ-N-RP-COMENTARIOS-V2025

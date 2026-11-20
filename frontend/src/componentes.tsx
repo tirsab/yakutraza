@@ -17,6 +17,46 @@ export function Rotulo({ naturaleza }: { naturaleza: string }) {
   return <span className={`rotulo ${n.clase}`}>{n.texto}</span>;
 }
 
+// ---------------------------------------------------------------- cuadros de los casos reales
+export interface TablaDocumento {
+  clave: string;
+  titulo: string;
+  documento: string;
+  pagina: string;
+  publica: boolean;
+  estado: string; // verificado | por_verificar
+  columnas: string[];
+  filas: string[][];
+  notas: string[];
+}
+
+/** Un cuadro tal como viene en su documento (valores exactos), con documento, página y estado. «Dato real». */
+export function CuadroDocumento({ t: tabla }: { t: TablaDocumento }) {
+  return (
+    <figure className="cuadro-doc">
+      <figcaption>
+        <strong>{tabla.titulo}</strong> <Rotulo naturaleza="real" />{" "}
+        {tabla.estado === "por_verificar" && <span className="pildora pil-warn">Por verificar</span>}
+        {!tabla.publica && <span className="pildora">Parte privada</span>}
+        <div className="meta">Fuente: {tabla.documento}, pág. {tabla.pagina}</div>
+      </figcaption>
+      <div className="tabla-wrap">
+        <table>
+          <thead><tr>{tabla.columnas.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
+          <tbody>
+            {tabla.filas.map((f, i) => (
+              <tr key={i}>{f.map((c, j) => j === 0
+                ? <th key={j} scope="row">{c}</th>
+                : <td key={j} className={c === "no legible" ? "no-legible" : undefined}>{c}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {tabla.notas.length > 0 && <ul className="meta">{tabla.notas.map((n) => <li key={n}>{n}</li>)}</ul>}
+    </figure>
+  );
+}
+
 /** «1 expediente», «3 expedientes». */
 export function plural(n: number, singular: string, plural_: string): string {
   return `${n} ${Math.abs(n) === 1 ? singular : plural_}`;

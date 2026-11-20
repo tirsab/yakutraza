@@ -91,6 +91,11 @@ def cargar_casos(dir_publico: Path, dir_privado: Path | None) -> dict[str, CasoR
             _combinar(datos["documentos"], extra.get("documentos"), "clave", caso.campos_privados, "documento")
             _combinar(datos.setdefault("eventos", []), extra.get("eventos"), "clave", caso.campos_privados, "evento")
             _combinar(datos["hitos"], extra.get("hitos"), "nro", caso.campos_privados, "hito")
+            # Cuadros de documentos no publicados (solo con «nuevo: true») y notas de la parte privada.
+            _combinar(datos.setdefault("tablas", []), extra.get("tablas"), "clave", caso.campos_privados, "tabla")
+            if extra.get("no_legibles"):
+                datos["no_legibles"] = extra["no_legibles"]
+                caso.campos_privados.append("no_legibles")
             datos["hitos"].sort(key=lambda h: int(h["nro"]))
             _combinar_dict(datos["expediente"], extra.get("expediente"), caso.campos_privados, "expediente")
             if extra.get("ruta_dinero"):
@@ -188,10 +193,11 @@ def sincronizar(engine: Engine, casos: dict[str, CasoReal]) -> dict[str, int]:
 def expediente_de(caso: CasoReal) -> Expediente:
     e = caso.datos["expediente"]
     por_clave = {d["clave"]: d for d in caso.datos["documentos"]}
-    hitos = [Hito(nro=int(h["nro"]), hito=h["hito"], etapa="unica", responsable=h.get("responsable"),
+    hitos = [Hito(nro=int(h["nro"]), hito=h["hito"], etapa=h.get("etapa", "unica"), responsable=h.get("responsable"),
                   fecha_inicio=h.get("inicio"), fecha_fin=h.get("fin"), plazo_referencial_dh=None,
                   plazo_etapa_dh=None, cuenta_plazo=h.get("cuenta_plazo"),
-                  documento=(por_clave.get(h.get("documento")) or {}).get("numero"), descripcion=h.get("nota"))
+                  documento=(por_clave.get(h.get("documento")) or {}).get("numero"), descripcion=h.get("nota"),
+                  plazo_de=h.get("plazo_de"))
              for h in caso.datos["hitos"]]
     return Expediente(id=e["id"], cod_eps="(caso real)", tipo=e["procedimiento"], fecha_inicio=e.get("fecha_inicio"),
                       plazo_maximo_dh=e.get("plazo_maximo_dh"), estado=e.get("estado"),
